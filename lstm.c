@@ -228,8 +228,8 @@ void lstm_forward_propagate(lstm_model_t* model, int X_index, lstm_values_cache_
 	vectors_multiply(tmp, cache_out->hc, N);
 
 	vectors_add(cache_out->c, tmp, N);
+	
 	// h = ho * tanh_c_cache
-
 	tanh_forward(cache_out->tanh_c_cache, cache_out->c, N);
 	copy_vector(cache_out->h, cache_out->ho, N);
 	vectors_multiply(cache_out->h, cache_out->tanh_c_cache, N);
@@ -352,7 +352,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		}
 
 		i = 0;
-	//	printf("FORWARD PASS, [training_points: %u]\n", training_points);
+
 		while ( i < training_points ) {
 			lstm_forward_propagate(model, X_train[i], caches[i], caches[i+1]);
 			loss += cross_entropy( caches[i+1]->probs, Y_train[i]);
@@ -364,7 +364,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
 
 		i = training_points;
-	//	printf("BACKWARD PASS\n");
+
 		lstm_values_next_cache_init(&d_next, N);
 		
 		lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
@@ -377,7 +377,6 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			sum_gradients(gradients, gradients_entry);
 
-		//	printf("%d\n", i);
 			--i;
 		}		
 
@@ -411,7 +410,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			int q = 0;
 			while ( q < F ) {
-//				printf("[%lf]", caches[i+1]->probs[q]);
+
 				++q;
 			}
 

@@ -107,7 +107,6 @@ void 	sigmoid_forward(double* Y, double* X, int L)
 	int l = 0;
 
 	while ( l < L ) {
-	//	printf("SIGMOID: [%d], hf[%d]: %lf\n", l,l ,1.0 / ( 1.0 + exp(-X[l])));
 		Y[l] = 1.0 / ( 1.0 + exp(-X[l]));
 		++l;
 
