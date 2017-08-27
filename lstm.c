@@ -228,7 +228,7 @@ void lstm_forward_propagate(lstm_model_t* model, int X_index, lstm_values_cache_
 	vectors_multiply(tmp, cache_out->hc, N);
 
 	vectors_add(cache_out->c, tmp, N);
-	
+
 	// h = ho * tanh_c_cache
 	tanh_forward(cache_out->tanh_c_cache, cache_out->c, N);
 	copy_vector(cache_out->h, cache_out->ho, N);
@@ -373,7 +373,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			lstm_zero_the_model(gradients_entry);
 
-			lstm_backward_propagate(model, caches[i]->probs, Y_train[i], d_next, caches[i], gradients_entry, d_next);
+			lstm_backward_propagate(model, caches[i]->probs, Y_train[i-1], d_next, caches[i], gradients_entry, d_next);
 
 			sum_gradients(gradients, gradients_entry);
 
