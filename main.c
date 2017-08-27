@@ -47,10 +47,8 @@ int main(int argc, char *argv[])
 		X_train[sz++] = set_char_to_indx(&set,c);
 	fclose(fp);
 
-	//printf("Model before set: %p\nFeatures: %d\n", model, set_get_features(&set));
 	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE);
-	//printf("Model after set: %p\n", model);
-	//exit(0);
+
 	lstm_train_the_next(model, &set, file_size, X_train, Y_train, ITERATIONS);
 
 	free(X_train);
