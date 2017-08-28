@@ -119,6 +119,21 @@ lstm_values_cache_t*  lstm_cache_container_init(int N, int F)
 	return cache;
 }
 
+void gradients_clip(lstm_model_t* gradients, double limit)
+{
+	matrix_clip(gradients->Wy, limit, gradients->F, gradients->N);
+	matrix_clip(gradients->Wi, limit, gradients->N, gradients->S);
+	matrix_clip(gradients->Wc, limit, gradients->N, gradients->S);
+	matrix_clip(gradients->Wo, limit, gradients->N, gradients->S);
+	matrix_clip(gradients->Wf, limit, gradients->N, gradients->S);
+
+	vectors_clip(gradients->by, limit, gradients->F);
+	vectors_clip(gradients->bi, limit, gradients->N);
+	vectors_clip(gradients->bc, limit, gradients->N);
+	vectors_clip(gradients->bf, limit, gradients->N);
+	vectors_clip(gradients->bo, limit, gradients->N);
+}
+
 void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 {
 	matrix_add(gradients->Wy, gradients_entry->Wy, gradients->F, gradients->N);
@@ -398,6 +413,8 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		}
 
 		lstm_values_next_cache_free(d_next);
+
+		gradients_clip(gradients, GRADIENT_CLIP_LIMIT);
 
 		gradients_decend(model, gradients);
 		lstm_free_model(gradients);

@@ -288,3 +288,32 @@ void 	matrix_scalar_multiply(double** A, double b, int R, int C)
 		++r;
 	}
 }
+void 	matrix_clip(double** A, double limit, int R, int C)
+{
+	int r = 0, c = 0;
+
+	while ( r < R ) {
+		c = 0;
+		while ( c < C ) {
+			if ( A[r][c] > limit )
+				A[r][c] = limit;
+			else if ( A[r][c] < -limit )
+				A[r][C] = -limit;
+			++c;
+		}
+		++r;
+	}
+}
+
+void 	vectors_clip(double* V, double limit, int L)
+{
+	int l = 0;
+	while ( l < L ){
+		if ( V[l] > limit )
+			V[l] = limit;
+		else if ( V[l] < -limit )
+			V[l] = -limit;
+		++l;
+	}
+}
+
