@@ -407,13 +407,6 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		char input = X_train[0];
 		while ( i < 50 ) {
 			lstm_forward_propagate(model, input, caches[i], caches[i+1]);
-
-			int q = 0;
-			while ( q < F ) {
-
-				++q;
-			}
-
 			input = set_probability_choice(char_index_mapping, caches[i+1]->probs);
 			printf ( "%c", input );
 			++i;
