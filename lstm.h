@@ -8,7 +8,7 @@
 #include "set.h"
 #include "layers.h"
 
-#define STD_LEARNING_RATE										0.0001
+#define STD_LEARNING_RATE										0.00001
 
 #define GRADIENT_CLIP_LIMIT										5
 
