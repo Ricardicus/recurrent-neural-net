@@ -7,7 +7,7 @@
 #include "layers.h"
 #include "utilities.h"
 
-#define ITERATIONS 	100
+#define ITERATIONS 	10000
 #define NEURONS		128
 
 int main(int argc, char *argv[])
