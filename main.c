@@ -8,7 +8,6 @@
 #include "utilities.h"
 
 #define ITERATIONS 	10000
-#define NEURONS		128
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +21,7 @@ int main(int argc, char *argv[])
 	srand( time ( NULL ) );
 
 	if ( argc < 2 ) {
-		printf("Usage: ./binary datafile\n");
+		printf("Usage: ./binary datafile [-r name_of_net_to_load]\n");
 		return -1;
 	}
 
@@ -48,6 +47,10 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE);
+
+	if ( argc == 4 && !strcmp(argv[2], "-r") ) {
+		lstm_read_net(model, argv[3]);
+	}
 
 	lstm_train_the_next(model, &set, file_size, X_train, Y_train, ITERATIONS);
 

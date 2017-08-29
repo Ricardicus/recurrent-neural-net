@@ -317,3 +317,81 @@ void 	vectors_clip(double* V, double limit, int L)
 	}
 }
 
+void 	matrix_store(double ** A, int R, int C, FILE * fp) 
+{
+	int r = 0, c = 0;
+	size_t i = 0;
+	void * p;
+
+	while ( r < R ) {
+		c = 0;
+		while ( c < C ) {
+			i = 0; p = &A[r][c];
+			while ( i < sizeof(double) ) {
+				fputc(*((char*)p), fp);
+				++i; ++p;
+			}
+			++c;
+		}
+		++r;
+	}
+
+}
+
+void 	matrix_read(double ** A, int R, int C, FILE * fp) 
+{
+	int r = 0, c = 0;
+	size_t i = 0;
+	void * p;
+	double value;
+
+	while ( r < R ) {
+		c = 0;
+		while ( c < C ) {
+			i = 0; p = &value;
+			while ( i < sizeof(double) ) {
+				*((char *)p) = fgetc(fp);
+				++i; ++p;
+			}
+			A[r][c] = value;
+			++c;
+		}
+		++r;
+	}
+
+}
+
+void 	vector_store(double* V, int L, FILE * fp)
+{
+	int l = 0;
+	size_t i = 0;
+	void * p;
+
+	while ( l < L ){
+		i = 0; p = &V[l];
+		while ( i < sizeof(double)) {
+			fputc(*((char*)p), fp);
+			++i; ++p;
+		}
+		++l;
+	}
+}
+
+void 	vector_read(double * V, int L, FILE * fp) 
+{
+	int l = 0;
+	size_t i = 0;
+	void * p;
+	double value;
+
+	while ( l < L ) {
+		i = 0; p = &value;
+		while ( i < sizeof(double) ) {
+			*((char *)p) = fgetc(fp);
+			++i; ++p;
+		}
+		V[l] = value;
+		++l;
+	}
+
+}

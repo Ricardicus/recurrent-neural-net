@@ -350,6 +350,61 @@ void lstm_cache_container_set_start(lstm_values_cache_t * cache)
 	vector_set_to_zero(cache->c, NEURONS); 
 }
 
+
+void lstm_store_net(lstm_model_t* model, const char * filename) 
+{
+	FILE * fp;
+
+	fp = fopen(filename, "w");
+
+	if ( fp == NULL ) {
+		printf("Failed to open file: %s for writing.\n", filename);
+		return;
+	}
+
+	matrix_store(model->Wy, model->F, model->N, fp);
+	matrix_store(model->Wi, model->N, model->S, fp);
+	matrix_store(model->Wc, model->N, model->S, fp);
+	matrix_store(model->Wo, model->N, model->S, fp);
+	matrix_store(model->Wf, model->N, model->S, fp);
+
+	vector_store(model->by, model->F, fp);
+	vector_store(model->bi, model->N, fp);
+	vector_store(model->bc, model->N, fp);
+	vector_store(model->bf, model->N, fp);
+	vector_store(model->bo, model->N, fp);
+
+	fclose(fp);
+
+}
+
+void lstm_read_net(lstm_model_t* model, const char * filename) 
+{
+	FILE * fp;
+
+	fp = fopen(filename, "r");
+
+	if ( fp == NULL ) {
+		printf("Failed to open file: %s for writing.\n", filename);
+		return;
+	}
+
+	matrix_read(model->Wy, model->F, model->N, fp);
+	matrix_read(model->Wi, model->N, model->S, fp);
+	matrix_read(model->Wc, model->N, model->S, fp);
+	matrix_read(model->Wo, model->N, model->S, fp);
+	matrix_read(model->Wf, model->N, model->S, fp);
+
+	vector_read(model->by, model->F, fp);
+	vector_read(model->bi, model->N, fp);
+	vector_read(model->bc, model->N, fp);
+	vector_read(model->bf, model->N, fp);
+	vector_read(model->bo, model->N, fp);
+
+	printf("Loaded the net: %s\n", filename);
+	fclose(fp);
+}
+
 void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in, int length) 
 {
 	lstm_values_cache_t * cache;
@@ -446,6 +501,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		lstm_output_string(model, char_index_mapping, X_train[0], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
 		printf("\n===================\n");
+
+		if (!( n % 5 ))
+			lstm_store_net(model, STD_LOADABLE_NET_NAME);
 
 		++n;
 	}

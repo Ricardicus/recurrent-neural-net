@@ -19,6 +19,8 @@
 #define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE				1
 #define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE		0
 
+#define STD_LOADABLE_NET_NAME									"lstm_net.net"
+
 typedef struct lstm_model_t
 {
 		int F; // Number of features
@@ -91,6 +93,11 @@ void lstm_cache_container_free(lstm_values_cache_t*);
 void lstm_values_next_cache_init(lstm_values_next_cache_t**, int);
 void lstm_values_next_cache_free(lstm_values_next_cache_t*);
 void sum_gradients(lstm_model_t*, lstm_model_t*);
+
+// For storing and loading of net data
+//					model (already init), name
+void lstm_store_net(lstm_model_t*, const char *);
+void lstm_read_net(lstm_model_t*, const char *);
 
 // The main entry point
 //						model, number of training points, X_train, Y_train, number of iterations

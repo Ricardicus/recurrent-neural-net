@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 // used on contigous vectors
 //		A = A + B		A,		B,    l
@@ -38,4 +39,9 @@ void 	vector_set_to_zero(double*, int);
 void matrix_clip(double**, double, int, int);
 void vectors_clip(double*, double, int);
 
+// I/O
+void 	vector_read(double *, int, FILE *);
+void 	vector_store(double *, int, FILE *);
+void 	matrix_store(double **, int, int, FILE *);  
+void 	matrix_read(double **, int, int, FILE *);   
 #endif
