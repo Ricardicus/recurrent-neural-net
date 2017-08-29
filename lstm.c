@@ -337,6 +337,35 @@ void lstm_zero_the_model(lstm_model_t * model)
 	vector_set_to_zero(model->bo, model->N);
 }
 
+void lstm_zero_d_next(lstm_values_next_cache_t * d_next)
+{
+	vector_set_to_zero(d_next->dldh_next, NEURONS);
+	vector_set_to_zero(d_next->dldc_next, NEURONS);
+}
+
+void lstm_cache_container_set_start(lstm_values_cache_t * cache)
+{
+	// State variables set to zero
+	vector_set_to_zero(cache->h, NEURONS); 
+	vector_set_to_zero(cache->c, NEURONS); 
+}
+
+void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in, int length) 
+{
+	lstm_values_cache_t * cache;
+	int i = 0;
+	char input = in;
+
+	cache = lstm_cache_container_init(model->N, model->F);
+
+	while ( i < length ) {
+		lstm_forward_propagate(model, input, cache, cache);
+		input = set_probability_choice(char_index_mapping, cache->probs);
+		printf ( "%c", input );
+		++i;
+	}
+}
+
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
@@ -358,15 +387,21 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 	tmp = caches;
 
+	lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
+	lstm_values_next_cache_init(&d_next, N);	
+	lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
+
+	i = 0;
+	while ( i < training_points + 1){
+		caches[i] = lstm_cache_container_init(N, F);
+		++i;
+	}
+
 	while ( n < iterations ){
 		i = 0;
 		loss = 0.0;
-		while ( i < training_points + 1){
-			caches[i] = lstm_cache_container_init(N, F);
-			++i;
-		}
 
-		i = 0;
+		lstm_cache_container_set_start(caches[0]);
 
 		while ( i < training_points ) {
 			lstm_forward_propagate(model, X_train[i], caches[i], caches[i+1]);
@@ -384,13 +419,11 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			printf("New record loss: %lf!\n", record_keeper);
 		}
 
-		lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
-
 		i = training_points;
 
-		lstm_values_next_cache_init(&d_next, N);
-		
-		lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
+		lstm_zero_the_model(gradients);
+
+		lstm_zero_d_next(d_next);
 
 		while ( i > 0 ) {
 
@@ -403,50 +436,31 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			--i;
 		}		
 
-		lstm_free_model(gradients_entry);
-
-		i = 0;
-		while ( i < training_points + 1) {
-			lstm_cache_container_free(caches[i]);
-			free(caches[i]);
-			++i;
-		}
-
-		lstm_values_next_cache_free(d_next);
-
 		gradients_clip(gradients, GRADIENT_CLIP_LIMIT);
 
 		gradients_decend(model, gradients);
-		lstm_free_model(gradients);
 
 		printf("Iteration: %lu, Loss: %lf, record: %lf\n", n+1, loss, record_keeper);
 		printf("===================\n");
 
-		i = 0;
-		while ( i < NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING + 1){
-			caches[i] = lstm_cache_container_init( N, F);
-			++i;
-		}
-
-		i = 0;
-		char input = X_train[0];
-		while ( i < NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING ) {
-			lstm_forward_propagate(model, input, caches[i], caches[i+1]);
-			input = set_probability_choice(char_index_mapping, caches[i+1]->probs);
-			printf ( "%c", input );
-			++i;
-		}
+		lstm_output_string(model, char_index_mapping, X_train[0], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
 		printf("\n===================\n");
 
-		i = 0;
-		while ( i < NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING + 1) {
-			lstm_cache_container_free(caches[i]);
-			free(caches[i]);
-			++i;
-		}
 		++n;
 	}
+
+	lstm_values_next_cache_free(d_next);
+
+	i = 0;
+	while ( i < training_points + 1) {
+		lstm_cache_container_free(caches[i]);
+		free(caches[i]);
+		++i;
+	}
+
+	lstm_free_model(gradients_entry);
+	lstm_free_model(gradients);
 
 	free(tmp);
 
