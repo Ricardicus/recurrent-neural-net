@@ -32,6 +32,7 @@ void 	copy_vector(double*, double*, int);
 double* 	get_zero_vector(int); 
 double** 	get_zero_matrix(int, int);
 double** 	get_random_matrix(int, int);
+double* 	get_random_vector(int,int);
 
 void 	matrix_set_to_zero(double**, int, int);
 void 	vector_set_to_zero(double*, int);

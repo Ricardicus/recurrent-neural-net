@@ -67,13 +67,30 @@ int 	init_random_matrix(double*** A, int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			(*A)[r][c] =  ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R / 2.0 ); 
+			(*A)[r][c] =  ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R * C / 2.0 ); 
 			++c;
 		}
 		++r;
 	}
 
 	return 0;
+}
+
+double*		get_random_vector(int L, int R) {
+	
+	int l = 0;
+	double *p;
+	p = calloc(L, sizeof(double));
+	if ( p == NULL )
+		exit(0);
+
+	while ( l < L ){
+		p[l] = ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R / 2.0 );;
+		++l;
+	}
+
+	return p;
+
 }
 
 double** 	get_random_matrix(int R, int C)

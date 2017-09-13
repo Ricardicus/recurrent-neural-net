@@ -15,17 +15,17 @@ int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros)
 	lstm->learning_rate = STD_LEARNING_RATE;
 
 	if ( zeros ) {
-		lstm->Wf = get_zero_matrix(N, S);
-		lstm->Wi = get_zero_matrix(N, S);
-		lstm->Wc = get_zero_matrix(N, S);
-		lstm->Wo = get_zero_matrix(N, S);
-		lstm->Wy = get_zero_matrix(F, N);
+		lstm->Wf = get_zero_vector(N * S);
+		lstm->Wi = get_zero_vector(N * S);
+		lstm->Wc = get_zero_vector(N * S);
+		lstm->Wo = get_zero_vector(N * S);
+		lstm->Wy = get_zero_vector(F * N);
 	} else {
-		lstm->Wf = get_random_matrix(N, S);
-		lstm->Wi = get_random_matrix(N, S);
-		lstm->Wc = get_random_matrix(N, S);
-		lstm->Wo = get_random_matrix(N, S);
-		lstm->Wy = get_random_matrix(F, N);
+		lstm->Wf = get_random_vector(N * S, N);
+		lstm->Wi = get_random_vector(N * S, N);
+		lstm->Wc = get_random_vector(N * S, N);
+		lstm->Wo = get_random_vector(N * S, N);
+		lstm->Wy = get_random_vector(F * N, F);
 	}
 
 	lstm->bf = get_zero_vector(N);
@@ -53,11 +53,11 @@ int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros)
 //					 lstm model to be freed
 void lstm_free_model(lstm_model_t* lstm)
 {
-	free_matrix(lstm->Wf,lstm->N);
-	free_matrix(lstm->Wi,lstm->N);
-	free_matrix(lstm->Wc,lstm->N);
-	free_matrix(lstm->Wo,lstm->N);
-	free_matrix(lstm->Wy,lstm->F);
+	free_vector(&lstm->Wf);
+	free_vector(&lstm->Wi);
+	free_vector(&lstm->Wc);
+	free_vector(&lstm->Wo);
+	free_vector(&lstm->Wy);
 
 	free_vector(&lstm->bf);
 	free_vector(&lstm->bi);
@@ -121,11 +121,11 @@ lstm_values_cache_t*  lstm_cache_container_init(int N, int F)
 
 void gradients_clip(lstm_model_t* gradients, double limit)
 {
-	matrix_clip(gradients->Wy, limit, gradients->F, gradients->N);
-	matrix_clip(gradients->Wi, limit, gradients->N, gradients->S);
-	matrix_clip(gradients->Wc, limit, gradients->N, gradients->S);
-	matrix_clip(gradients->Wo, limit, gradients->N, gradients->S);
-	matrix_clip(gradients->Wf, limit, gradients->N, gradients->S);
+	vectors_clip(gradients->Wy, limit, gradients->F * gradients->N);
+	vectors_clip(gradients->Wi, limit, gradients->N * gradients->S);
+	vectors_clip(gradients->Wc, limit, gradients->N * gradients->S);
+	vectors_clip(gradients->Wo, limit, gradients->N * gradients->S);
+	vectors_clip(gradients->Wf, limit, gradients->N * gradients->S);
 
 	vectors_clip(gradients->by, limit, gradients->F);
 	vectors_clip(gradients->bi, limit, gradients->N);
@@ -136,11 +136,11 @@ void gradients_clip(lstm_model_t* gradients, double limit)
 
 void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 {
-	matrix_add(gradients->Wy, gradients_entry->Wy, gradients->F, gradients->N);
-	matrix_add(gradients->Wi, gradients_entry->Wi, gradients->N, gradients->S);
-	matrix_add(gradients->Wc, gradients_entry->Wc, gradients->N, gradients->S);
-	matrix_add(gradients->Wo, gradients_entry->Wo, gradients->N, gradients->S);
-	matrix_add(gradients->Wf, gradients_entry->Wf, gradients->N, gradients->S);
+	vectors_add(gradients->Wy, gradients_entry->Wy, gradients->F * gradients->N);
+	vectors_add(gradients->Wi, gradients_entry->Wi, gradients->N * gradients->S);
+	vectors_add(gradients->Wc, gradients_entry->Wc, gradients->N * gradients->S);
+	vectors_add(gradients->Wo, gradients_entry->Wo, gradients->N * gradients->S);
+	vectors_add(gradients->Wf, gradients_entry->Wf, gradients->N * gradients->S);
 
 	vectors_add(gradients->by, gradients_entry->by, gradients->F);
 	vectors_add(gradients->bi, gradients_entry->bi, gradients->N);
@@ -151,17 +151,17 @@ void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 
 // A = A - alpha * dl/dA
 void gradients_decend(lstm_model_t* model, lstm_model_t* gradients) {
-	matrix_scalar_multiply(gradients->Wy, model->learning_rate, model->F, model->N);
-	matrix_scalar_multiply(gradients->Wi, model->learning_rate, model->N, model->S);
-	matrix_scalar_multiply(gradients->Wc, model->learning_rate, model->N, model->S);
-	matrix_scalar_multiply(gradients->Wo, model->learning_rate, model->N, model->S);
-	matrix_scalar_multiply(gradients->Wf, model->learning_rate, model->N, model->S);
+	vectors_mutliply_scalar(gradients->Wy, model->learning_rate, model->F * model->N);
+	vectors_mutliply_scalar(gradients->Wi, model->learning_rate, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wc, model->learning_rate, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wo, model->learning_rate, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wf, model->learning_rate, model->N * model->S);
 
-	matrix_substract(model->Wy, gradients->Wy, model->F, model->N);
-	matrix_substract(model->Wi, gradients->Wi, model->N, model->S);
-	matrix_substract(model->Wc, gradients->Wc, model->N, model->S);
-	matrix_substract(model->Wo, gradients->Wo, model->N, model->S);
-	matrix_substract(model->Wf, gradients->Wf, model->N, model->S);
+	vectors_substract(model->Wy, gradients->Wy, model->F * model->N);
+	vectors_substract(model->Wi, gradients->Wi, model->N * model->S);
+	vectors_substract(model->Wc, gradients->Wc, model->N * model->S);
+	vectors_substract(model->Wo, gradients->Wo, model->N * model->S);
+	vectors_substract(model->Wf, gradients->Wf, model->N * model->S);
 
 	vectors_mutliply_scalar(gradients->by, model->learning_rate, model->F);
 	vectors_mutliply_scalar(gradients->bi, model->learning_rate, model->N);
@@ -324,11 +324,11 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 
 void lstm_zero_the_model(lstm_model_t * model)
 {
-	matrix_set_to_zero(model->Wy, model->F, model->N);
-	matrix_set_to_zero(model->Wi, model->N, model->S);
-	matrix_set_to_zero(model->Wc, model->N, model->S);
-	matrix_set_to_zero(model->Wo, model->N, model->S);
-	matrix_set_to_zero(model->Wf, model->N, model->S);
+	vector_set_to_zero(model->Wy, model->F * model->N);
+	vector_set_to_zero(model->Wi, model->N * model->S);
+	vector_set_to_zero(model->Wc, model->N * model->S);
+	vector_set_to_zero(model->Wo, model->N * model->S);
+	vector_set_to_zero(model->Wf, model->N * model->S);
 
 	vector_set_to_zero(model->by, model->F);
 	vector_set_to_zero(model->bi, model->N);
@@ -362,11 +362,11 @@ void lstm_store_net(lstm_model_t* model, const char * filename)
 		return;
 	}
 
-	matrix_store(model->Wy, model->F, model->N, fp);
-	matrix_store(model->Wi, model->N, model->S, fp);
-	matrix_store(model->Wc, model->N, model->S, fp);
-	matrix_store(model->Wo, model->N, model->S, fp);
-	matrix_store(model->Wf, model->N, model->S, fp);
+	vector_store(model->Wy, model->F * model->N, fp);
+	vector_store(model->Wi, model->N * model->S, fp);
+	vector_store(model->Wc, model->N * model->S, fp);
+	vector_store(model->Wo, model->N * model->S, fp);
+	vector_store(model->Wf, model->N * model->S, fp);
 
 	vector_store(model->by, model->F, fp);
 	vector_store(model->bi, model->N, fp);
@@ -389,11 +389,11 @@ void lstm_read_net(lstm_model_t* model, const char * filename)
 		return;
 	}
 
-	matrix_read(model->Wy, model->F, model->N, fp);
-	matrix_read(model->Wi, model->N, model->S, fp);
-	matrix_read(model->Wc, model->N, model->S, fp);
-	matrix_read(model->Wo, model->N, model->S, fp);
-	matrix_read(model->Wf, model->N, model->S, fp);
+	vector_store(model->Wy, model->F * model->N, fp);
+	vector_store(model->Wi, model->N * model->S, fp);
+	vector_store(model->Wc, model->N * model->S, fp);
+	vector_store(model->Wo, model->N * model->S, fp);
+	vector_store(model->Wf, model->N * model->S, fp);
 
 	vector_read(model->by, model->F, fp);
 	vector_read(model->bi, model->N, fp);
@@ -421,13 +421,25 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 	}
 }
 
+void lstm_store_progress(unsigned int n, double loss)
+{
+	FILE * fp;
+
+	fp = fopen(PROGRESS_FILE_NAME, "a");
+	if ( fp != NULL ) {
+		fprintf(fp, "%u,%lf\n",n,loss);
+		fclose(fp);
+	}
+
+}
+
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
 	int N,F,S;
-	unsigned int i = 0;
+	unsigned int i = 0, b = 0, q = 0, record_iteration = 0;
 	unsigned long n = 0;
-	double loss = 0.0, record_keeper = 0.0;
+	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	lstm_values_cache_t **caches, **tmp; 
 	lstm_values_next_cache_t *d_next = NULL;
 	lstm_model_t *gradients, *gradients_entry = NULL;
@@ -452,58 +464,76 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		++i;
 	}
 
+	i = 0;
+	b = 0;
+
+
 	while ( n < iterations ){
-		i = 0;
-		loss = 0.0;
 
-		lstm_cache_container_set_start(caches[0]);
+		b = i;
 
-		while ( i < training_points ) {
+		loss_tmp = 0.0;
+
+		lstm_cache_container_set_start(caches[b]);
+
+		q = 0;
+		while ( i < b + MINI_BATCH_SIZE && i < training_points ) {
 			lstm_forward_propagate(model, X_train[i], caches[i], caches[i+1]);
-			loss += cross_entropy( caches[i+1]->probs, Y_train[i]);
-			++i;
+			loss_tmp += cross_entropy( caches[i+1]->probs, Y_train[i]);
+			++i; ++q;
 		}
 
-		loss /= training_points; 
+		loss_tmp /= (q+1); 
+
+		if ( loss < 0 )
+			loss = loss_tmp;
+
+		loss = loss_tmp * LOSS_MOVING_AVG + (1 - LOSS_MOVING_AVG) * loss;
 
 		if ( n == 0 ) 
 			record_keeper = loss;
 
-		if ( loss < record_keeper ) {
+		if ( loss < record_keeper ){
 			record_keeper = loss;
-			printf("New record loss: %lf!\n", record_keeper);
+			record_iteration = n;
 		}
-
-		i = training_points;
 
 		lstm_zero_the_model(gradients);
 
 		lstm_zero_d_next(d_next);
 
-		while ( i > 0 ) {
+		while ( i > b ) {
 
 			lstm_zero_the_model(gradients_entry);
 
 			lstm_backward_propagate(model, caches[i]->probs, Y_train[i-1], d_next, caches[i], gradients_entry, d_next);
 
 			sum_gradients(gradients, gradients_entry);
-
-			--i;
-		}		
+			i--;
+		}
 
 		gradients_clip(gradients, GRADIENT_CLIP_LIMIT);
 
 		gradients_decend(model, gradients);
 
-		printf("Iteration: %lu, Loss: %lf, record: %lf\n", n+1, loss, record_keeper);
-		printf("===================\n");
+		if (!( n % PRINT_EVERY_X_ITERATIONS )) {
 
-		lstm_output_string(model, char_index_mapping, X_train[0], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
+			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
+			printf("===================\n");
 
-		printf("\n===================\n");
+			lstm_output_string(model, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
-		if (!( n % 5 ))
+			printf("\n===================\n");
+
+		}
+
+		if ( !(n % STORE_EVERY_X_ITERATIONS ))
 			lstm_store_net(model, STD_LOADABLE_NET_NAME);
+
+		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
+			lstm_store_progress(n, loss);
+
+		i = b + MINI_BATCH_SIZE > training_points ? 0 : b + MINI_BATCH_SIZE;
 
 		++n;
 	}
@@ -523,8 +553,6 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 	free(tmp);
 
 }
-
-
 
 
 

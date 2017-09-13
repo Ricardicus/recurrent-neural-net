@@ -7,7 +7,7 @@
 #include "layers.h"
 #include "utilities.h"
 
-#define ITERATIONS 	10000
+#define ITERATIONS 	1000000
 
 int main(int argc, char *argv[])
 {

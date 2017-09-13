@@ -3,9 +3,9 @@
 
 // Dealing with FC layers, forward and backward
 //		Y = AX + b  			&Y,      A,   		X,		B,     Rows (A), Columns (A)
-void	fully_connected_forward(double*, double**, double*, double*, int, int);
+void	fully_connected_forward(double*, double*, double*, double*, int, int);
 //		Y = AX + b  			dldY,       A,     X,        &dldA,    &dldX,    &dldb   Rows (A), Columns (A)
-void 	fully_connected_backward(double*, double**, double* ,double**, double*, double*, int,    int);
+void 	fully_connected_backward(double*, double*, double* ,double*, double*, double*, int,    int);
 
 // Dealing with softmax layer, forward and backward
 //								&P,		Y,  	features

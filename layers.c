@@ -11,14 +11,14 @@
 *
 */
 //		Y = AX + b  			&Y,      A,   		X,		B,     Rows (for A), Columns (for A)
-void	fully_connected_forward(double* Y, double** A, double* X, double* b, int R, int C)
+void	fully_connected_forward(double* Y, double* A, double* X, double* b, int R, int C)
 {
 	int i = 0, n = 0;
 	while ( i < R ) {
 		Y[i] = b[i];
 		n = 0;
 		while ( n < C ) {
-			Y[i] += A[i][n] * X[n];
+			Y[i] += A[i * C + n] * X[n];
 			++n;
 		}
 		++i;
@@ -26,7 +26,7 @@ void	fully_connected_forward(double* Y, double** A, double* X, double* b, int R,
 
 }
 //		Y = AX + b  			dldY,       A,     X,        &dldA,    &dldX,    &dldb   Rows (A), Columns (A)
-void 	fully_connected_backward(double* dldY, double** A, double* X,double** dldA, double* dldX, double* dldb, int R, int C)
+void 	fully_connected_backward(double* dldY, double* A, double* X,double* dldA, double* dldX, double* dldb, int R, int C)
 {
 	int i = 0, n = 0;
 
@@ -34,7 +34,7 @@ void 	fully_connected_backward(double* dldY, double** A, double* X,double** dldA
 	while ( i < R ) {
 		n = 0;
 		while ( n < C ) {
-			dldA[i][n] = dldY[i] * X[n];
+			dldA[i * C + n] = dldY[i] * X[n];
 			++n;
 		}
 		++i;
@@ -54,7 +54,7 @@ void 	fully_connected_backward(double* dldY, double** A, double* X,double** dldA
 
 		dldX[i] = 0.0;
 		while ( n < R ) {
-			dldX[i] += A[n][i] * dldY[n];
+			dldX[i] += A[n * C + i] * dldY[n];
 			++n;
 		}
 
