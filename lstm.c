@@ -524,7 +524,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			lstm_output_string(model, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
 			printf("\n===================\n");
-
+			
+			// Flushing stdout
+			fflush(stdout);
 		}
 
 		if ( !(n % STORE_EVERY_X_ITERATIONS ))
