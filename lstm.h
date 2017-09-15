@@ -8,13 +8,13 @@
 #include "set.h"
 #include "layers.h"
 
-#define STD_LEARNING_RATE						0.0001
+#define STD_LEARNING_RATE						0.001
 
 #define NEURONS								128
 
-#define GRADIENT_CLIP_LIMIT						5
+#define GRADIENT_CLIP_LIMIT						10000
 
-#define MINI_BATCH_SIZE							12
+#define MINI_BATCH_SIZE							10
 
 #define PRINT_EVERY_X_ITERATIONS					2000
 #define STORE_EVERY_X_ITERATIONS					200
@@ -25,7 +25,7 @@
 #define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE			1
 #define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE		0
 
-#define LOSS_MOVING_AVG							0.001
+#define LOSS_MOVING_AVG							0.01
 
 #define STD_LOADABLE_NET_NAME						"lstm_net.net"
 #define PROGRESS_FILE_NAME						"progress.csv"
