@@ -1,5 +1,16 @@
 #include "set.h"
 
+
+void 
+initialize_set(set_T * set) 
+{
+	int i = 0;
+	while ( i < SET_MAX_CHARS ) {
+		set->values[i] = '\0';
+		++i;
+	}
+}
+
 int
 set_insert_symbol(set_T * set, char c)
 {
