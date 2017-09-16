@@ -1,7 +1,7 @@
 #include "lstm.h"
 
 //					 Features,   Neurons,  &lstm model, 		zeros
-int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros)
+int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros, lstm_model_parameters_t * params)
 {
 	int S = F + N;
 	lstm_model_t* lstm = calloc(1, sizeof(lstm_model_t));
@@ -12,7 +12,7 @@ int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros)
 	lstm->N = N;
 	lstm->S = S;
 
-	lstm->learning_rate = STD_LEARNING_RATE;
+	lstm->params = params;
 
 	if ( zeros ) {
 		lstm->Wf = get_zero_vector(N * S);
@@ -46,6 +46,19 @@ int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros)
 	lstm->dldXi = get_zero_vector(S);
 	lstm->dldXf = get_zero_vector(S);
 
+	// Gradient descent momentum caches
+	lstm->Wfm = get_zero_vector(N * S);
+	lstm->Wim = get_zero_vector(N * S);
+	lstm->Wcm = get_zero_vector(N * S);
+	lstm->Wom = get_zero_vector(N * S);
+	lstm->Wym = get_zero_vector(F * N);
+
+	lstm->bfm = get_zero_vector(N);
+	lstm->bim = get_zero_vector(N);
+	lstm->bcm = get_zero_vector(N);
+	lstm->bom = get_zero_vector(N);
+	lstm->bym = get_zero_vector(F);
+
 	*model_to_be_set = lstm;
 
 	return 0;
@@ -76,6 +89,18 @@ void lstm_free_model(lstm_model_t* lstm)
 	free_vector(&lstm->dldXo);
 	free_vector(&lstm->dldXi);
 	free_vector(&lstm->dldXf);
+
+	free_vector(&lstm->Wfm);
+	free_vector(&lstm->Wim);
+	free_vector(&lstm->Wcm);
+	free_vector(&lstm->Wom);
+	free_vector(&lstm->Wym);
+
+	free_vector(&lstm->bfm);
+	free_vector(&lstm->bim);
+	free_vector(&lstm->bcm);
+	free_vector(&lstm->bom);
+	free_vector(&lstm->bym);
 
 	free(lstm);
 }
@@ -149,31 +174,47 @@ void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 	vectors_add(gradients->bo, gradients_entry->bo, gradients->N);
 }
 
-// A = A - alpha * dl/dA
+// A = A - alpha * m, m = momentum * m + ( 1 - momentum ) * dldA
 void gradients_decend(lstm_model_t* model, lstm_model_t* gradients) {
-	vectors_mutliply_scalar(gradients->Wy, model->learning_rate, model->F * model->N);
-	vectors_mutliply_scalar(gradients->Wi, model->learning_rate, model->N * model->S);
-	vectors_mutliply_scalar(gradients->Wc, model->learning_rate, model->N * model->S);
-	vectors_mutliply_scalar(gradients->Wo, model->learning_rate, model->N * model->S);
-	vectors_mutliply_scalar(gradients->Wf, model->learning_rate, model->N * model->S);
+	
+	// Computing momumentum * m
+	vectors_mutliply_scalar(gradients->Wym, model->params->momentum, model->F * model->N);
+	vectors_mutliply_scalar(gradients->Wim, model->params->momentum, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wcm, model->params->momentum, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wom, model->params->momentum, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wfm, model->params->momentum, model->N * model->S);
 
-	vectors_substract(model->Wy, gradients->Wy, model->F * model->N);
-	vectors_substract(model->Wi, gradients->Wi, model->N * model->S);
-	vectors_substract(model->Wc, gradients->Wc, model->N * model->S);
-	vectors_substract(model->Wo, gradients->Wo, model->N * model->S);
-	vectors_substract(model->Wf, gradients->Wf, model->N * model->S);
+	vectors_mutliply_scalar(gradients->bym, model->params->momentum, model->F);
+	vectors_mutliply_scalar(gradients->bim, model->params->momentum, model->N);
+	vectors_mutliply_scalar(gradients->bcm, model->params->momentum, model->N);
+	vectors_mutliply_scalar(gradients->bom, model->params->momentum, model->N);
+	vectors_mutliply_scalar(gradients->bfm, model->params->momentum, model->N);
 
-	vectors_mutliply_scalar(gradients->by, model->learning_rate, model->F);
-	vectors_mutliply_scalar(gradients->bi, model->learning_rate, model->N);
-	vectors_mutliply_scalar(gradients->bc, model->learning_rate, model->N);
-	vectors_mutliply_scalar(gradients->bo, model->learning_rate, model->N);
-	vectors_mutliply_scalar(gradients->bf, model->learning_rate, model->N);
+	// Computing m = momentum * m + (1 - momentum) * dldA
+	vectors_add_scalar_multiply(gradients->Wym, gradients->Wy, model->F * model->N, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->Wim, gradients->Wi, model->N * model->S, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->Wcm, gradients->Wc, model->N * model->S, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->Wom, gradients->Wo, model->N * model->S, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->Wfm, gradients->Wf, model->N * model->S, 1.0 - model->params->momentum);
 
-	vectors_substract(model->by, gradients->by, model->F);
-	vectors_substract(model->bi, gradients->bi, model->N);
-	vectors_substract(model->bc, gradients->bc, model->N);
-	vectors_substract(model->bf, gradients->bf, model->N);
-	vectors_substract(model->bo, gradients->bo, model->N);
+	vectors_add_scalar_multiply(gradients->bym, gradients->by, model->F, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->bim, gradients->bi, model->N, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->bcm, gradients->bc, model->N, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->bom, gradients->bo, model->N, 1.0 - model->params->momentum);
+	vectors_add_scalar_multiply(gradients->bfm, gradients->bf, model->N, 1.0 - model->params->momentum);
+
+	// Computing A = A - alpha * m
+	vectors_substract_scalar_multiply(model->Wy, gradients->Wym, model->F * model->N, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->Wi, gradients->Wim, model->N * model->S, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->Wc, gradients->Wcm, model->N * model->S, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->Wo, gradients->Wom, model->N * model->S, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->Wf, gradients->Wfm, model->N * model->S, model->params->learning_rate);
+
+	vectors_substract_scalar_multiply(model->by, gradients->bym, model->F, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->bi, gradients->bim, model->N, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->bc, gradients->bcm, model->N, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->bf, gradients->bfm, model->N, model->params->learning_rate);
+	vectors_substract_scalar_multiply(model->bo, gradients->bom, model->N, model->params->learning_rate);
 }
 
 void lstm_values_next_cache_init(lstm_values_next_cache_t** d_next_to_set, int N)
@@ -438,7 +479,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 {
 	int N,F,S;
 	unsigned int i = 0, b = 0, q = 0, record_iteration = 0;
-	unsigned long n = 0;
+	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	lstm_values_cache_t **caches, **tmp; 
 	lstm_values_next_cache_t *d_next = NULL;
@@ -454,9 +495,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 	tmp = caches;
 
-	lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
+	lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 	lstm_values_next_cache_init(&d_next, N);	
-	lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE);
+	lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 
 	i = 0;
 	while ( i < training_points + 1){
@@ -477,7 +518,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		lstm_cache_container_set_start(caches[b]);
 
 		q = 0;
-		while ( i < b + MINI_BATCH_SIZE && i < training_points ) {
+		while ( i < b + model->params->mini_batch_size && i < training_points ) {
 			lstm_forward_propagate(model, X_train[i], caches[i], caches[i+1]);
 			loss_tmp += cross_entropy( caches[i+1]->probs, Y_train[i]);
 			++i; ++q;
@@ -488,14 +529,21 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		if ( loss < 0 )
 			loss = loss_tmp;
 
-		loss = loss_tmp * LOSS_MOVING_AVG + (1 - LOSS_MOVING_AVG) * loss;
+		loss = loss_tmp * model->params->loss_moving_avg + (1 - model->params->loss_moving_avg) * loss;
 
 		if ( n == 0 ) 
 			record_keeper = loss;
 
 		if ( loss < record_keeper ){
 			record_keeper = loss;
+			
+			/* if ( n - record_iteration > model->params->learning_rate_decrease_threshold ) {
+				model->params->learning_rate *= model->params->learning_rate_decrease;
+				printf("learning_rate: %lf\n", model->params->learning_rate);
+			} */ 
+
 			record_iteration = n;
+
 		}
 
 		lstm_zero_the_model(gradients);
@@ -512,11 +560,11 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			i--;
 		}
 
-		gradients_clip(gradients, GRADIENT_CLIP_LIMIT);
+		gradients_clip(gradients, model->params->gradient_clip_limit);
 
 		gradients_decend(model, gradients);
 
-		if (!( n % PRINT_EVERY_X_ITERATIONS )) {
+		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
 			printf("===================\n");
@@ -535,7 +583,8 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);
 
-		i = b + MINI_BATCH_SIZE > training_points ? 0 : b + MINI_BATCH_SIZE;
+
+		i = b + model->params->mini_batch_size > training_points ? 0 : b + model->params->mini_batch_size;
 
 		++n;
 	}

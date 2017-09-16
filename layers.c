@@ -109,8 +109,8 @@ void 	sigmoid_forward(double* Y, double* X, int L)
 	while ( l < L ) {
 		Y[l] = 1.0 / ( 1.0 + exp(-X[l]));
 		++l;
-
 	}
+
 }
 // 		Y = sigmoid(X), dldY, Y, &dldX, length
 void 	sigmoid_backward(double* dldY, double* Y, double* dldX, int L) 

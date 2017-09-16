@@ -8,27 +8,42 @@
 #include "set.h"
 #include "layers.h"
 
-#define STD_LEARNING_RATE						0.0005
-
 #define NEURONS								128
 
+#define STD_LEARNING_RATE						0.0005
+#define STD_MOMENTUM							0.90
 #define GRADIENT_CLIP_LIMIT						5
+#define MINI_BATCH_SIZE							10
+#define LOSS_MOVING_AVG							0.01
 
-#define MINI_BATCH_SIZE							12
+#define STD_LEARNING_RATE_DECREASE				0.95
+#define STD_LEARNING_RATE_THRESHOLD				10000
 
 #define PRINT_EVERY_X_ITERATIONS					2000
-#define STORE_EVERY_X_ITERATIONS					200
-#define STORE_PROGRESS_EVERY_X_ITERATIONS				5000
+#define STORE_EVERY_X_ITERATIONS					1000
+#define STORE_PROGRESS_EVERY_X_ITERATIONS				1000
 
 #define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING			100
 
 #define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE			1
 #define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE		0
 
-#define LOSS_MOVING_AVG							0.001
-
 #define STD_LOADABLE_NET_NAME						"lstm_net.net"
 #define PROGRESS_FILE_NAME						"progress.csv"
+
+typedef struct lstm_model_parameters_t {
+	// For progress monitoring
+	double loss_moving_avg;
+	// For gradient descent
+	double learning_rate;
+	double momentum;
+
+	int learning_rate_decrease_threshold;
+	double learning_rate_decrease;
+	// General parameters
+	int mini_batch_size;
+	int gradient_clip_limit;
+} lstm_model_parameters_t;
 
 typedef struct lstm_model_t
 {
@@ -36,7 +51,8 @@ typedef struct lstm_model_t
 		int N; // Number of neurons
 		int S; // The sum of the above..
 
-		double learning_rate; // for gradient decend..
+		// Parameters
+		lstm_model_parameters_t * params;
 
 		// The model
 		double* Wf;
@@ -63,6 +79,19 @@ typedef struct lstm_model_t
 		double* dldXf;
 		double* dldXc;
 
+		// Gradient descent momentum
+		double* Wfm;
+		double* Wim;
+		double* Wcm;
+		double* Wom;
+		double* Wym;
+		double* bfm;
+		double* bim;
+		double* bcm;
+		double* bom;
+		double* bym;
+
+
 } lstm_model_t;
 
 typedef struct lstm_values_cache_t {
@@ -84,8 +113,8 @@ typedef struct lstm_values_next_cache_t {
 	double* dldc_next;
 } lstm_values_next_cache_t;
 
-//					 F,   N,  &lstm model,    zeros
-int lstm_init_model(int, int, lstm_model_t**, int);
+//					 F,   N,  &lstm model,    zeros, parameters
+int lstm_init_model(int, int, lstm_model_t**, int, lstm_model_parameters_t *);
 void lstm_zero_the_model(lstm_model_t*);
 void lstm_zero_d_next(lstm_values_next_cache_t *);
 void lstm_cache_container_set_start(lstm_values_cache_t *);

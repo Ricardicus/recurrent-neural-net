@@ -20,6 +20,17 @@ void 	vectors_add(double* A, double* B, int L)
 		++l;
 	}
 }
+
+// A = A + (B * s)
+void 	vectors_add_scalar_multiply(double* A, double* B, int L, double s)
+{
+	int l = 0;
+	while ( l < L ) {
+		A[l] += B[l] * s;
+		++l;
+	}
+}
+
 void 	vectors_substract(double* A, double* B, int L)
 {
 	int l = 0;
@@ -28,6 +39,16 @@ void 	vectors_substract(double* A, double* B, int L)
 		++l;
 	}
 }
+// A = A - (B * s)
+void 	vectors_substract_scalar_multiply(double* A, double* B, int L, double s)
+{
+	int l = 0;
+	while ( l < L ) {
+		A[l] -= B[l] * s;
+		++l;
+	}
+}
+
 
 void 	vectors_multiply(double* A, double* B, int L)
 {

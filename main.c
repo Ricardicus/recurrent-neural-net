@@ -7,7 +7,7 @@
 #include "layers.h"
 #include "utilities.h"
 
-#define ITERATIONS 	1000000
+#define ITERATIONS 	100000000
 
 int main(int argc, char *argv[])
 {
@@ -17,6 +17,15 @@ int main(int argc, char *argv[])
 	FILE * fp;
 	set_T set;
 	lstm_model_t * model;
+	lstm_model_parameters_t params;
+
+	params.loss_moving_avg = LOSS_MOVING_AVG;
+	params.learning_rate = STD_LEARNING_RATE;
+	params.momentum = STD_MOMENTUM;
+	params.mini_batch_size = MINI_BATCH_SIZE;
+	params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
+	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
+	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
 
 	srand( time ( NULL ) );
 
@@ -46,7 +55,7 @@ int main(int argc, char *argv[])
 		X_train[sz++] = set_char_to_indx(&set,c);
 	fclose(fp);
 
-	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE);
+	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE, &params);
 
 	if ( argc == 4 && !strcmp(argv[2], "-r") ) {
 		lstm_read_net(model, argv[3]);

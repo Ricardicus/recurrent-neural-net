@@ -9,6 +9,8 @@
 //		A = A + B		A,		B,    l
 void 	vectors_add(double*, double*, int);
 void 	vectors_substract(double*, double*, int);
+void 	vectors_add_scalar_multiply(double*, double*, int, double);
+void 	vectors_substract_scalar_multiply(double*, double*, int, double);
 //		A = A + B		A,		B,    R, C
 void 	matrix_add(double**, double**, int, int);
 void 	matrix_substract(double**, double**, int, int);
