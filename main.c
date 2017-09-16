@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	initialize_set(&set);
+
 	fp = fopen(argv[1], "r");
 	while ( ( c = fgetc(fp) ) != EOF ) {
 		set_insert_symbol(&set, (char)c );

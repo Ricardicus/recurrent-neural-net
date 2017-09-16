@@ -18,4 +18,6 @@ int set_char_to_indx(set_T*, char);
 int set_probability_choice(set_T*, double*);
 int set_get_features(set_T*);
 
+void initialize_set(set_T*);
+
 #endif

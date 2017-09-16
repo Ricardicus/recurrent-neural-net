@@ -8,6 +8,7 @@
 #include "set.h"
 #include "layers.h"
 
+
 #define NEURONS								128
 
 #define STD_LEARNING_RATE						0.0005
