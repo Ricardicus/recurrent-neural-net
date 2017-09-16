@@ -146,17 +146,17 @@ lstm_values_cache_t*  lstm_cache_container_init(int N, int F)
 
 void gradients_clip(lstm_model_t* gradients, double limit)
 {
-	vectors_clip(gradients->Wy, limit, gradients->F * gradients->N);
-	vectors_clip(gradients->Wi, limit, gradients->N * gradients->S);
-	vectors_clip(gradients->Wc, limit, gradients->N * gradients->S);
-	vectors_clip(gradients->Wo, limit, gradients->N * gradients->S);
-	vectors_clip(gradients->Wf, limit, gradients->N * gradients->S);
+	vectors_fit(gradients->Wy, limit, gradients->F * gradients->N);
+	vectors_fit(gradients->Wi, limit, gradients->N * gradients->S);
+	vectors_fit(gradients->Wc, limit, gradients->N * gradients->S);
+	vectors_fit(gradients->Wo, limit, gradients->N * gradients->S);
+	vectors_fit(gradients->Wf, limit, gradients->N * gradients->S);
 
-	vectors_clip(gradients->by, limit, gradients->F);
-	vectors_clip(gradients->bi, limit, gradients->N);
-	vectors_clip(gradients->bc, limit, gradients->N);
-	vectors_clip(gradients->bf, limit, gradients->N);
-	vectors_clip(gradients->bo, limit, gradients->N);
+	vectors_fit(gradients->by, limit, gradients->F);
+	vectors_fit(gradients->bi, limit, gradients->N);
+	vectors_fit(gradients->bc, limit, gradients->N);
+	vectors_fit(gradients->bf, limit, gradients->N);
+	vectors_fit(gradients->bo, limit, gradients->N);
 }
 
 void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
@@ -172,6 +172,16 @@ void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 	vectors_add(gradients->bc, gradients_entry->bc, gradients->N);
 	vectors_add(gradients->bf, gradients_entry->bf, gradients->N);
 	vectors_add(gradients->bo, gradients_entry->bo, gradients->N);
+}
+
+// A -= alpha * Am_hat / (np.sqrt(Rm_hat) + epsilon)
+// Am_hat = Am / ( 1 - betaM ^ (iteration) )
+// Rm_hat = Rm / ( 1 - betaR ^ (iteration) )
+
+void gradients_adam_optimizer(lstm_model_t* model, lstm_model_t* gradients) 
+{
+
+
 }
 
 // A = A - alpha * m, m = momentum * m + ( 1 - momentum ) * dldA
@@ -478,7 +488,7 @@ void lstm_store_progress(unsigned int n, double loss)
 void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
 	int N,F,S;
-	unsigned int i = 0, b = 0, q = 0, record_iteration = 0;
+	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, record_iteration = 0;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	lstm_values_cache_t **caches, **tmp; 
@@ -510,7 +520,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 
 	while ( n < iterations ){
-
+		int bold = b;
 		b = i;
 
 		loss_tmp = 0.0;
@@ -518,9 +528,11 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		lstm_cache_container_set_start(caches[b]);
 
 		q = 0;
-		while ( i < b + model->params->mini_batch_size && i < training_points ) {
-			lstm_forward_propagate(model, X_train[i], caches[i], caches[i+1]);
-			loss_tmp += cross_entropy( caches[i+1]->probs, Y_train[i]);
+		while ( q < model->params->mini_batch_size ) {
+			e1 = i % training_points;
+			e2 = ( e1 + 1 ) % training_points;
+			lstm_forward_propagate(model, X_train[e1], caches[e1], caches[e2]);
+			loss_tmp += cross_entropy( caches[e2]->probs, Y_train[e1]);
 			++i; ++q;
 		}
 
@@ -550,14 +562,16 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 		lstm_zero_d_next(d_next);
 
-		while ( i > b ) {
-
+		q = model->params->mini_batch_size;
+		while ( q > 0 ) {
+			e1 = i % training_points;
+			e2 = ( training_points + e1 - 1 ) % training_points;
 			lstm_zero_the_model(gradients_entry);
 
-			lstm_backward_propagate(model, caches[i]->probs, Y_train[i-1], d_next, caches[i], gradients_entry, d_next);
+			lstm_backward_propagate(model, caches[e1]->probs, Y_train[e2], d_next, caches[e1], gradients_entry, d_next);
 
 			sum_gradients(gradients, gradients_entry);
-			i--;
+			i--; q--;
 		}
 
 		gradients_clip(gradients, model->params->gradient_clip_limit);
@@ -584,7 +598,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			lstm_store_progress(n, loss);
 
 
-		i = b + model->params->mini_batch_size > training_points ? 0 : b + model->params->mini_batch_size;
+		i = (b + model->params->mini_batch_size) % training_points;
 
 		++n;
 	}

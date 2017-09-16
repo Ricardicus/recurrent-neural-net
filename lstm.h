@@ -11,10 +11,10 @@
 
 #define NEURONS								128
 
-#define STD_LEARNING_RATE						0.0005
-#define STD_MOMENTUM							0.90
-#define GRADIENT_CLIP_LIMIT						5
-#define MINI_BATCH_SIZE							10
+#define STD_LEARNING_RATE						0.001
+#define STD_MOMENTUM							0.99
+#define GRADIENT_CLIP_LIMIT						5.0
+#define MINI_BATCH_SIZE							8
 #define LOSS_MOVING_AVG							0.01
 
 #define STD_LEARNING_RATE_DECREASE				0.95
@@ -43,7 +43,7 @@ typedef struct lstm_model_parameters_t {
 	double learning_rate_decrease;
 	// General parameters
 	int mini_batch_size;
-	int gradient_clip_limit;
+	double gradient_clip_limit;
 } lstm_model_parameters_t;
 
 typedef struct lstm_model_t
