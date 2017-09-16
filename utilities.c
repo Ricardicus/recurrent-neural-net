@@ -352,7 +352,7 @@ void 	vectors_fit(double* V, double limit, int L)
 	while ( l < L ){
 		if ( V[l] > limit || V[l] < -limit ){
 			msg = 0;
-			vectors_mutliply_scalar(V, 0.01, L);
+			vectors_mutliply_scalar(V, 0.1, L);
 			l = 0;
 		}
 		++l;

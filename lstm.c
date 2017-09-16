@@ -515,10 +515,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		++i;
 	}
 
-	i = 0;
-	b = 0;
-
-
+	i = 0; b = 0;
 	while ( n < iterations ){
 		int bold = b;
 		b = i;
@@ -591,7 +588,7 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			fflush(stdout);
 		}
 
-		if ( !(n % STORE_EVERY_X_ITERATIONS ))
+		if ( !(n % STORE_EVERY_X_ITERATIONS ) && n > 0 )
 			lstm_store_net(model, STD_LOADABLE_NET_NAME);
 
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
