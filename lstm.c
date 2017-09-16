@@ -465,7 +465,7 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 	cache = lstm_cache_container_init(model->N, model->F);
 
 	while ( i < length ) {
-		lstm_forward_propagate(model, input, cache, cache);
+		lstm_forward_propagate(model, set_char_to_indx(char_index_mapping,input) , cache, cache);
 		input = set_probability_choice(char_index_mapping, cache->probs);
 		printf ( "%c", input );
 		++i;
