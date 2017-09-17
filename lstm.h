@@ -11,8 +11,8 @@
 
 #define NEURONS								128
 
-#define STD_LEARNING_RATE						0.0001
-#define STD_MOMENTUM							0.98
+#define STD_LEARNING_RATE						0.0005
+#define STD_MOMENTUM							0.95
 #define GRADIENT_CLIP_LIMIT						5.0
 #define MINI_BATCH_SIZE							8
 #define LOSS_MOVING_AVG							0.01
