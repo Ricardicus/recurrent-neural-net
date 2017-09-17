@@ -40,7 +40,7 @@ void 	matrix_set_to_zero(double**, int, int);
 void 	vector_set_to_zero(double*, int);
 
 void matrix_clip(double**, double, int, int);
-void vectors_fit(double*, double, int);
+int vectors_fit(double*, double, int);
 
 // I/O
 void 	vector_read(double *, int, FILE *);

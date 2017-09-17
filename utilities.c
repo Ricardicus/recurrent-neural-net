@@ -11,7 +11,7 @@
 *
 */
 
-extern int debug_info;
+extern int debug_print_on;
 
 // used on contigous vectors
 void 	vectors_add(double* A, double* B, int L)
@@ -345,18 +345,20 @@ void 	matrix_clip(double** A, double limit, int R, int C)
 	}
 }
 
-void 	vectors_fit(double* V, double limit, int L)
+int 	vectors_fit(double* V, double limit, int L)
 {
 	int l = 0;
-	int msg = 1;
+	int msg = 0;
 	while ( l < L ){
 		if ( V[l] > limit || V[l] < -limit ){
-			msg = 0;
+			msg = 1;
 			vectors_mutliply_scalar(V, 0.1, L);
 			l = 0;
 		}
 		++l;
 	}
+
+	return msg;
 }
 
 void 	matrix_store(double ** A, int R, int C, FILE * fp) 

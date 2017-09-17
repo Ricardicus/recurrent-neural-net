@@ -10,6 +10,9 @@
 * =================================================
 *
 */
+
+extern int debug_print_on;
+
 //		Y = AX + b  			&Y,      A,   		X,		B,     Rows (for A), Columns (for A)
 void	fully_connected_forward(double* Y, double* A, double* X, double* b, int R, int C)
 {

@@ -1,5 +1,7 @@
 #include "lstm.h"
 
+int debug_print_on = 1;
+
 //					 Features,   Neurons,  &lstm model, 		zeros
 int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros, lstm_model_parameters_t * params)
 {
@@ -144,19 +146,22 @@ lstm_values_cache_t*  lstm_cache_container_init(int N, int F)
 	return cache;
 }
 
-void gradients_clip(lstm_model_t* gradients, double limit)
+int gradients_clip(lstm_model_t* gradients, double limit)
 {
-	vectors_fit(gradients->Wy, limit, gradients->F * gradients->N);
-	vectors_fit(gradients->Wi, limit, gradients->N * gradients->S);
-	vectors_fit(gradients->Wc, limit, gradients->N * gradients->S);
-	vectors_fit(gradients->Wo, limit, gradients->N * gradients->S);
-	vectors_fit(gradients->Wf, limit, gradients->N * gradients->S);
+	int msg = 0;
+	msg += vectors_fit(gradients->Wy, limit, gradients->F * gradients->N);
+	msg += vectors_fit(gradients->Wi, limit, gradients->N * gradients->S);
+	msg += vectors_fit(gradients->Wc, limit, gradients->N * gradients->S);
+	msg += vectors_fit(gradients->Wo, limit, gradients->N * gradients->S);
+	msg += vectors_fit(gradients->Wf, limit, gradients->N * gradients->S);
 
-	vectors_fit(gradients->by, limit, gradients->F);
-	vectors_fit(gradients->bi, limit, gradients->N);
-	vectors_fit(gradients->bc, limit, gradients->N);
-	vectors_fit(gradients->bf, limit, gradients->N);
-	vectors_fit(gradients->bo, limit, gradients->N);
+	msg += vectors_fit(gradients->by, limit, gradients->F);
+	msg += vectors_fit(gradients->bi, limit, gradients->N);
+	msg += vectors_fit(gradients->bc, limit, gradients->N);
+	msg += vectors_fit(gradients->bf, limit, gradients->N);
+	msg += vectors_fit(gradients->bo, limit, gradients->N);
+
+	return msg;
 }
 
 void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
@@ -487,7 +492,7 @@ void lstm_store_progress(unsigned int n, double loss)
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
-	int N,F,S;
+	int N,F,S, status = 0;
 	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, record_iteration = 0;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
@@ -571,12 +576,17 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			i--; q--;
 		}
 
-		gradients_clip(gradients, model->params->gradient_clip_limit);
+		if ( gradients_clip(gradients, model->params->gradient_clip_limit) )
+			status = 1;
 
 		gradients_decend(model, gradients);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
-
+			if (status) {
+				printf("clipped the gradients this time..\n");
+				model->params->learning_rate *= 0.5;
+			}
+			status = 0;
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
 			printf("===================\n");
 
