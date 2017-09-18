@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
 
-	printf("LSTM Neural net compiled: %s, LR: %lf, Mo: %lf, LR-decrease: %ld\n", __TIME__, params.learning_rate, params.momentum, params.learning_rate_decrease);
+	printf("LSTM Neural net compiled: %s, LR: %lf, Mo: %lf, LR-decrease: %lf\n", __TIME__, params.learning_rate, params.momentum, params.learning_rate_decrease);
 
 	srand( time ( NULL ) );
 
