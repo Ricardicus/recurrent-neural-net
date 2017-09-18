@@ -1,7 +1,5 @@
 #include "lstm.h"
 
-int debug_print_on = 1;
-
 //					 Features,   Neurons,  &lstm model, 		zeros
 int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros, lstm_model_parameters_t * params)
 {
@@ -409,6 +407,18 @@ void lstm_zero_the_model(lstm_model_t * model)
 	vector_set_to_zero(model->bc, model->N);
 	vector_set_to_zero(model->bf, model->N);
 	vector_set_to_zero(model->bo, model->N);
+
+	vector_set_to_zero(model->dldhf, model->N);
+	vector_set_to_zero(model->dldhi, model->N);
+	vector_set_to_zero(model->dldhc, model->N);
+	vector_set_to_zero(model->dldho, model->N);
+	vector_set_to_zero(model->dldc, model->N);
+	vector_set_to_zero(model->dldh, model->N);
+
+	vector_set_to_zero(model->dldXc, model->S);
+	vector_set_to_zero(model->dldXo, model->S);
+	vector_set_to_zero(model->dldXi, model->S);
+	vector_set_to_zero(model->dldXf, model->S);
 }
 
 void lstm_zero_d_next(lstm_values_next_cache_t * d_next)
@@ -422,6 +432,15 @@ void lstm_cache_container_set_start(lstm_values_cache_t * cache)
 	// State variables set to zero
 	vector_set_to_zero(cache->h, NEURONS); 
 	vector_set_to_zero(cache->c, NEURONS); 
+
+	vector_set_to_zero(cache->c_old, NEURONS); 
+	vector_set_to_zero(cache->h_old, NEURONS); 
+	vector_set_to_zero(cache->X, NEURONS); 
+	vector_set_to_zero(cache->hf, NEURONS); 
+	vector_set_to_zero(cache->hi, NEURONS); 
+	vector_set_to_zero(cache->ho, NEURONS); 
+	vector_set_to_zero(cache->hc, NEURONS); 
+	vector_set_to_zero(cache->tanh_c_cache, NEURONS); 
 }
 
 
@@ -493,6 +512,8 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 		printf ( "%c", input );
 		++i;
 	}
+
+	lstm_cache_container_free(cache);
 }
 
 void lstm_store_progress(unsigned int n, double loss)
@@ -540,7 +561,6 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 	i = 0; b = 0;
 	while ( n < iterations ){
-		int bold = b;
 		b = i;
 
 		loss_tmp = 0.0;

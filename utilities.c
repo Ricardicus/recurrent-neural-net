@@ -11,8 +11,6 @@
 *
 */
 
-extern int debug_print_on;
-
 // used on contigous vectors
 void 	vectors_add(double* A, double* B, int L)
 {
