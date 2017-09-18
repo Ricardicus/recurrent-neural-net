@@ -10,16 +10,8 @@ import sys
 
 learning_rate = 0.001
 
-supported_chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m'\
-,'n','o','p','q','r','x','y','z','.',' ','!','-', '1', '2', '3', '4', '5'\
-'6','7','8','9', '[', ']', ',', ';', ':']
-
 def tanh(x):
 	return np.tanh(x)
-
-def hipster_softmax(X):
-    eX = np.exp((X.T - np.max(X, axis=1)).T)
-    return (eX.T / eX.sum(axis=1)).T
 
 def dtanh(x):
 	return 1.0 - x**2
@@ -74,6 +66,7 @@ class lstm:
 		# the computation Ax = y , where x is column vector
 		# is instead computed as xT AT = yT, for some reason
 		# it i MUCH faster this way on my machine.
+		print (np.random.randn(S,N) / np.sqrt(S / 2) )
 
 		self.model = dict(
 			Wf=np.random.randn(S,N) / np.sqrt(S / 2),
@@ -157,13 +150,10 @@ class lstm:
 
 		h_old, c_old = state
 
-#		h_old = np.array([h_old])
 		X_one_hot = np.zeros(F)
 		X_one_hot[X] = 1.
 		X_one_hot = X_one_hot.reshape(1, -1)
 		
-#		print(h_old)
-#		print(X_one_hot)
 		X = np.column_stack((h_old, X_one_hot))
 
 		hf = np.dot(X, Wf) + bf
@@ -205,13 +195,12 @@ class lstm:
 		dldh[0,y_train] -= 1.
 
 		dh, dWy, dby = fc_backward(dldh, (m["Wy"], h) )
-#		print("dh: " + str(np.shape(dh)) + " dldh_next: " + str(np.shape(dldh_next)))
+
 		dh += dldh_next
 
 		dldho = dh * tanh_c_cache
 		dldho = dsigmoid(ho) * dldho
 
-#		print("dldh: " + str(np.shape(dldh)) + " ho: " + str(np.shape(ho)) + " cache_tmp: " + str(np.shape(cache_tmp)))
 		dldc = dh * ho * dtanh(tanh_c_cache)
 		dldc += dldc_next
 
@@ -299,11 +288,12 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 
 	best_loss = 100.0
 	indx = 0
+	loss = 1000
 	for i in range(1, iterations+1):
 		probs = []
 		caches = []
 		states = []
-		loss = 0.
+		loss_tmp = 0.
  
 		(x_mini, y_mini) = batches[indx]
 
@@ -315,14 +305,19 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 		n = -1
 		for x, y_true in zip(x_mini, y_mini):
 			prob, state, cache = l.forward_propagate(x, state)
-			loss += cross_entropy_loss(prob, y_true)
+			loss_tmp += cross_entropy_loss(prob, y_true)
 
 			states.append(state)
 			probs.append(prob)
 			caches.append(cache)
 			n += 1
 
-		loss /= len(x_mini)
+		if ( i == 1 ):
+			loss = loss_tmp
+
+		loss_tmp /= len(x_mini)
+		loss = 0.99 * loss + (1 - 0.99) * loss_tmp
+
 
 		if ( loss < best_loss):
 			best_loss = loss
@@ -342,16 +337,21 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 			grads, d_next = l.backward_propagate(prob, y_true, state, d_next, cache)
 
 			for k in grads.keys():
-	#			print(grads[k])
-	#			print(grds[k])
 				grds[k] += grads[k]
 			n -= 1
 
+		clipped = False
 		for k, v in grds.items():
+			cli = np.clip(v,-5,5)
+			for qq in range(len(cli[0])):
+				if (cli[0][qq] != v[0][qq]):
+					clipped = True
 			grds[k] = np.clip(v, -5,5)
 
+		if clipped:
+			print("Clipped at iteration: " + str(i))
+
 		# Gradient decend
-#		print(grds)
 		l.gradient_update(grds, i)
 
 		test_state = l.get_initial_state() # starting state
@@ -364,11 +364,8 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 
 			for q in range(0,50):
 				pr, test_state, ch = l.forward_propagate(test_input, test_state)
-		#		print(pr)
-		#		print(idx_list)
 				test_input = np.random.choice(idx_list,p=pr.ravel())
 				st += idx_to_char[test_input]
-				#print(pr) <- changes over time
 			print(st)
 			print("===================")
 
