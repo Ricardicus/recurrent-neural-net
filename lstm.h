@@ -12,12 +12,12 @@
 #define NEURONS								128
 
 #define STD_LEARNING_RATE						0.001
-#define STD_MOMENTUM							0.09
+#define STD_MOMENTUM							0.10
 #define GRADIENT_CLIP_LIMIT						5.0
-#define MINI_BATCH_SIZE							8
+#define MINI_BATCH_SIZE							10
 #define LOSS_MOVING_AVG							0.01
 
-#define STD_LEARNING_RATE_DECREASE				0.95
+#define STD_LEARNING_RATE_DECREASE				150000
 #define STD_LEARNING_RATE_THRESHOLD				10000
 
 #define PRINT_EVERY_X_ITERATIONS					2000

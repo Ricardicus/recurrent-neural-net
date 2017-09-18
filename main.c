@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
 
+	printf("LSTM Neural net compiled: %s, LR: %lf, Mo: %lf, LR-decrease: %ld\n", __TIME__, params.learning_rate, params.momentum, params.learning_rate_decrease);
+
 	srand( time ( NULL ) );
 
 	if ( argc < 2 ) {
@@ -58,6 +60,8 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE, &params);
+
+
 
 	if ( argc == 4 && !strcmp(argv[2], "-r") ) {
 		lstm_read_net(model, argv[3]);

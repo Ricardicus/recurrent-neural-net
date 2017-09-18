@@ -590,6 +590,8 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			lstm_backward_propagate(model, caches[e1]->probs, Y_train[e2], d_next, caches[e1], gradients_entry, d_next);
 
+			//gradients_fit(gradients_entry, model->params->gradient_clip_limit);
+
 			sum_gradients(gradients, gradients_entry);
 			i--; q--;
 		}
@@ -627,6 +629,8 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		i = b + model->params->mini_batch_size;
 		if ( i >= training_points )
 			i = 0;
+
+		//model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
 
 		++n;
 	}

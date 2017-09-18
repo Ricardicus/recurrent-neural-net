@@ -108,7 +108,7 @@ double*		get_random_vector(int L, int R) {
 		exit(0);
 
 	while ( l < L ){
-		p[l] = ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 );;
+		p[l] = ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 );
 		++l;
 	}
 
