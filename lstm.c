@@ -630,7 +630,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		if ( i >= training_points )
 			i = 0;
 
-		//model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+#ifdef DECREASE_LR
+		model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+#endif
 
 		++n;
 	}

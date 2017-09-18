@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits.h>
 
 // used on contigous vectors
 //		A = A + B		A,		B,    l
@@ -38,6 +39,8 @@ double* 	get_random_vector(int,int);
 
 void 	matrix_set_to_zero(double**, int, int);
 void 	vector_set_to_zero(double*, int);
+
+double sample_normal(void);
 
 double one_norm(double*, int);
 

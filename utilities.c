@@ -90,7 +90,7 @@ int 	init_random_matrix(double*** A, int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			(*A)[r][c] =  ((( (double) rand() ) / RAND_MAX) ) / sqrt( R * C / 2.0 ); 
+			(*A)[r][c] =  sample_normal() / sqrt( R * C / 2.0 ); 
 			++c;
 		}
 		++r;
@@ -108,7 +108,7 @@ double*		get_random_vector(int L, int R) {
 		exit(0);
 
 	while ( l < L ){
-		p[l] = ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 );
+		p[l] = sample_normal() / sqrt( R / 2.0 );
 		++l;
 	}
 
@@ -473,4 +473,13 @@ void 	vector_read(double * V, int L, FILE * fp)
 		++l;
 	}
 
+}
+
+double sample_normal() {
+    double u = ((double) rand() / (RAND_MAX)) * 2 - 1;
+    double v = ((double) rand() / (RAND_MAX)) * 2 - 1;
+    double r = u * u + v * v;
+    if (r == 0 || r > 1) return sample_normal();
+    double c = sqrt(-2 * log(r) / r);
+    return u * c;
 }
