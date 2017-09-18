@@ -90,7 +90,7 @@ int 	init_random_matrix(double*** A, int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			(*A)[r][c] =  ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R * C / 2.0 ); 
+			(*A)[r][c] =  ((( (double) rand() ) / RAND_MAX) ) / sqrt( R * C / 2.0 ); 
 			++c;
 		}
 		++r;
@@ -108,7 +108,7 @@ double*		get_random_vector(int L, int R) {
 		exit(0);
 
 	while ( l < L ){
-		p[l] = ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R / 2.0 );;
+		p[l] = ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 );;
 		++l;
 	}
 
@@ -137,7 +137,7 @@ double** 	get_random_matrix(int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			p[r][c] =  ((( (double) rand() ) / RAND_MAX) - 0.5 ) / sqrt( R / 2.0 ); 
+			p[r][c] =  ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 ); 
 			++c;
 		}
 		++r;
@@ -345,14 +345,49 @@ void 	matrix_clip(double** A, double limit, int R, int C)
 	}
 }
 
+double one_norm(double* V, int L)
+{
+	int l = 0;
+	double norm = 0.0;
+	while ( l < L ) {
+		norm += fabs(V[l]);
+		++l;
+	}
+
+	return norm;
+}
+
 int 	vectors_fit(double* V, double limit, int L)
 {
 	int l = 0;
 	int msg = 0;
+	double norm;
 	while ( l < L ){
 		if ( V[l] > limit || V[l] < -limit ){
 			msg = 1;
-			vectors_mutliply_scalar(V, 0.1, L);
+			norm = one_norm(V, L);
+			break;
+		}
+		++l;
+	}
+
+	if ( msg )
+		vectors_mutliply_scalar(V, limit / norm, L);
+
+	return msg;
+}
+
+int 	vectors_clip(double* V, double limit, int L)
+{
+	int l = 0;
+	int msg = 0;
+	while ( l < L ){
+		if ( V[l] > limit ){
+			msg = 1;
+			V[l] = limit;
+		} else if(  V[l] < -limit ){
+			msg = 1;
+			V[l] = -limit;
 			l = 0;
 		}
 		++l;

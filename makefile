@@ -1,2 +1,2 @@
 all:
-	gcc *.c -Ofast -lm -o net
+	gcc *.c -Ofast -msse3 -lm -o net

@@ -146,7 +146,7 @@ lstm_values_cache_t*  lstm_cache_container_init(int N, int F)
 	return cache;
 }
 
-int gradients_clip(lstm_model_t* gradients, double limit)
+int gradients_fit(lstm_model_t* gradients, double limit)
 {
 	int msg = 0;
 	msg += vectors_fit(gradients->Wy, limit, gradients->F * gradients->N);
@@ -160,6 +160,24 @@ int gradients_clip(lstm_model_t* gradients, double limit)
 	msg += vectors_fit(gradients->bc, limit, gradients->N);
 	msg += vectors_fit(gradients->bf, limit, gradients->N);
 	msg += vectors_fit(gradients->bo, limit, gradients->N);
+
+	return msg;
+}
+
+int gradients_clip(lstm_model_t* gradients, double limit)
+{
+	int msg = 0;
+	msg += vectors_clip(gradients->Wy, limit, gradients->F * gradients->N);
+	msg += vectors_clip(gradients->Wi, limit, gradients->N * gradients->S);
+	msg += vectors_clip(gradients->Wc, limit, gradients->N * gradients->S);
+	msg += vectors_clip(gradients->Wo, limit, gradients->N * gradients->S);
+	msg += vectors_clip(gradients->Wf, limit, gradients->N * gradients->S);
+
+	msg += vectors_clip(gradients->by, limit, gradients->F);
+	msg += vectors_clip(gradients->bi, limit, gradients->N);
+	msg += vectors_clip(gradients->bc, limit, gradients->N);
+	msg += vectors_clip(gradients->bf, limit, gradients->N);
+	msg += vectors_clip(gradients->bo, limit, gradients->N);
 
 	return msg;
 }
@@ -582,10 +600,11 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		gradients_decend(model, gradients);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
+
 			if (status) {
 				printf("clipped the gradients this time..\n");
-				model->params->learning_rate *= 0.5;
 			}
+
 			status = 0;
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
 			printf("===================\n");
@@ -605,7 +624,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			lstm_store_progress(n, loss);
 
 
-		i = (b + model->params->mini_batch_size) % training_points;
+		i = b + model->params->mini_batch_size;
+		if ( i >= training_points )
+			i = 0;
 
 		++n;
 	}
