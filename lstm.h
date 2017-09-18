@@ -7,13 +7,14 @@
 #include "utilities.h"
 #include "set.h"
 #include "layers.h"
+#include "assert.h"
 
 
 #define NEURONS								128
 
 #define STD_LEARNING_RATE						0.001
 #define STD_MOMENTUM							0.0
-#define GRADIENT_CLIP_LIMIT						5.0
+#define GRADIENT_CLIP_LIMIT						1.0
 #define MINI_BATCH_SIZE							10
 #define LOSS_MOVING_AVG							0.01
 
@@ -21,7 +22,7 @@
 #define STD_LEARNING_RATE_DECREASE				100000
 #define STD_LEARNING_RATE_THRESHOLD				10000
 
-#define PRINT_EVERY_X_ITERATIONS					2000
+#define PRINT_EVERY_X_ITERATIONS					200
 #define STORE_EVERY_X_ITERATIONS					8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS				1000
 

@@ -568,6 +568,9 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		lstm_cache_container_set_start(caches[b]);
 
 		q = 0;
+
+		unsigned int check = i % training_points;
+
 		while ( q < model->params->mini_batch_size ) {
 			e1 = i % training_points;
 			e2 = ( e1 + 1 ) % training_points;
@@ -616,16 +619,21 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 			i--; q--;
 		}
 
-		if ( gradients_clip(gradients, model->params->gradient_clip_limit) )
+		assert(check == e2);
+
+/*
+		if ( gradients_clip(gradients, model->params->gradient_clip_limit) ){
+			printf("Clipped the gradients at iteration: %lu\n", n);
 			status = 1;
+		} */
+
+		if ( gradients_fit(gradients, model->params->gradient_clip_limit) ){
+			status = 1;
+		} 	
 
 		gradients_decend(model, gradients);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
-
-			if (status) {
-				printf("clipped the gradients this time..\n");
-			}
 
 			status = 0;
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);

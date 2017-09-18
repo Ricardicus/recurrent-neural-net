@@ -474,8 +474,8 @@ void 	vector_read(double * V, int L, FILE * fp)
 }
 
 double sample_normal() {
-    double u = ((double) rand() / (RAND_MAX)) * 2 - 1;
-    double v = ((double) rand() / (RAND_MAX)) * 2 - 1;
+    double u = ((double) arc4random() / (UINT32_MAX)) * 2 - 1;
+    double v = ((double) arc4random() / (UINT32_MAX)) * 2 - 1;
     double r = u * u + v * v;
     if (r == 0 || r > 1) return sample_normal();
     double c = sqrt(-2 * log(r) / r);
