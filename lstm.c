@@ -482,11 +482,11 @@ void lstm_read_net(lstm_model_t* model, const char * filename)
 		return;
 	}
 
-	vector_store(model->Wy, model->F * model->N, fp);
-	vector_store(model->Wi, model->N * model->S, fp);
-	vector_store(model->Wc, model->N * model->S, fp);
-	vector_store(model->Wo, model->N * model->S, fp);
-	vector_store(model->Wf, model->N * model->S, fp);
+	vector_read(model->Wy, model->F * model->N, fp);
+	vector_read(model->Wi, model->N * model->S, fp);
+	vector_read(model->Wc, model->N * model->S, fp);
+	vector_read(model->Wo, model->N * model->S, fp);
+	vector_read(model->Wf, model->N * model->S, fp);
 
 	vector_read(model->by, model->F, fp);
 	vector_read(model->bi, model->N, fp);
