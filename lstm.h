@@ -10,29 +10,30 @@
 #include "assert.h"
 
 
-#define NEURONS								128
+#define NEURONS													128
 
-#define STD_LEARNING_RATE						0.001
-#define STD_MOMENTUM							0.0
-#define GRADIENT_CLIP_LIMIT						1.0
-#define MINI_BATCH_SIZE							10
-#define LOSS_MOVING_AVG							0.01
+#define STD_LEARNING_RATE										0.001
+#define STD_MOMENTUM											0.0
+#define GRADIENT_CLIP_LIMIT										5.0
+#define MINI_BATCH_SIZE											10
+#define LOSS_MOVING_AVG											0.01
 
-#define DECREASE_LR
-#define STD_LEARNING_RATE_DECREASE				100000
-#define STD_LEARNING_RATE_THRESHOLD				10000
+#define STD_LEARNING_RATE_DECREASE								100000
+#define STD_LEARNING_RATE_THRESHOLD								10000
 
-#define PRINT_EVERY_X_ITERATIONS					200
-#define STORE_EVERY_X_ITERATIONS					8000
-#define STORE_PROGRESS_EVERY_X_ITERATIONS				1000
+#define GRADIENTS_CLIP
 
-#define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING			100
+#define PRINT_EVERY_X_ITERATIONS								200
+#define STORE_EVERY_X_ITERATIONS								8000
+#define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
 
-#define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE			1
-#define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE		0
+#define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				100
 
-#define STD_LOADABLE_NET_NAME						"lstm_net.net"
-#define PROGRESS_FILE_NAME						"progress.csv"
+#define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE				1
+#define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE		0
+
+#define STD_LOADABLE_NET_NAME									"lstm_net.net"
+#define PROGRESS_FILE_NAME										"progress.csv"
 
 typedef struct lstm_model_parameters_t {
 	// For progress monitoring

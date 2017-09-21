@@ -88,7 +88,7 @@ int 	init_random_matrix(double*** A, int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			(*A)[r][c] =  sample_normal() / sqrt( R * C / 2.0 ); 
+			(*A)[r][c] =  randn(0,1) / sqrt( R / 2 ); 
 			++c;
 		}
 		++r;
@@ -106,7 +106,7 @@ double*		get_random_vector(int L, int R) {
 		exit(0);
 
 	while ( l < L ){
-		p[l] = sample_normal() / sqrt( R / 2.0 );
+		p[l] = randn(0,0.8) / sqrt( R / 2.0 );
 		++l;
 	}
 
@@ -386,7 +386,6 @@ int 	vectors_clip(double* V, double limit, int L)
 		} else if(  V[l] < -limit ){
 			msg = 1;
 			V[l] = -limit;
-			l = 0;
 		}
 		++l;
 	}
@@ -413,6 +412,22 @@ void 	matrix_store(double ** A, int R, int C, FILE * fp)
 		++r;
 	}
 
+}
+
+void 	vector_print(double *V, int L)
+{
+	int l = 0;
+	double min = 100;
+	double max = -100;
+	while ( l < L ) {
+		if ( V[l] > max )
+			max = V[l];
+		if ( V[l] < min )
+			min = V[l];
+		printf("%.10lf\n", V[l]);
+		++l;
+	}
+	printf("min: %.10lf, max: %.10lf\n", min, max);
 }
 
 void 	matrix_read(double ** A, int R, int C, FILE * fp) 
@@ -471,6 +486,39 @@ void 	vector_read(double * V, int L, FILE * fp)
 		++l;
 	}
 
+}
+
+/*
+* Gaussian generator: https://phoxis.org/2013/05/04/generating-random-numbers-from-normal-distribution-in-c/
+*/
+double
+randn (double mu, double sigma)
+{
+  double U1, U2, W, mult;
+  static double X1, X2;
+  static int call = 0;
+ 
+  if (call == 1)
+    {
+      call = !call;
+      return (mu + sigma * (double) X2);
+    }
+ 
+  do
+    {
+      U1 = -1 + ((double) arc4random () / RAND_MAX) * 2;
+      U2 = -1 + ((double) arc4random () / RAND_MAX) * 2;
+      W = pow (U1, 2) + pow (U2, 2);
+    }
+  while (W >= 1 || W == 0);
+ 
+  mult = sqrt ((-2 * log (W)) / W);
+  X1 = U1 * mult;
+  X2 = U2 * mult;
+ 
+  call = !call;
+ 
+  return (mu + sigma * (double) X1);
 }
 
 double sample_normal() {

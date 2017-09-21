@@ -21,11 +21,11 @@ int lstm_init_model(int F, int N, lstm_model_t** model_to_be_set, int zeros, lst
 		lstm->Wo = get_zero_vector(N * S);
 		lstm->Wy = get_zero_vector(F * N);
 	} else {
-		lstm->Wf = get_random_vector(N * S, N);
-		lstm->Wi = get_random_vector(N * S, N);
-		lstm->Wc = get_random_vector(N * S, N);
-		lstm->Wo = get_random_vector(N * S, N);
-		lstm->Wy = get_random_vector(F * N, F);
+		lstm->Wf = get_random_vector(N * S, S);
+		lstm->Wi = get_random_vector(N * S, S);
+		lstm->Wc = get_random_vector(N * S, S);
+		lstm->Wo = get_random_vector(N * S, S);
+		lstm->Wy = get_random_vector(F * N, N);
 	}
 
 	lstm->bf = get_zero_vector(N);
@@ -385,9 +385,9 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 	fully_connected_backward(dldhf, model->Wf, cache_in->X, gradients->Wf, gradients->dldXf, gradients->bf, N, S);
 	
 	// dldXi will work as a temporary substitute for dldX (where we get extract dh_next from!)
-	vectors_add(gradients->dldXi, gradients->dldXc, S);
-	vectors_add(gradients->dldXi, gradients->dldXo, S);
-	vectors_add(gradients->dldXi, gradients->dldXf, S);
+	vectors_add(gradients->dldXi, gradients->dldXc, N);
+	vectors_add(gradients->dldXi, gradients->dldXo, N);
+	vectors_add(gradients->dldXi, gradients->dldXf, N);
 
 	copy_vector(cache_out->dldh_next, gradients->dldXi, N);
 	copy_vector(cache_out->dldc_next, cache_in->hf, N);
@@ -478,7 +478,7 @@ void lstm_read_net(lstm_model_t* model, const char * filename)
 	fp = fopen(filename, "r");
 
 	if ( fp == NULL ) {
-		printf("Failed to open file: %s for writing.\n", filename);
+		printf("Failed to open file: %s for reading.\n", filename);
 		return;
 	}
 
@@ -559,6 +559,10 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 		++i;
 	}
 
+#ifdef GRADIENTS_CLIP
+	unsigned long clip_count = 0;
+#endif
+
 	i = 0; b = 0;
 	while ( n < iterations ){
 		b = i;
@@ -621,27 +625,36 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 		assert(check == e2);
 
-/*
+#ifdef GRADIENTS_CLIP
 		if ( gradients_clip(gradients, model->params->gradient_clip_limit) ){
 			printf("Clipped the gradients at iteration: %lu\n", n);
-			status = 1;
-		} */
+			clip_count++;
 
+
+#ifdef GRADIENT_CLIP_DECREASE_LR
+			model->params->learning_rate *= 0.99;
+			printf("New learning rate: %.20lf\n", model->params->learning_rate);
+#endif				
+
+
+			status = 1;
+		} 
+#elif GRADIENTS_FIT
 		if ( gradients_fit(gradients, model->params->gradient_clip_limit) ){
 			status = 1;
 		} 	
-
+#endif
 		gradients_decend(model, gradients);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			status = 0;
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
-			printf("===================\n");
+			printf("=====================================================\n");
 
 			lstm_output_string(model, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
-			printf("\n===================\n");
+			printf("\n=====================================================\n");
 			
 			// Flushing stdout
 			fflush(stdout);

@@ -64,9 +64,7 @@ int main(int argc, char *argv[])
 		X_train[sz++] = set_char_to_indx(&set,c);
 	fclose(fp);
 
-	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBER_PLEASE, &params);
-
-
+	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, &params);
 
 	if ( argc == 4 && !strcmp(argv[2], "-r") ) {
 		lstm_read_net(model, argv[3]);
