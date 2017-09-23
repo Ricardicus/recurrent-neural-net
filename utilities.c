@@ -88,7 +88,7 @@ int 	init_random_matrix(double*** A, int R, int C)
 	while ( r < R ){
 		c = 0;
 		while ( c < C ){
-			(*A)[r][c] =  randn(0,1) / sqrt( R / 2 ); 
+			(*A)[r][c] =  randn(0,1) / sqrt( R ); 
 			++c;
 		}
 		++r;
@@ -106,7 +106,7 @@ double*		get_random_vector(int L, int R) {
 		exit(0);
 
 	while ( l < L ){
-		p[l] = randn(0,0.8) / sqrt( R / 2.0 );
+		p[l] = randn(0,1) / sqrt( R / 5 );
 		++l;
 	}
 
@@ -414,7 +414,7 @@ void 	matrix_store(double ** A, int R, int C, FILE * fp)
 
 }
 
-void 	vector_print(double *V, int L)
+void 	vector_print_min_max(char *name, double *V, int L)
 {
 	int l = 0;
 	double min = 100;
@@ -424,10 +424,9 @@ void 	vector_print(double *V, int L)
 			max = V[l];
 		if ( V[l] < min )
 			min = V[l];
-		printf("%.10lf\n", V[l]);
 		++l;
 	}
-	printf("min: %.10lf, max: %.10lf\n", min, max);
+	printf("%s min: %.10lf, max: %.10lf\n", name, min, max);
 }
 
 void 	matrix_read(double ** A, int R, int C, FILE * fp) 

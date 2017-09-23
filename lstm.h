@@ -14,14 +14,22 @@
 
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
+#define STD_LAMBDA												0.05
 #define GRADIENT_CLIP_LIMIT										5.0
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
+#define GRADIENTS_CLIP
+// #define GRADIENTS_FIT
+
+// #define DECREASE_LR 
+
+// #define MODEL_REGULARIZE
+
+// #define DEBUG_PRINT
+
 #define STD_LEARNING_RATE_DECREASE								100000
 #define STD_LEARNING_RATE_THRESHOLD								10000
-
-#define GRADIENTS_CLIP
 
 #define PRINT_EVERY_X_ITERATIONS								200
 #define STORE_EVERY_X_ITERATIONS								8000
@@ -41,6 +49,7 @@ typedef struct lstm_model_parameters_t {
 	// For gradient descent
 	double learning_rate;
 	double momentum;
+	double lambda;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;

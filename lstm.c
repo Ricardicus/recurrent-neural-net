@@ -306,7 +306,7 @@ void lstm_forward_propagate(lstm_model_t* model, int X_index, lstm_values_cache_
 	sigmoid_forward(cache_out->ho, cache_out->ho, N);
 
 	fully_connected_forward(cache_out->hc, model->Wc, X_one_hot, model->bc, N, S);
-	sigmoid_forward(cache_out->hc, cache_out->hc, N);
+	tanh_forward(cache_out->hc, cache_out->hc, N);
 
 	// c = hf * c_old + hi * hc
 	copy_vector(cache_out->c, cache_out->hf, N);
@@ -528,6 +528,23 @@ void lstm_store_progress(unsigned int n, double loss)
 
 }
 
+void lstm_model_regularization(lstm_model_t* model, lstm_model_t* gradients)
+{
+	double lambda = model->params->lambda; 
+
+	vectors_add_scalar_multiply(gradients->Wy, model->Wy, model->F * model->N, lambda);
+	vectors_add_scalar_multiply(gradients->Wi, model->Wi, model->N * model->S, lambda);
+	vectors_add_scalar_multiply(gradients->Wc, model->Wc, model->N * model->S, lambda);
+	vectors_add_scalar_multiply(gradients->Wo, model->Wo, model->N * model->S, lambda);
+	vectors_add_scalar_multiply(gradients->Wf, model->Wf, model->N * model->S, lambda);
+
+	vectors_add_scalar_multiply(gradients->by, model->by, model->F, lambda);
+	vectors_add_scalar_multiply(gradients->bi, model->bi, model->N, lambda);
+	vectors_add_scalar_multiply(gradients->bc, model->bc, model->N, lambda);
+	vectors_add_scalar_multiply(gradients->bo, model->bo, model->N, lambda);
+	vectors_add_scalar_multiply(gradients->bf, model->bf, model->N, lambda);
+}
+
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
@@ -625,9 +642,15 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 		assert(check == e2);
 
+#ifdef MODEL_REGULARIZE
+		lstm_model_regularization(model, gradients);
+#endif
+
 #ifdef GRADIENTS_CLIP
 		if ( gradients_clip(gradients, model->params->gradient_clip_limit) ){
-			printf("Clipped the gradients at iteration: %lu\n", n);
+#ifdef DEBUG_PRINT	
+				printf("Clipped the gradients at iteration: %lu\n", n);
+#endif
 			clip_count++;
 
 
@@ -639,7 +662,8 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			status = 1;
 		} 
-#elif GRADIENTS_FIT
+#endif
+#ifdef GRADIENTS_FIT
 		if ( gradients_fit(gradients, model->params->gradient_clip_limit) ){
 			status = 1;
 		} 	
@@ -650,6 +674,18 @@ void lstm_train_the_next(lstm_model_t* model, set_T* char_index_mapping, unsigne
 
 			status = 0;
 			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
+#ifdef DEBUG_PRINT
+			vector_print_min_max("Wy", model->Wy, F * N);
+			vector_print_min_max("Wi", model->Wi, S * N);
+			vector_print_min_max("Wc", model->Wc, S * N);
+			vector_print_min_max("Wo", model->Wo, S * N);
+			vector_print_min_max("Wf", model->Wf, S * N);
+			vector_print_min_max("by", model->by, F);
+			vector_print_min_max("bi", model->bi, N);
+			vector_print_min_max("bc", model->bc, N);
+			vector_print_min_max("bo", model->bo, N);
+			vector_print_min_max("bf", model->bf, N);
+#endif
 			printf("=====================================================\n");
 
 			lstm_output_string(model, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);

@@ -50,7 +50,7 @@ int vectors_fit(double*, double, int);
 int vectors_clip(double*, double, int);
 
 // I/O
-void 	vector_print(double *, int);
+void 	vector_print_min_max(char *, double *, int);
 void 	vector_read(double *, int, FILE *);
 void 	vector_store(double *, int, FILE *);
 void 	matrix_store(double **, int, int, FILE *);  
