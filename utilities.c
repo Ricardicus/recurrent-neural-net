@@ -505,8 +505,8 @@ randn (double mu, double sigma)
  
   do
     {
-      U1 = -1 + ((double) arc4random () / RAND_MAX) * 2;
-      U2 = -1 + ((double) arc4random () / RAND_MAX) * 2;
+      U1 = -1 + ((double) rand () / RAND_MAX) * 2;
+      U2 = -1 + ((double) rand () / RAND_MAX) * 2;
       W = pow (U1, 2) + pow (U2, 2);
     }
   while (W >= 1 || W == 0);
@@ -521,8 +521,8 @@ randn (double mu, double sigma)
 }
 
 double sample_normal() {
-    double u = ((double) arc4random() / (UINT32_MAX)) * 2 - 1;
-    double v = ((double) arc4random() / (UINT32_MAX)) * 2 - 1;
+    double u = ((double) rand() / (RAND_MAX)) * 2 - 1;
+    double v = ((double) rand() / (RAND_MAX)) * 2 - 1;
     double r = u * u + v * v;
     if (r == 0 || r > 1) return sample_normal();
     double c = sqrt(-2 * log(r) / r);
