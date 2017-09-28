@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include "utilities.h"
 #include "set.h"
 #include "layers.h"
@@ -19,8 +20,11 @@
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
-#define GRADIENTS_CLIP
-// #define GRADIENTS_FIT
+#define TWO_LAYERS
+//#define ONE_LAYER
+
+// #define GRADIENTS_CLIP
+#define GRADIENTS_FIT
 
 // #define DECREASE_LR 
 
@@ -109,6 +113,7 @@ typedef struct lstm_model_t
 
 typedef struct lstm_values_cache_t {
 	double* probs;
+	double* probs_before_sigma;
 	double* c;
 	double* h;
 	double* c_old;
@@ -124,24 +129,25 @@ typedef struct lstm_values_cache_t {
 typedef struct lstm_values_next_cache_t {
 	double* dldh_next;
 	double* dldc_next;
+	double* dldY_pass;
 } lstm_values_next_cache_t;
 
 //					 F,   N,  &lstm model,    zeros, parameters
 int lstm_init_model(int, int, lstm_model_t**, int, lstm_model_parameters_t *);
 void lstm_zero_the_model(lstm_model_t*);
-void lstm_zero_d_next(lstm_values_next_cache_t *);
+void lstm_zero_d_next(lstm_values_next_cache_t *, int);
 void lstm_cache_container_set_start(lstm_values_cache_t *);
 
 //					 lstm model to be freed
 void lstm_free_model(lstm_model_t*);
 //							model, input,  state and cache values, &state and cache values
-void lstm_forward_propagate(lstm_model_t*, int, lstm_values_cache_t*, lstm_values_cache_t*);
+void lstm_forward_propagate(lstm_model_t*, double*, lstm_values_cache_t*, lstm_values_cache_t*, int);
 //							model, y_probabilities, y_correct, the next deltas, state and cache values, &gradients, &the next deltas
 void lstm_backward_propagate(lstm_model_t*, double*, int, lstm_values_next_cache_t*, lstm_values_cache_t*, lstm_model_t*, lstm_values_next_cache_t*);
 
 lstm_values_cache_t*  lstm_cache_container_init(int N, int F);
 void lstm_cache_container_free(lstm_values_cache_t*);
-void lstm_values_next_cache_init(lstm_values_next_cache_t**, int);
+void lstm_values_next_cache_init(lstm_values_next_cache_t**, int, int);
 void lstm_values_next_cache_free(lstm_values_next_cache_t*);
 void sum_gradients(lstm_model_t*, lstm_model_t*);
 
@@ -149,12 +155,18 @@ void sum_gradients(lstm_model_t*, lstm_model_t*);
 //					model (already init), name
 void lstm_store_net(lstm_model_t*, const char *);
 void lstm_read_net(lstm_model_t*, const char *);
+void lstm_store_net_two_layers(lstm_model_t*,lstm_model_t*, const char *);
+void lstm_read_net_two_layers(lstm_model_t*,lstm_model_t*, const char *);
 void lstm_store_progress(unsigned int, double);
 
 // The main entry point
 //						model, number of training points, X_train, Y_train, number of iterations
-void lstm_train_the_next(lstm_model_t*, set_T*, unsigned int, int*, int*, unsigned long);
+void lstm_train_the_net(lstm_model_t*, set_T*, unsigned int, int*, int*, unsigned long);
+void lstm_train_the_net_two_layers(lstm_model_t*, lstm_model_t*, lstm_model_t*, set_T*, unsigned int, int*, int*, unsigned long);
 // Used to output a given number of characters from the net based on an input char
 void lstm_output_string(lstm_model_t *, set_T*, char, int);
+void lstm_output_string_from_string(lstm_model_t *, set_T*, char *, int); 
+void lstm_output_string_two_layers(lstm_model_t *,lstm_model_t *, set_T*, char, int);
+void lstm_output_string_from_string_two_layers(lstm_model_t *, lstm_model_t *, set_T*, char *, int);
 
 #endif

@@ -14,9 +14,11 @@ int main(int argc, char *argv[])
 	int i = 0, c;
 	size_t file_size = 0, sz = 0;
 	int *X_train, *Y_train;
+	char * clean;
 	FILE * fp;
 	set_T set;
-	lstm_model_t * model;
+	lstm_model_t *model, *layer1, *layer2;
+
 	lstm_model_parameters_t params;
 
 	params.loss_moving_avg = LOSS_MOVING_AVG;
@@ -27,13 +29,6 @@ int main(int argc, char *argv[])
 	params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
-
-#ifdef DECREASE_LR
-	printf("LSTM Neural net compiled: %s, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __TIME__, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
-#else
-	printf("LSTM Neural net compiled: %s, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, params.learning_rate, params.momentum, params.lambda);
-#endif
-
 
 	srand( time ( NULL ) );
 
@@ -65,15 +60,68 @@ int main(int argc, char *argv[])
 		X_train[sz++] = set_char_to_indx(&set,c);
 	fclose(fp);
 
+#ifdef ONE_LAYER
+
 	lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
 
-	if ( argc == 4 && !strcmp(argv[2], "-r") ) {
+	if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
 		lstm_read_net(model, argv[3]);
 	}
 
-	lstm_train_the_next(model, &set, file_size, X_train, Y_train, ITERATIONS);
+	if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
+		do {
+			clean = strchr(argv[5], '_');
+			if ( clean != NULL )
+				*clean = ' ';
+		} while ( clean != NULL );
+		lstm_output_string_from_string(model, &set, argv[5], 100);
+	} else {
+	#ifdef DECREASE_LR
+		printf("LSTM Neural net compiled: %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+	#else
+		printf("LSTM Neural net compiled: %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
+	#endif
+
+		lstm_train_the_net(model, &set, file_size, X_train, Y_train, ITERATIONS);
+	}
 
 	free(X_train);
 
 	return 0;
+#endif 
+
+#ifdef TWO_LAYERS
+
+
+	lstm_init_model(set_get_features(&set), NEURONS, &layer1, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
+	lstm_init_model(set_get_features(&set), NEURONS, &layer2, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
+
+
+	if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
+		lstm_read_net_two_layers(layer1, layer2, argv[3]);
+	}
+
+	if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
+		do {
+			clean = strchr(argv[5], '_');
+			if ( clean != NULL )
+				*clean = ' ';
+		} while ( clean != NULL );
+		lstm_output_string_from_string_two_layers(layer1, layer2, &set, argv[5], 100);
+	} else {
+	#ifdef DECREASE_LR
+		printf("LSTM Neural net compiled: %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+	#else
+		printf("LSTM Neural net compiled: %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
+	#endif
+
+		lstm_train_the_net_two_layers(layer1, layer1, layer2, &set, file_size, X_train, Y_train, ITERATIONS);
+	}
+
+	free(X_train);
+
+	return 0;
+
+#endif
+
 }
