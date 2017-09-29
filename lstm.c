@@ -326,7 +326,7 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	// probs = softmax ( Wy*h + by )
 	fully_connected_forward(cache_out->probs, model->Wy, cache_out->h, model->by, F, N);
 	
-	if  (softmax >= 0 ){
+	if  (softmax > 0 ){
 		softmax_layers_forward(cache_out->probs, cache_out->probs, F);
 	} else {
 		copy_vector(cache_out->probs_before_sigma, cache_out->probs, F);
