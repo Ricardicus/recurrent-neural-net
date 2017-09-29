@@ -11,7 +11,7 @@
 #include "assert.h"
 
 
-#define NEURONS													128
+#define NEURONS													512
 
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
