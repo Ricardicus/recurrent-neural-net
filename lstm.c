@@ -996,7 +996,7 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, lstm_model_t* layer2, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
 	int N,F,S, status = 0;
-	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, record_iteration = 0, tmp_count;
+	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 
@@ -1030,7 +1030,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	lstm_init_model(F, N, &gradients_entry_layer_two, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 
 	i = 0;
-	while ( i < training_points + 1){
+	while ( i < model->params->mini_batch_size ){
 		caches_layer_one[i] = lstm_cache_container_init(N, F);
 		caches_layer_two[i] = lstm_cache_container_init(N, F);
 		++i;
@@ -1046,26 +1046,28 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 		loss_tmp = 0.0;
 
-		lstm_cache_container_set_start(caches_layer_one[b]);
-		lstm_cache_container_set_start(caches_layer_two[b]);
+		lstm_cache_container_set_start(caches_layer_one[0]);
+		lstm_cache_container_set_start(caches_layer_two[0]);
 
 		q = 0;
 
 		unsigned int check = i % training_points;
 
 		while ( q < model->params->mini_batch_size ) {
-			e1 = i % training_points;
-			e2 = ( e1 + 1 ) % training_points;
+			e1 = q % model->params->mini_batch_size;
+			e2 = ( e1 + 1 ) % model->params->mini_batch_size;
 			
+			e3 = i % training_points;
+
 			tmp_count = 0;
 			while ( tmp_count < F ){
-				first_layer_input[tmp_count] = tmp_count == X_train[e1] ? X_train[e1] : 0.0;
+				first_layer_input[tmp_count] = tmp_count == X_train[e3] ? 1.0 : 0.0;
 				++tmp_count;
 			}
 			/* Layer numbering starts at the output point of the net */
 			lstm_forward_propagate(layer2, first_layer_input, caches_layer_two[e1], caches_layer_two[e2], 0);
 			lstm_forward_propagate(layer1, caches_layer_two[e2]->probs, caches_layer_one[e1], caches_layer_one[e2], 1);
-			loss_tmp += cross_entropy( caches_layer_one[e2]->probs, Y_train[e1]);
+			loss_tmp += cross_entropy( caches_layer_one[e2]->probs, Y_train[e3]);
 			++i; ++q;
 		}
 
@@ -1092,13 +1094,15 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 		q = model->params->mini_batch_size;
 		while ( q > 0 ) {
-			e1 = i % training_points;
-			e2 = ( training_points + e1 - 1 ) % training_points;
+			e1 = q % model->params->mini_batch_size;
+			e2 = ( model->params->mini_batch_size + e1 - 1 ) % model->params->mini_batch_size;
+
+			e3 = ( training_points + i - 1 ) % training_points;
 
 			lstm_zero_the_model(gradients_entry_layer_one);
 			lstm_zero_the_model(gradients_entry_layer_two);
 
-			lstm_backward_propagate(layer1, caches_layer_one[e1]->probs, Y_train[e2], d_next_layer_one, caches_layer_one[e1], gradients_entry_layer_one, d_next_layer_one);
+			lstm_backward_propagate(layer1, caches_layer_one[e1]->probs, Y_train[e3], d_next_layer_one, caches_layer_one[e1], gradients_entry_layer_one, d_next_layer_one);
 			lstm_backward_propagate(layer2, d_next_layer_one->dldY_pass, -1 , d_next_layer_two, caches_layer_two[e1], gradients_entry_layer_two, d_next_layer_two);
 
 			//gradients_fit(gradients_entry, model->params->gradient_clip_limit);
@@ -1109,7 +1113,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 			i--; q--;
 		}
 
-		assert(check == e2);
+		assert(check == e3);
 
 
 #ifdef GRADIENTS_CLIP
