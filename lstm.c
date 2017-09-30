@@ -1091,8 +1091,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 		lstm_zero_d_next(d_next_layer_one, F);
 		lstm_zero_d_next(d_next_layer_two, F);
-
-		q = model->params->mini_batch_size;
+ 
 		while ( q > 0 ) {
 			e1 = q % model->params->mini_batch_size;
 			e2 = ( model->params->mini_batch_size + e1 - 1 ) % model->params->mini_batch_size;
@@ -1197,7 +1196,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	lstm_values_next_cache_free(d_next_layer_two);
 
 	i = 0;
-	while ( i < training_points + 1) {
+	while ( i < model->params->mini_batch_size) {
 		lstm_cache_container_free(caches_layer_one[i]);
 		free(caches_layer_one[i]);
 		lstm_cache_container_free(caches_layer_two[i]);
