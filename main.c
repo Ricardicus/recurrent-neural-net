@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "lstm.h"
 #include "set.h"
@@ -8,6 +10,41 @@
 #include "utilities.h"
 
 #define ITERATIONS 	100000000
+
+lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
+
+void store_the_net(int signo)
+{
+
+#ifdef ONE_LAYER
+
+	if ( model != NULL ){
+		lstm_store_net(model, STD_LOADABLE_NET_NAME);
+		printf("\nStored the net\n");	
+	} else {
+		printf("Failed to store the net!");
+		exit(-1);
+	}
+
+	exit(0);
+	return;
+#endif
+
+#ifdef TWO_LAYERS
+
+	if ( layer1 != NULL && layer2 != NULL ){
+		lstm_store_net_two_layers(layer1, layer2, STD_LOADABLE_NET_NAME);
+		printf("\nStored the net\n");
+	} else {
+		printf("Failed to store the net!");
+		exit(-1);
+	}
+
+	exit(0);
+	return;
+#endif
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +54,6 @@ int main(int argc, char *argv[])
 	char * clean;
 	FILE * fp;
 	set_T set;
-	lstm_model_t *model, *layer1, *layer2;
 
 	lstm_model_parameters_t params;
 
@@ -115,6 +151,8 @@ int main(int argc, char *argv[])
 	#else
 		printf("LSTM Neural net compiled: %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
 	#endif
+
+		signal(SIGINT, store_the_net);
 
 		lstm_train_the_net_two_layers(layer1, layer1, layer2, &set, file_size, X_train, Y_train, ITERATIONS);
 	}

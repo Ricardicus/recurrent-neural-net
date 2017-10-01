@@ -16,7 +16,7 @@
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
 #define STD_LAMBDA												0.05
-#define SOFTMAX_TEMP											0.3
+#define SOFTMAX_TEMP											1.0
 #define GRADIENT_CLIP_LIMIT										5.0
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
@@ -36,6 +36,7 @@
 #define STD_LEARNING_RATE_DECREASE								100000
 #define STD_LEARNING_RATE_THRESHOLD								10000
 
+// #define STORE_DURING_TRANING
 #define PRINT_EVERY_X_ITERATIONS								200
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000

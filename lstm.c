@@ -957,8 +957,10 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 			fflush(stdout);
 		}
 
+#ifdef STORE_DURING_TRANING
 		if ( !(n % STORE_EVERY_X_ITERATIONS ) && n > 0 )
 			lstm_store_net(model, STD_LOADABLE_NET_NAME);
+#endif
 
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);
@@ -1174,8 +1176,10 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 			fflush(stdout);
 		}
 
+#ifdef STORE_DURING_TRANING
 		if ( !(n % STORE_EVERY_X_ITERATIONS ) && n > 0 )
 			lstm_store_net_two_layers(layer1, layer2, STD_LOADABLE_NET_NAME);
+#endif
 
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);

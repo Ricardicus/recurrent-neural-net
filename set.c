@@ -67,7 +67,7 @@ set_probability_choice(set_T* set, double* probs)
 		++i;
 	}
 
-	return -1;
+	return 0;
 }
 
 int
