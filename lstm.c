@@ -327,7 +327,7 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	fully_connected_forward(cache_out->probs, model->Wy, cache_out->h, model->by, F, N);
 	
 	if  (softmax > 0 ){
-		softmax_layers_forward(cache_out->probs, cache_out->probs, F);
+		softmax_layers_forward(cache_out->probs, cache_out->probs, F, model->params->softmax_temp);
 	} else {
 		copy_vector(cache_out->probs_before_sigma, cache_out->probs, F);
 		sigmoid_forward(cache_out->probs, cache_out->probs_before_sigma, F);

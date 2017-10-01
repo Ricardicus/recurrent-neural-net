@@ -11,11 +11,12 @@
 #include "assert.h"
 
 
-#define NEURONS													512
+#define NEURONS												128
 
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
 #define STD_LAMBDA												0.05
+#define SOFTMAX_TEMP											0.3
 #define GRADIENT_CLIP_LIMIT										5.0
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
@@ -54,6 +55,7 @@ typedef struct lstm_model_parameters_t {
 	double learning_rate;
 	double momentum;
 	double lambda;
+	double softmax_temp;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;

@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
 	params.learning_rate = STD_LEARNING_RATE;
 	params.momentum = STD_MOMENTUM;
 	params.lambda = STD_LAMBDA;
+	params.softmax_temp = SOFTMAX_TEMP;
 	params.mini_batch_size = MINI_BATCH_SIZE;
 	params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;

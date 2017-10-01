@@ -9,7 +9,7 @@ void 	fully_connected_backward(double*, double*, double* ,double*, double*, doub
 
 // Dealing with softmax layer, forward and backward
 //								&P,		Y,  	features
-void 	softmax_layers_forward(double*, double*, int);
+void 	softmax_layers_forward(double*, double*, int, double);
 //									  P,	  c,  &dldh, rows
 void 	softmax_loss_layer_backward(double*, int, double*, int);
 

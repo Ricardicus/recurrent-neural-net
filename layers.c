@@ -70,14 +70,14 @@ double cross_entropy(double* probs, int correct)
 
 // Dealing with softmax layer, forward and backward
 //								&P,		Y,  	features
-void 	softmax_layers_forward(double* P, double* Y, int F)  
+void 	softmax_layers_forward(double* P, double* Y, int F, double temperature)  
 {
 	int f = 0;
 	double sum = 0;
 	double cache[F];
 
 	while ( f < F ) {
-		cache[f] = exp(Y[f]);
+		cache[f] = exp(Y[f] / temperature);
 		sum += cache[f];
 		++f;
 	}
