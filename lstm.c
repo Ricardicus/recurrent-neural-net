@@ -328,10 +328,11 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	
 	if  (softmax > 0 ){
 		softmax_layers_forward(cache_out->probs, cache_out->probs, F, model->params->softmax_temp);
-	} else {
+	} /* else {
+		// This was not good.
 		copy_vector(cache_out->probs_before_sigma, cache_out->probs, F);
 		sigmoid_forward(cache_out->probs, cache_out->probs_before_sigma, F);
-	}
+	} */
 
 	copy_vector(cache_out->X, X_one_hot, S);
 
@@ -364,9 +365,10 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 
 	if ( y_correct >= 0 ){
 		dldy[y_correct] -= 1.0;
-	} else {
+	} /* else {
+		// This was not good
 		sigmoid_backward(y_probabilities, cache_in->probs_before_sigma, dldy, F);
-	}
+	} */
 
 	fully_connected_backward(dldy, model->Wy, h, gradients->Wy, dldh, gradients->by, F, N);
 	vectors_add(dldh, dldh_next, N);
@@ -641,7 +643,7 @@ void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, s
 		index = set_char_to_indx(char_index_mapping,input);
 
 		count = 0;
-		while ( count > F ) {
+		while ( count < F ) {
 			first_layer_input[count] = count == index ? 1.0 : 0.0;
 			++count;
 		}
@@ -675,7 +677,7 @@ void lstm_output_string_from_string(lstm_model_t *model, set_T* char_index_mappi
 		index = set_char_to_indx(char_index_mapping,input_string[i]);
 
 		count = 0;
-		while ( count > F ) {
+		while ( count < F ) {
 			first_layer_input[count] = count == index ? 1.0 : 0.0;
 			++count;
 		}
@@ -694,7 +696,7 @@ void lstm_output_string_from_string(lstm_model_t *model, set_T* char_index_mappi
 		index = set_char_to_indx(char_index_mapping,input);
 
 		count = 0;
-		while ( count > F ) {
+		while ( count < F ) {
 			first_layer_input[count] = count == index ? 1.0 : 0.0;
 			++count;
 		}
@@ -730,7 +732,7 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 		index = set_char_to_indx(char_index_mapping, input_string[i]);
 
 		count = 0;
-		while ( count > F ) {
+		while ( count < F ) {
 			first_layer_input[count] = count == index ? 1.0 : 0.0;
 			++count;
 		}
@@ -1000,7 +1002,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 {
 	int N,F,S, status = 0;
 	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count;
-	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
+	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 
 	lstm_values_cache_t **caches_layer_one, **caches_layer_two; 
@@ -1166,7 +1168,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			status = 0;
-			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
+			printf("Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d)\n", n, epoch, loss, record_keeper, record_iteration);
 			printf("=====================================================\n");
 
 			lstm_output_string_two_layers(layer1, layer2, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
@@ -1187,8 +1189,11 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 
 		i = b + model->params->mini_batch_size;
-		if ( i >= training_points )
+		if ( i >= training_points ){
 			i = 0;
+			epoch++;
+		}
+
 
 #ifdef DECREASE_LR
 		model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );

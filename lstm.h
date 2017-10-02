@@ -21,8 +21,8 @@
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
-//#define TWO_LAYERS
-#define ONE_LAYER
+#define TWO_LAYERS
+// #define ONE_LAYER
 
 // #define GRADIENTS_CLIP
 #define GRADIENTS_FIT
