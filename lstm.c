@@ -609,6 +609,7 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 	while ( i < length ) {
 		index = set_char_to_indx(char_index_mapping,input);
 
+		tmp_count = 0;
 		while ( tmp_count < F ){
 			first_layer_input[tmp_count] = index == tmp_count ? 1.0 : 0.0;
 			++tmp_count;

@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	#else
 		printf("LSTM Neural net compiled: %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
 	#endif
-
+		signal(SIGINT, store_the_net);
 		lstm_train_the_net(model, &set, file_size, X_train, Y_train, ITERATIONS);
 	}
 
