@@ -11,9 +11,9 @@
 #include "assert.h"
 
 
-#define NEURONS												128
+#define NEURONS												512
 
-#define STD_LEARNING_RATE										0.001
+#define STD_LEARNING_RATE										0.01
 #define STD_MOMENTUM											0.0
 #define STD_LAMBDA											0.05
 #define SOFTMAX_TEMP											1.0
@@ -24,8 +24,8 @@
 #define TWO_LAYERS
 // #define ONE_LAYER
 
-// #define GRADIENTS_CLIP
-#define GRADIENTS_FIT
+#define GRADIENTS_CLIP
+// #define GRADIENTS_FIT
 
 // #define DECREASE_LR 
 
