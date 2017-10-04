@@ -728,7 +728,7 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 	in_len = strlen(input_string);
 
 	while ( i < in_len - 1 ) {
-
+		printf("%c", input_string[i]);
 		index = set_char_to_indx(char_index_mapping, input_string[i]);
 
 		count = 0;
@@ -739,8 +739,8 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 
 		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
 		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
-		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
-		printf ( "%c", input );
+//		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
+//		printf ( "%c", input );
 		++i;
 
 	}
@@ -753,7 +753,7 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 		index = set_char_to_indx(char_index_mapping,input);
 
 		count = 0;
-		while ( count > F ) {
+		while ( count < F ) {
 			first_layer_input[count] = count == index ? 1.0 : 0.0;
 			++count;
 		}
