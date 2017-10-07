@@ -1004,6 +1004,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
+	double initial_learning_rate = model->params->learning_rate;
 
 	lstm_values_cache_t **caches_layer_one, **caches_layer_two; 
 
@@ -1168,7 +1169,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			status = 0;
-			printf("Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d)\n", n, epoch, loss, record_keeper, record_iteration);
+			printf("Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
 			printf("=====================================================\n");
 
 			lstm_output_string_two_layers(layer1, layer2, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
@@ -1196,7 +1197,8 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 
 #ifdef DECREASE_LR
-		model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+//		printf("learning rate: %lf\n", model->params->learning_rate);
 #endif
 
 		++n;
