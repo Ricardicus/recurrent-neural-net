@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "utilities.h"
 #include "set.h"
 #include "layers.h"
@@ -18,7 +19,7 @@
 #define STD_LAMBDA											0.05
 #define SOFTMAX_TEMP											1.0
 #define GRADIENT_CLIP_LIMIT										5.0
-#define MINI_BATCH_SIZE											100
+#define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
 #define TWO_LAYERS

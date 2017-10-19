@@ -1005,6 +1005,8 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	double initial_learning_rate = model->params->learning_rate;
+	time_t time_iter;
+	char time_buffer[40];
 
 	lstm_values_cache_t **caches_layer_one, **caches_layer_two; 
 
@@ -1169,7 +1171,11 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			status = 0;
-			printf("Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
+			memset(time_buffer, '\0', sizeof time_buffer);
+			time(&time_iter);
+			strftime(time_buffer, sizeof time_buffer, "%X", localtime(&time_iter));
+
+			printf("%s Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", time_buffer, n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
 			printf("=====================================================\n");
 
 			lstm_output_string_two_layers(layer1, layer2, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
