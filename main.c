@@ -138,7 +138,6 @@ int main(int argc, char *argv[])
 	lstm_init_model(set_get_features(&set), NEURONS, &layer1, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
 	lstm_init_model(set_get_features(&set), NEURONS, &layer2, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
 
-
 	if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
 		lstm_read_net_two_layers(layer1, layer2, argv[3]);
 	}
@@ -149,6 +148,7 @@ int main(int argc, char *argv[])
 			if ( clean != NULL )
 				*clean = ' ';
 		} while ( clean != NULL );
+
 		lstm_output_string_from_string_two_layers(layer1, layer2, &set, argv[5], 100);
 	} else {
 	#ifdef DECREASE_LR

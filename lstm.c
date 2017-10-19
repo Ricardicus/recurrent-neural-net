@@ -1020,10 +1020,10 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 	double first_layer_input[F];
 
-	caches_layer_one = calloc(training_points + 1, sizeof(lstm_values_cache_t*));
+	caches_layer_one = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 	if ( caches_layer_one == NULL ) 
 		return;
-	caches_layer_two = calloc(training_points + 1, sizeof(lstm_values_cache_t*));
+	caches_layer_two = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 	if ( caches_layer_two == NULL ) 
 		return;
 
