@@ -119,9 +119,9 @@ int main(int argc, char *argv[])
 		lstm_output_string_from_string(model, &set, argv[5], 100);
 	} else {
 	#ifdef DECREASE_LR
-		printf("LSTM Neural net compiled: %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+		printf("LSTM Neural net compiled: %s %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
 	#else
-		printf("LSTM Neural net compiled: %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
+		printf("LSTM Neural net compiled: %s %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
 	#endif
 		signal(SIGINT, store_the_net);
 		lstm_train_the_net(model, &set, file_size, X_train, Y_train, ITERATIONS);
@@ -152,9 +152,9 @@ int main(int argc, char *argv[])
 		lstm_output_string_from_string_two_layers(layer1, layer2, &set, argv[5], 100);
 	} else {
 	#ifdef DECREASE_LR
-		printf("LSTM Neural net compiled: %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+		printf("LSTM Neural net compiled: %s %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
 	#else
-		printf("LSTM Neural net compiled: %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
+		printf("LSTM Neural net compiled: %s %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
 	#endif
 
 		signal(SIGINT, store_the_net);
