@@ -80,3 +80,33 @@ set_get_features(set_T* set)
 		return i+1;
 	return 0;
 }
+
+void 
+set_print(set_T* set, double* probs)
+{
+	int i = 0;
+	while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
+		if ( set->values[i] == '\n')
+			printf("[ newline:	%lf ]\n", probs[i]);
+		else
+			printf("[ %c: 		%lf ]\n", set->values[i], probs[i]);
+		++i;
+	}
+}
+
+int 
+set_greedy_argmax(set_T* set, double* probs)
+{
+	int i = 0;
+	int max_i = 0;
+	double max_double = 0.0;
+	while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
+		if ( probs[i] > max_double ){
+			max_i = i;
+			max_double = probs[i];
+		}
+		++i;
+	}
+
+	return set->values[max_i];
+}

@@ -201,11 +201,277 @@ void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 // Am_hat = Am / ( 1 - betaM ^ (iteration) )
 // Rm_hat = Rm / ( 1 - betaR ^ (iteration) )
 
-void gradients_adam_optimizer(lstm_model_t* model, lstm_model_t* gradients) 
+
+void gradients_adam_optimizer(lstm_model_t* model, lstm_model_t* gradients, lstm_model_t* M, lstm_model_t* R, unsigned int t) 
 {
+	double beta1 = model->params->beta1;
+	double beta2 = model->params->beta2;
+
+	double beta1t = 1.0 / ( 1.0 - pow(beta1, t+1));
+	double beta2t = 1.0 / ( 1.0 - pow(beta2, t+1));
+
+	if ( !(beta2t == beta2t) ) {
+		printf("beta2t: %lf\n", beta2t);
+		exit(0);
+	}
+
+	copy_vector(gradients->Wym, gradients->Wy, model->F * model->N);
+	copy_vector(gradients->Wim, gradients->Wi, model->N * model->S);
+	copy_vector(gradients->Wcm, gradients->Wc, model->N * model->S);
+	copy_vector(gradients->Wom, gradients->Wo, model->N * model->S);
+	copy_vector(gradients->Wfm, gradients->Wf, model->N * model->S);
+
+	copy_vector(gradients->bym, gradients->by, model->F);
+	copy_vector(gradients->bim, gradients->bi, model->N);
+	copy_vector(gradients->bcm, gradients->bc, model->N);
+	copy_vector(gradients->bom, gradients->bo, model->N);
+	copy_vector(gradients->bfm, gradients->bf, model->N);
+
+	vectors_mutliply_scalar(gradients->Wym, 1.0 - beta1, model->F * model->N);
+	vectors_mutliply_scalar(gradients->Wim, 1.0 - beta1, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wcm, 1.0 - beta1, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wom, 1.0 - beta1, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wfm, 1.0 - beta1, model->N * model->S);
+
+	vectors_mutliply_scalar(gradients->bym, 1.0 - beta1, model->F);
+	vectors_mutliply_scalar(gradients->bim, 1.0 - beta1, model->N);
+	vectors_mutliply_scalar(gradients->bcm, 1.0 - beta1, model->N);
+	vectors_mutliply_scalar(gradients->bom, 1.0 - beta1, model->N);
+	vectors_mutliply_scalar(gradients->bfm, 1.0 - beta1, model->N);
+
+	vectors_mutliply_scalar(M->Wy, beta1, model->F * model->N);
+	vectors_mutliply_scalar(M->Wi, beta1, model->N * model->S);
+	vectors_mutliply_scalar(M->Wc, beta1, model->N * model->S);
+	vectors_mutliply_scalar(M->Wo, beta1, model->N * model->S);
+	vectors_mutliply_scalar(M->Wf, beta1, model->N * model->S);
+
+	vectors_mutliply_scalar(M->by, beta1, model->F);
+	vectors_mutliply_scalar(M->bi, beta1, model->N);
+	vectors_mutliply_scalar(M->bc, beta1, model->N);
+	vectors_mutliply_scalar(M->bo, beta1, model->N);
+	vectors_mutliply_scalar(M->bf, beta1, model->N);
+
+	vectors_add(M->Wy, gradients->Wy, model->F * model->N);
+	vectors_add(M->Wi, gradients->Wi, model->N * model->S);
+	vectors_add(M->Wc, gradients->Wc, model->N * model->S);
+	vectors_add(M->Wo, gradients->Wo, model->N * model->S);
+	vectors_add(M->Wf, gradients->Wf, model->N * model->S);
+
+	vectors_add(M->by, gradients->by, model->F);
+	vectors_add(M->bi, gradients->bi, model->N);
+	vectors_add(M->bc, gradients->bc, model->N);
+	vectors_add(M->bo, gradients->bo, model->N);
+	vectors_add(M->bf, gradients->bf, model->N);
+	
+	// M Done!
+	// Computing R
+
+	vectors_multiply(gradients->Wy, gradients->Wy, model->F * model->N);
+	vectors_multiply(gradients->Wi, gradients->Wi, model->N * model->S);
+	vectors_multiply(gradients->Wc, gradients->Wc, model->N * model->S);
+	vectors_multiply(gradients->Wo, gradients->Wo, model->N * model->S);
+	vectors_multiply(gradients->Wf, gradients->Wf, model->N * model->S);
+
+	vectors_multiply(gradients->by, gradients->by, model->F );
+	vectors_multiply(gradients->bi, gradients->bi, model->N );
+	vectors_multiply(gradients->bc, gradients->bc, model->N );
+	vectors_multiply(gradients->bo, gradients->bo, model->N );
+	vectors_multiply(gradients->bf, gradients->bf, model->N );
+
+	copy_vector(gradients->Wym, gradients->Wy, model->F * model->N);
+	copy_vector(gradients->Wim, gradients->Wi, model->N * model->S);
+	copy_vector(gradients->Wcm, gradients->Wc, model->N * model->S);
+	copy_vector(gradients->Wom, gradients->Wo, model->N * model->S);
+	copy_vector(gradients->Wfm, gradients->Wf, model->N * model->S);
+
+	copy_vector(gradients->bym, gradients->by, model->F);
+	copy_vector(gradients->bim, gradients->bi, model->N);
+	copy_vector(gradients->bcm, gradients->bc, model->N);
+	copy_vector(gradients->bom, gradients->bo, model->N);
+	copy_vector(gradients->bfm, gradients->bf, model->N);
+
+	vectors_mutliply_scalar(gradients->Wym, 1.0 - beta2, model->F * model->N);
+	vectors_mutliply_scalar(gradients->Wim, 1.0 - beta2, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wcm, 1.0 - beta2, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wom, 1.0 - beta2, model->N * model->S);
+	vectors_mutliply_scalar(gradients->Wfm, 1.0 - beta2, model->N * model->S);
+
+	vectors_mutliply_scalar(gradients->bym, 1.0 - beta2, model->F);
+	vectors_mutliply_scalar(gradients->bim, 1.0 - beta2, model->N);
+	vectors_mutliply_scalar(gradients->bcm, 1.0 - beta2, model->N);
+	vectors_mutliply_scalar(gradients->bom, 1.0 - beta2, model->N);
+	vectors_mutliply_scalar(gradients->bfm, 1.0 - beta2, model->N);
+
+	vectors_mutliply_scalar(R->Wy, beta2, model->F * model->N);
+	vectors_mutliply_scalar(R->Wi, beta2, model->N * model->S);
+	vectors_mutliply_scalar(R->Wc, beta2, model->N * model->S);
+	vectors_mutliply_scalar(R->Wo, beta2, model->N * model->S);
+	vectors_mutliply_scalar(R->Wf, beta2, model->N * model->S);
+
+	vectors_mutliply_scalar(R->by, beta2, model->F);
+	vectors_mutliply_scalar(R->bi, beta2, model->N);
+	vectors_mutliply_scalar(R->bc, beta2, model->N);
+	vectors_mutliply_scalar(R->bo, beta2, model->N);
+	vectors_mutliply_scalar(R->bf, beta2, model->N);
+
+	vectors_add(R->Wy, gradients->Wy, model->F * model->N);
+	vectors_add(R->Wi, gradients->Wi, model->N * model->S);
+	vectors_add(R->Wc, gradients->Wc, model->N * model->S);
+	vectors_add(R->Wo, gradients->Wo, model->N * model->S);
+	vectors_add(R->Wf, gradients->Wf, model->N * model->S);
+
+	vectors_add(R->by, gradients->by, model->F);
+	vectors_add(R->bi, gradients->bi, model->N);
+	vectors_add(R->bc, gradients->bc, model->N);
+	vectors_add(R->bo, gradients->bo, model->N);
+	vectors_add(R->bf, gradients->bf, model->N);
+
+	// R done!
+
+	copy_vector(M->Wym, M->Wy, model->F * model->N);
+	copy_vector(M->Wim, M->Wi, model->N * model->S);
+	copy_vector(M->Wcm, M->Wc, model->N * model->S);
+	copy_vector(M->Wom, M->Wo, model->N * model->S);
+	copy_vector(M->Wfm, M->Wf, model->N * model->S);
+
+	copy_vector(M->bym, M->by, model->F);
+	copy_vector(M->bim, M->bi, model->N);
+	copy_vector(M->bcm, M->bc, model->N);
+	copy_vector(M->bom, M->bo, model->N);
+	copy_vector(M->bfm, M->bf, model->N);
+
+	vectors_mutliply_scalar(M->Wym, beta1t, model->F * model->N);
+	vectors_mutliply_scalar(M->Wim, beta1t, model->N * model->S);
+	vectors_mutliply_scalar(M->Wcm, beta1t, model->N * model->S);
+	vectors_mutliply_scalar(M->Wom, beta1t, model->N * model->S);
+	vectors_mutliply_scalar(M->Wfm, beta1t, model->N * model->S);
+
+	vectors_mutliply_scalar(M->bym, beta1t, model->F);
+	vectors_mutliply_scalar(M->bim, beta1t, model->N);
+	vectors_mutliply_scalar(M->bcm, beta1t, model->N);
+	vectors_mutliply_scalar(M->bom, beta1t, model->N);
+	vectors_mutliply_scalar(M->bfm, beta1t, model->N);
+
+	// M hat done!
+
+	copy_vector(R->Wym, R->Wy, model->F * model->N);
+	copy_vector(R->Wim, R->Wi, model->N * model->S);
+	copy_vector(R->Wcm, R->Wc, model->N * model->S);
+	copy_vector(R->Wom, R->Wo, model->N * model->S);
+	copy_vector(R->Wfm, R->Wf, model->N * model->S);
+
+	copy_vector(R->bym, R->by, model->F);
+	copy_vector(R->bim, R->bi, model->N);
+	copy_vector(R->bcm, R->bc, model->N);
+	copy_vector(R->bom, R->bo, model->N);
+	copy_vector(R->bfm, R->bf, model->N);
+
+	vectors_mutliply_scalar(R->Wym, beta2t, model->F * model->N);
+	vectors_mutliply_scalar(R->Wim, beta2t, model->N * model->S);
+	vectors_mutliply_scalar(R->Wcm, beta2t, model->N * model->S);
+	vectors_mutliply_scalar(R->Wom, beta2t, model->N * model->S);
+	vectors_mutliply_scalar(R->Wfm, beta2t, model->N * model->S);
+
+	vectors_mutliply_scalar(R->bym, beta2t, model->F);
+	vectors_mutliply_scalar(R->bim, beta2t, model->N);
+	vectors_mutliply_scalar(R->bcm, beta2t, model->N);
+	vectors_mutliply_scalar(R->bom, beta2t, model->N);
+	vectors_mutliply_scalar(R->bfm, beta2t, model->N);
+
+	// R hat done!
+
+	vector_sqrt(R->Wym, model->F * model->N);
+	vector_sqrt(R->Wim, model->N * model->S);
+	vector_sqrt(R->Wcm, model->N * model->S);
+	vector_sqrt(R->Wom, model->N * model->S);
+	vector_sqrt(R->Wfm, model->N * model->S);
+
+	vector_sqrt(R->bym, model->F);
+	vector_sqrt(R->bim, model->N);
+	vector_sqrt(R->bcm, model->N);
+	vector_sqrt(R->bom, model->N);
+	vector_sqrt(R->bfm, model->N);
+
+	vectors_add_scalar(R->Wym, 1e-7, model->F * model->N);
+	vectors_add_scalar(R->Wim, 1e-7, model->N * model->S);
+	vectors_add_scalar(R->Wcm, 1e-7, model->N * model->S);
+	vectors_add_scalar(R->Wom, 1e-7, model->N * model->S);
+	vectors_add_scalar(R->Wfm, 1e-7, model->N * model->S);
+
+	vectors_add_scalar(R->bym, 1e-7, model->F);
+	vectors_add_scalar(R->bim, 1e-7, model->N);
+	vectors_add_scalar(R->bcm, 1e-7, model->N);
+	vectors_add_scalar(R->bom, 1e-7, model->N);
+	vectors_add_scalar(R->bfm, 1e-7, model->N);
+
+	copy_vector(gradients->Wym, M->Wym, model->F * model->N);
+	copy_vector(gradients->Wim, M->Wim, model->N * model->S);
+	copy_vector(gradients->Wcm, M->Wcm, model->N * model->S);
+	copy_vector(gradients->Wom, M->Wom, model->N * model->S);
+	copy_vector(gradients->Wfm, M->Wfm, model->N * model->S);
+
+	copy_vector(gradients->bym, M->bym, model->F);
+	copy_vector(gradients->bim, M->bim, model->N);
+	copy_vector(gradients->bcm, M->bcm, model->N);
+	copy_vector(gradients->bom, M->bom, model->N);
+	copy_vector(gradients->bfm, M->bfm, model->N);	
+
+	vectors_scalar_multiply(gradients->Wym, model->params->learning_rate, model->F * model->N);
+	vectors_scalar_multiply(gradients->Wim, model->params->learning_rate, model->N * model->S);
+	vectors_scalar_multiply(gradients->Wcm, model->params->learning_rate, model->N * model->S);
+	vectors_scalar_multiply(gradients->Wom, model->params->learning_rate, model->N * model->S);
+	vectors_scalar_multiply(gradients->Wfm, model->params->learning_rate, model->N * model->S);
+
+	vectors_scalar_multiply(gradients->bym, model->params->learning_rate, model->F);
+	vectors_scalar_multiply(gradients->bim, model->params->learning_rate, model->N);
+	vectors_scalar_multiply(gradients->bcm, model->params->learning_rate, model->N);
+	vectors_scalar_multiply(gradients->bom, model->params->learning_rate, model->N);
+	vectors_scalar_multiply(gradients->bfm, model->params->learning_rate, model->N);	
+
+	vectors_div(gradients->Wym, R->Wym, model->F * model->N);
+	vectors_div(gradients->Wim, R->Wim, model->N * model->S);
+	vectors_div(gradients->Wcm, R->Wcm, model->N * model->S);
+	vectors_div(gradients->Wom, R->Wom, model->N * model->S);
+	vectors_div(gradients->Wfm, R->Wfm, model->N * model->S);
+
+	vectors_div(gradients->bym, R->bym, model->F);
+	vectors_div(gradients->bim, R->bim, model->N);
+	vectors_div(gradients->bcm, R->bcm, model->N);
+	vectors_div(gradients->bom, R->bom, model->N);
+	vectors_div(gradients->bfm, R->bfm, model->N);
 
 
-}
+	vectors_substract(model->Wy, gradients->Wym, model->F * model->N);
+	vectors_substract(model->Wi, gradients->Wim, model->N * model->S);
+	vectors_substract(model->Wc, gradients->Wcm, model->N * model->S);
+	vectors_substract(model->Wo, gradients->Wom, model->N * model->S);
+	vectors_substract(model->Wf, gradients->Wfm, model->N * model->S);
+
+	vectors_substract(model->by, gradients->bym, model->F);
+	vectors_substract(model->bi, gradients->bim, model->N);
+	vectors_substract(model->bc, gradients->bcm, model->N);
+	vectors_substract(model->bo, gradients->bom, model->N);
+	vectors_substract(model->bf, gradients->bfm, model->N);	
+
+/*			try:
+				M[k]
+				R[k]
+			except KeyError:
+				M[k] = 0.
+				R[k] = 0.
+
+			M[k] = exp_running_avg(M[k], grad[k], beta1)
+			R[k] = exp_running_avg(R[k], grad[k]**2, beta2)
+
+			m_k_hat = M[k] / (1. - beta1**(t))
+			r_k_hat = R[k] / (1. - beta2**(t))
+
+			model[k] -= alpha * m_k_hat / (np.sqrt(r_k_hat) + 1e-7)
+
+*/
+	
+} 
+
 
 // A = A - alpha * m, m = momentum * m + ( 1 - momentum ) * dldA
 void gradients_decend(lstm_model_t* model, lstm_model_t* gradients) {
@@ -325,7 +591,6 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	
 	// probs = softmax ( Wy*h + by )
 	fully_connected_forward(cache_out->probs, model->Wy, cache_out->h, model->by, F, N);
-	
 	if  (softmax > 0 ){
 		softmax_layers_forward(cache_out->probs, cache_out->probs, F, model->params->softmax_temp);
 	} /* else {
@@ -365,10 +630,7 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 
 	if ( y_correct >= 0 ){
 		dldy[y_correct] -= 1.0;
-	} /* else {
-		// This was not good
-		sigmoid_backward(y_probabilities, cache_in->probs_before_sigma, dldy, F);
-	} */
+	}
 
 	fully_connected_backward(dldy, model->Wy, h, gradients->Wy, dldh, gradients->by, F, N);
 	vectors_add(dldh, dldh_next, N);
@@ -425,6 +687,18 @@ void lstm_zero_the_model(lstm_model_t * model)
 	vector_set_to_zero(model->bc, model->N);
 	vector_set_to_zero(model->bf, model->N);
 	vector_set_to_zero(model->bo, model->N);
+
+	vector_set_to_zero(model->Wym, model->F * model->N);
+	vector_set_to_zero(model->Wim, model->N * model->S);
+	vector_set_to_zero(model->Wcm, model->N * model->S);
+	vector_set_to_zero(model->Wom, model->N * model->S);
+	vector_set_to_zero(model->Wfm, model->N * model->S);
+
+	vector_set_to_zero(model->bym, model->F);
+	vector_set_to_zero(model->bim, model->N);
+	vector_set_to_zero(model->bcm, model->N);
+	vector_set_to_zero(model->bfm, model->N);
+	vector_set_to_zero(model->bom, model->N);
 
 	vector_set_to_zero(model->dldhf, model->N);
 	vector_set_to_zero(model->dldhi, model->N);
@@ -607,13 +881,13 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 	double first_layer_input[F];
 
 	cache = lstm_cache_container_init(model->N, model->F);
-
+	lstm_cache_container_set_start(cache);
 	while ( i < length ) {
 		index = set_char_to_indx(char_index_mapping,input);
 
 		tmp_count = 0;
 		while ( tmp_count < F ){
-			first_layer_input[tmp_count] = index == tmp_count ? 1.0 : 0.0;
+			first_layer_input[tmp_count] = (index == tmp_count ? 1.0 : 0.0);
 			++tmp_count;
 		}
 
@@ -650,8 +924,9 @@ void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, s
 
 		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
 		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
+//		set_print(char_index_mapping, caches_layer_one->probs);
 		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
-		printf ( "%c", input );
+		printf( "%c", input );
 		++i;
 	}
 
@@ -669,7 +944,7 @@ void lstm_output_string_from_string(lstm_model_t *model, set_T* char_index_mappi
 	F = model->F;
 
 	cache = lstm_cache_container_init(model->N, model->F);
-
+	lstm_cache_container_set_start(cache);
 	double first_layer_input[F];
 
 	while ( i < in_len - 1 ) {
@@ -760,12 +1035,67 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 
 		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
 		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
-		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
+		input = set_greedy_argmax(char_index_mapping, caches_layer_one->probs);
 		printf ( "%c", input );
+//		set_print(char_index_mapping,caches_layer_one->probs);
 		++i;
 	}
 
 	printf("\n");
+
+	lstm_cache_container_free(caches_layer_one);
+	lstm_cache_container_free(caches_layer_two);
+}
+
+
+void lstm_output_string_from_string_two_layers_during_training(lstm_model_t *layer1, lstm_model_t* layer2, set_T* char_index_mapping, int* input_string_index, int in_len, int out_length) 
+{
+	lstm_values_cache_t *caches_layer_one, *caches_layer_two;
+	int i = 0, count, index;
+	char input;
+	int F = layer1->F;
+
+	caches_layer_one = lstm_cache_container_init(layer1->N, layer1->F);
+	caches_layer_two = lstm_cache_container_init(layer2->N, layer2->F);
+
+	double first_layer_input[F];
+
+	while ( i < in_len - 1 ) {
+		index = input_string_index[i];
+
+//		printf("%c",set_indx_to_char(char_index_mapping, index));
+
+		count = 0;
+		while ( count < F ) {
+			first_layer_input[count] = count == index ? 1.0 : 0.0;
+			++count;
+		}
+
+		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
+		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
+
+		++i;
+
+	}
+
+	input = set_indx_to_char(char_index_mapping, input_string_index[i]);
+	i = 0;
+	while ( i < out_length ) {
+		index = set_char_to_indx(char_index_mapping,input);
+
+		count = 0;
+		while ( count < F ) {
+			first_layer_input[count] = count == index ? 1.0 : 0.0;
+			++count;
+		}
+
+		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
+		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
+		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
+		printf ( "%c", input );
+//		set_print(char_index_mapping,caches_layer_one->probs);
+		++i;
+	}
 
 	lstm_cache_container_free(caches_layer_one);
 	lstm_cache_container_free(caches_layer_two);
@@ -804,31 +1134,39 @@ void lstm_model_regularization(lstm_model_t* model, lstm_model_t* gradients)
 void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
 	int N,F,S, status = 0;
-	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, record_iteration = 0, tmp_count = 0;
+	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, record_iteration = 0, tmp_count = 0, trailing;;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	lstm_values_cache_t **caches, **tmp; 
 	lstm_values_next_cache_t *d_next = NULL;
-	lstm_model_t *gradients, *gradients_entry = NULL;
+	lstm_model_t *gradients, *gradients_entry = NULL, *M, *R;
 
 	N = model->N;
 	F = model->F;
 	S = model->S;
 
+	double initial_learning_rate = model->params->learning_rate;
+
 	double first_layer_input[F];
 
-	caches = calloc(training_points + 1, sizeof(lstm_values_cache_t*));
+	caches = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 	if ( caches == NULL ) 
 		return;
 
 	tmp = caches;
 
 	lstm_init_model(F, N, &gradients, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+	lstm_init_model(F, N, &M, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+	lstm_init_model(F, N, &R, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+
+	lstm_zero_the_model(M);
+	lstm_zero_the_model(R);
+
 	lstm_values_next_cache_init(&d_next, N, F);	
 	lstm_init_model(F, N, &gradients_entry, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 
 	i = 0;
-	while ( i < training_points + 1){
+	while ( i <= model->params->mini_batch_size + 1 ){
 		caches[i] = lstm_cache_container_init(N, F);
 		++i;
 	}
@@ -837,32 +1175,40 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 	unsigned long clip_count = 0;
 #endif
 
+	lstm_cache_container_set_start(caches[0]);
+
 	i = 0; b = 0;
 	while ( n < iterations ){
 		b = i;
 
 		loss_tmp = 0.0;
 
-		lstm_cache_container_set_start(caches[b]);
+		unsigned int check = i;
+		trailing = model->params->mini_batch_size;
+
+		if ( i + model->params->mini_batch_size >= training_points ) {
+			trailing = training_points - i;
+		}
+
+//		printf("[ ");
+
+		lstm_cache_container_set_start(caches[0]);
 
 		q = 0;
-
-		unsigned int check = i % training_points;
-
-		while ( q < model->params->mini_batch_size ) {
-			e1 = i % training_points;
-			e2 = ( e1 + 1 ) % training_points;
+		while ( q < trailing ) {
+//			printf("%c ", set_indx_to_char(char_index_mapping, X_train[e1])) ;
 
 			tmp_count = 0;
 			while ( tmp_count < F ){
-				first_layer_input[tmp_count] = tmp_count == X_train[e1] ? 1.0 : 0.0;
+				first_layer_input[tmp_count] = (tmp_count == X_train[ i ] ? 1.0 : 0.0);
 				++tmp_count;
 			}
 
-			lstm_forward_propagate(model, first_layer_input, caches[e1], caches[e2], 1);
-			loss_tmp += cross_entropy( caches[e2]->probs, Y_train[e1]);
+			lstm_forward_propagate(model, first_layer_input, caches[q], caches[q+1], 1);
+			loss_tmp += cross_entropy( caches[q+1]->probs, Y_train[i]);
 			++i; ++q;
 		}
+//		printf("]\n");
 
 		loss_tmp /= (q+1); 
 
@@ -890,21 +1236,16 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 
 		lstm_zero_d_next(d_next, F);
 
-		q = model->params->mini_batch_size;
 		while ( q > 0 ) {
-			e1 = i % training_points;
-			e2 = ( training_points + e1 - 1 ) % training_points;
+
 			lstm_zero_the_model(gradients_entry);
 
-			lstm_backward_propagate(model, caches[e1]->probs, Y_train[e2], d_next, caches[e1], gradients_entry, d_next);
+			lstm_backward_propagate(model, caches[q]->probs, Y_train[ i - 1 ], d_next, caches[q], gradients_entry, d_next);
 
 			//gradients_fit(gradients_entry, model->params->gradient_clip_limit);
-
 			sum_gradients(gradients, gradients_entry);
 			i--; q--;
 		}
-
-		assert(check == e2);
 
 #ifdef MODEL_REGULARIZE
 		lstm_model_regularization(model, gradients);
@@ -932,12 +1273,14 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 			status = 1;
 		} 	
 #endif
-		gradients_decend(model, gradients);
+
+		gradients_adam_optimizer(model, gradients, M ,R ,n);
+//		gradients_decend(model, gradients);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
 			status = 0;
-			printf("Iteration: %lu, Loss: %lf, record: %lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
+			printf("Iteration: %lu, Loss: %.20lf, record: %.20lf (iteration: %d)\n", n, loss, record_keeper, record_iteration);
 #ifdef DEBUG_PRINT
 			vector_print_min_max("Wy", model->Wy, F * N);
 			vector_print_min_max("Wi", model->Wi, S * N);
@@ -969,12 +1312,13 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 			lstm_store_progress(n, loss);
 
 
-		i = b + model->params->mini_batch_size;
-		if ( i >= training_points )
+		i = (b + model->params->mini_batch_size) % training_points;
+
+		if ( i < model->params->mini_batch_size)
 			i = 0;
 
 #ifdef DECREASE_LR
-		model->params->learning_rate = model->params->learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
 #endif
 
 		++n;
@@ -983,7 +1327,7 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 	lstm_values_next_cache_free(d_next);
 
 	i = 0;
-	while ( i < training_points + 1) {
+	while ( i < training_points) {
 		lstm_cache_container_free(caches[i]);
 		free(caches[i]);
 		++i;
@@ -1179,6 +1523,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 			printf("=====================================================\n");
 
 			lstm_output_string_two_layers(layer1, layer2, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
+//			lstm_output_string_from_string_two_layers_during_training(layer1, layer2, char_index_mapping, X_train, training_points, NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
 			printf("\n=====================================================\n");
 			

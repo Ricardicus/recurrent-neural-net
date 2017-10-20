@@ -11,7 +11,11 @@
 void 	vectors_add(double*, double*, int);
 void 	vectors_substract(double*, double*, int);
 void 	vectors_add_scalar_multiply(double*, double*, int, double);
+void 	vectors_scalar_multiply(double*, double, int);
 void 	vectors_substract_scalar_multiply(double*, double*, int, double);
+void 	vectors_add_scalar(double*, double, int );
+void 	vectors_div(double*, double*, int);
+void 	vector_sqrt(double*, int);
 //		A = A + B		A,		B,    R, C
 void 	matrix_add(double**, double**, int, int);
 void 	matrix_substract(double**, double**, int, int);

@@ -12,23 +12,23 @@
 #include "assert.h"
 
 
-#define NEURONS												512
+#define NEURONS													64
 
-#define STD_LEARNING_RATE										0.01
-#define STD_MOMENTUM											0.36
-#define STD_LAMBDA											0.05
+#define STD_LEARNING_RATE										0.001
+#define STD_MOMENTUM											0.0
+#define STD_LAMBDA												0.05
 #define SOFTMAX_TEMP											1.0
 #define GRADIENT_CLIP_LIMIT										5.0
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
-#define TWO_LAYERS
-// #define ONE_LAYER
+//#define TWO_LAYERS
+#define ONE_LAYER
 
-// #define GRADIENTS_CLIP
-#define GRADIENTS_FIT
+#define GRADIENTS_CLIP
+//#define GRADIENTS_FIT
 
-#define DECREASE_LR 
+//#define DECREASE_LR 
 
 // #define MODEL_REGULARIZE
 
@@ -43,7 +43,7 @@
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
 
-#define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				100
+#define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
 
 #define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE				1
 #define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE		0
@@ -59,6 +59,9 @@ typedef struct lstm_model_parameters_t {
 	double momentum;
 	double lambda;
 	double softmax_temp;
+
+	double beta1;
+	double beta2;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;

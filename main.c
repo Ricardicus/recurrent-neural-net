@@ -67,6 +67,9 @@ int main(int argc, char *argv[])
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
 
+	params.beta1 = 0.9;
+	params.beta2 = 0.999;
+
 	srand( time ( NULL ) );
 
 	if ( argc < 2 ) {
