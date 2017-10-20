@@ -66,7 +66,6 @@ class lstm:
 		# the computation Ax = y , where x is column vector
 		# is instead computed as xT AT = yT, for some reason
 		# it i MUCH faster this way on my machine.
-		print (np.random.randn(S,N) / np.sqrt(S / 2) )
 
 		self.model = dict(
 			Wf=np.random.randn(S,N) / np.sqrt(S / 2),
@@ -237,9 +236,46 @@ class lstm:
 		for k in grads:
 			m[k] -= learn * grads[k]
 
-	def gradient_update(self, grads, t):
+	def adam_update(self, M, R, grad, t, beta1=.9, beta2=.999):
+
+		model = self.model
+		alpha = self.alpha
+
+		for k in grad:
+
+			try:
+				M[k]
+				R[k]
+			except KeyError:
+				M[k] = 0.
+				R[k] = 0.
+
+			M[k] = exp_running_avg(M[k], grad[k], beta1)
+			R[k] = exp_running_avg(R[k], grad[k]**2, beta2)
+
+			m_k_hat = M[k] / (1. - beta1**(t))
+			r_k_hat = R[k] / (1. - beta2**(t))
+
+			model[k] -= alpha * m_k_hat / (np.sqrt(r_k_hat) + 1e-7)
+
+	def gradient_update(self, grads, t, M, R):
 		# grads must have the keys and values like those returned from backward_propagate
+#		self.adam_update(M, R, grads, t)
+
 		self.gradient_descent(grads, t)
+
+	def print_max_min_parameter(self, key):
+
+		min_p = 100
+		max_p = -100
+		for r in range(len(self.model[key])):
+			for c in range(len(self.model[key][r])):
+				if ( self.model[key][r][c] < min_p ):
+					min_p = self.model[key][r][c]
+				if ( self.model[key][r][c] > max_p ):
+					max_p = self.model[key][r][c]
+
+		return (min_p, max_p)
 
 def get_minibatch(X, y, minibatch_size, shuffle=True):
 	minibatches = []
@@ -271,7 +307,10 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 	y.append(char_to_idx['.'])
 	y = np.array(y)
 
-	D = 128 # the number of neurons to be used
+	M = {}
+	R = {}
+
+	D = 64 # the number of neurons to be used
 	H = len(char_to_idx) # number of features to classify (chars appearing)
 
 	l = lstm(D,H,netname)
@@ -340,19 +379,11 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 				grds[k] += grads[k]
 			n -= 1
 
-		clipped = False
 		for k, v in grds.items():
-			cli = np.clip(v,-5,5)
-			for qq in range(len(cli[0])):
-				if (cli[0][qq] != v[0][qq]):
-					clipped = True
 			grds[k] = np.clip(v, -5,5)
 
-		if clipped:
-			print("Clipped at iteration: " + str(i))
-
 		# Gradient decend
-		l.gradient_update(grds, i)
+		l.gradient_update(grds, i, M, R)
 
 		test_state = l.get_initial_state() # starting state
 
@@ -362,11 +393,12 @@ def train_lstm(filename, netname="LSTM_NeuralNet.txt", read_net=False, filename_
 			test_input = x_mini[0]
 			st = ""
 
-			for q in range(0,50):
+			for q in range(0,200):
 				pr, test_state, ch = l.forward_propagate(test_input, test_state)
 				test_input = np.random.choice(idx_list,p=pr.ravel())
 				st += idx_to_char[test_input]
 			print(st)
+
 			print("===================")
 
 if __name__=="__main__":
