@@ -260,9 +260,9 @@ class lstm:
 
 	def gradient_update(self, grads, t, M, R):
 		# grads must have the keys and values like those returned from backward_propagate
-#		self.adam_update(M, R, grads, t)
+		self.adam_update(M, R, grads, t)
 
-		self.gradient_descent(grads, t)
+#		self.gradient_descent(grads, t)
 
 	def print_max_min_parameter(self, key):
 
