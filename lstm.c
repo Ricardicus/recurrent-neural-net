@@ -726,14 +726,14 @@ void lstm_cache_container_set_start(lstm_values_cache_t * cache)
 	vector_set_to_zero(cache->h, NEURONS); 
 	vector_set_to_zero(cache->c, NEURONS); 
 
-	vector_set_to_zero(cache->c_old, NEURONS); 
+/*	vector_set_to_zero(cache->c_old, NEURONS); 
 	vector_set_to_zero(cache->h_old, NEURONS); 
 	vector_set_to_zero(cache->X, NEURONS); 
 	vector_set_to_zero(cache->hf, NEURONS); 
 	vector_set_to_zero(cache->hi, NEURONS); 
 	vector_set_to_zero(cache->ho, NEURONS); 
 	vector_set_to_zero(cache->hc, NEURONS); 
-	vector_set_to_zero(cache->tanh_c_cache, NEURONS); 
+	vector_set_to_zero(cache->tanh_c_cache, NEURONS);  */
 }
 
 
@@ -874,30 +874,38 @@ void lstm_read_net_two_layers(lstm_model_t* layer1, lstm_model_t* layer2, const 
 
 void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in, int length) 
 {
-	lstm_values_cache_t * cache;
+	lstm_values_cache_t ** caches;
 	int i = 0, F = model->F, index, tmp_count = 0;
 	char input = in;
 
 	double first_layer_input[F];
 
-	cache = lstm_cache_container_init(model->N, model->F);
-	lstm_cache_container_set_start(cache);
+	caches = calloc(2, sizeof(lstm_values_cache_t*));
+
+	caches[0] = lstm_cache_container_init(model->N, model->F);
+	caches[1] = lstm_cache_container_init(model->N, model->F);
+
+	lstm_cache_container_set_start(caches[0]);
 	while ( i < length ) {
 		index = set_char_to_indx(char_index_mapping,input);
 
 		tmp_count = 0;
 		while ( tmp_count < F ){
-			first_layer_input[tmp_count] = (index == tmp_count ? 1.0 : 0.0);
+			first_layer_input[tmp_count] = 0.0;
 			++tmp_count;
 		}
 
-		lstm_forward_propagate(model, first_layer_input, cache, cache, 1);
-		input = set_probability_choice(char_index_mapping, cache->probs);
+		first_layer_input[index] = 1.0;
+
+		lstm_forward_propagate(model, first_layer_input, caches[i%2], caches[(i+1)%2], 1);
+		input = set_probability_choice(char_index_mapping, caches[(i+1)%2]->probs);
 		printf ( "%c", input );
 		++i;
 	}
 
-	lstm_cache_container_free(cache);
+	lstm_cache_container_free(caches[0]);
+	lstm_cache_container_free(caches[1]);
+	free(caches);
 }
 
 void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, set_T* char_index_mapping, char in, int length) 
@@ -1195,15 +1203,18 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 		lstm_cache_container_set_start(caches[0]);
 
 		q = 0;
+//		printf("\n[%d] ", i);
 		while ( q < trailing ) {
-//			printf("%c ", set_indx_to_char(char_index_mapping, X_train[e1])) ;
 
 			tmp_count = 0;
 			while ( tmp_count < F ){
-				first_layer_input[tmp_count] = (tmp_count == X_train[ i ] ? 1.0 : 0.0);
+				first_layer_input[tmp_count] = 0.0;
 				++tmp_count;
 			}
 
+			first_layer_input[X_train[i]] = 1.0;
+
+//			printf("%c ", set_indx_to_char(char_index_mapping, X_train[i])) ;
 			lstm_forward_propagate(model, first_layer_input, caches[q], caches[q+1], 1);
 			loss_tmp += cross_entropy( caches[q+1]->probs, Y_train[i]);
 			++i; ++q;
@@ -1222,25 +1233,19 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 
 		if ( loss < record_keeper ){
 			record_keeper = loss;
-			
-			/* if ( n - record_iteration > model->params->learning_rate_decrease_threshold ) {
-				model->params->learning_rate *= model->params->learning_rate_decrease;
-				printf("learning_rate: %lf\n", model->params->learning_rate);
-			} */ 
 
 			record_iteration = n;
-
 		}
 
 		lstm_zero_the_model(gradients);
 
 		lstm_zero_d_next(d_next, F);
-
+//		printf("%d\n",q);
 		while ( q > 0 ) {
 
 			lstm_zero_the_model(gradients_entry);
-
-			lstm_backward_propagate(model, caches[q]->probs, Y_train[ i - 1 ], d_next, caches[q], gradients_entry, d_next);
+//			printf("%c ", set_indx_to_char(char_index_mapping, Y_train[i - 1])) ;
+			lstm_backward_propagate(model, caches[q]->probs, Y_train[ i - 1], d_next, caches[q], gradients_entry, d_next);
 
 			//gradients_fit(gradients_entry, model->params->gradient_clip_limit);
 			sum_gradients(gradients, gradients_entry);
