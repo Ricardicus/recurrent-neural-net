@@ -22,15 +22,17 @@
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
-//#define TWO_LAYERS
-#define ONE_LAYER
+#define LAYERS  												1
 
-#define GRADIENTS_CLIP
-//#define GRADIENTS_FIT
+#define GRADIENTS_CLIP											1
+#define GRADIENTS_FIT											0
 
 //#define DECREASE_LR 
 
-// #define MODEL_REGULARIZE
+#define MODEL_REGULARIZE										0
+	
+#define OPTIMIZE_ADAM											0
+#define OPTIMIZE_GRADIENT_DESCENT								1
 
 // #define DEBUG_PRINT
 
@@ -62,6 +64,15 @@ typedef struct lstm_model_parameters_t {
 
 	double beta1;
 	double beta2;
+
+	int layers;
+
+	int gradient_clip;
+	int gradient_fit;
+
+	int optimizer;
+
+	int model_regularize;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;

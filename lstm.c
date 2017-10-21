@@ -910,13 +910,19 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 
 void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, set_T* char_index_mapping, char in, int length) 
 {
-	lstm_values_cache_t * caches_layer_one, *caches_layer_two;
+	lstm_values_cache_t **caches_layer_ones, **caches_layer_twos;
 	int i = 0, count, index;
 	char input = in;
 	int F = layer1->F;
 
-	caches_layer_one = lstm_cache_container_init(layer1->N, layer1->F);
-	caches_layer_two = lstm_cache_container_init(layer2->N, layer2->F);
+	caches_layer_ones = calloc(2, sizeof(lstm_values_cache_t*));
+	caches_layer_twos = calloc(2, sizeof(lstm_values_cache_t*));
+
+	caches_layer_ones[0] = lstm_cache_container_init(layer1->N, layer1->F);
+	caches_layer_ones[1] = lstm_cache_container_init(layer1->N, layer1->F);
+
+	caches_layer_twos[0] = lstm_cache_container_init(layer2->N, layer2->F);
+	caches_layer_twos[1] = lstm_cache_container_init(layer2->N, layer2->F);
 
 	double first_layer_input[F];
 
@@ -930,16 +936,22 @@ void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, s
 			++count;
 		}
 
-		lstm_forward_propagate(layer2, first_layer_input , caches_layer_two, caches_layer_two, 0);
-		lstm_forward_propagate(layer1, caches_layer_two->probs , caches_layer_one, caches_layer_one, 1);
+		lstm_forward_propagate(layer2, first_layer_input , caches_layer_twos[i%2], caches_layer_twos[(i+1)%2], 0);
+		lstm_forward_propagate(layer1, caches_layer_twos[i%2]->probs , caches_layer_ones[i%2], caches_layer_ones[(i+1)%2], 1);
 //		set_print(char_index_mapping, caches_layer_one->probs);
-		input = set_probability_choice(char_index_mapping, caches_layer_one->probs);
+		input = set_probability_choice(char_index_mapping, caches_layer_ones[(i+1)%2]->probs);
 		printf( "%c", input );
 		++i;
 	}
 
-	lstm_cache_container_free(caches_layer_one);
-	lstm_cache_container_free(caches_layer_two);
+	lstm_cache_container_free(caches_layer_ones[0]);
+	lstm_cache_container_free(caches_layer_ones[1]);
+
+	lstm_cache_container_free(caches_layer_twos[0]);
+	lstm_cache_container_free(caches_layer_twos[1]);
+
+	free(caches_layer_ones);
+	free(caches_layer_twos);
 }
 
 
@@ -1179,10 +1191,6 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 		++i;
 	}
 
-#ifdef GRADIENTS_CLIP
-	unsigned long clip_count = 0;
-#endif
-
 	lstm_cache_container_set_start(caches[0]);
 
 	i = 0; b = 0;
@@ -1252,35 +1260,28 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 			i--; q--;
 		}
 
-#ifdef MODEL_REGULARIZE
-		lstm_model_regularization(model, gradients);
-#endif
-
-#ifdef GRADIENTS_CLIP
-		if ( gradients_clip(gradients, model->params->gradient_clip_limit) ){
-#ifdef DEBUG_PRINT	
-				printf("Clipped the gradients at iteration: %lu\n", n);
-#endif
-			clip_count++;
+		if ( model->params->model_regularize )
+			lstm_model_regularization(model, gradients);
 
 
-#ifdef GRADIENT_CLIP_DECREASE_LR
-			model->params->learning_rate *= 0.99;
-			printf("New learning rate: %.20lf\n", model->params->learning_rate);
-#endif				
+		if ( model->params->gradient_clip )
+			gradients_clip(gradients, model->params->gradient_clip_limit);
 
 
-			status = 1;
-		} 
-#endif
-#ifdef GRADIENTS_FIT
-		if ( gradients_fit(gradients, model->params->gradient_clip_limit) ){
-			status = 1;
-		} 	
-#endif
+		if ( model->params->gradient_fit )
+			gradients_fit(gradients, model->params->gradient_clip_limit);
 
-		gradients_adam_optimizer(model, gradients, M ,R ,n);
-//		gradients_decend(model, gradients);
+
+		switch ( model->params->optimizer ) {
+		case OPTIMIZE_ADAM:
+			gradients_adam_optimizer(model, gradients, M, R, n);
+		break;
+		case OPTIMIZE_GRADIENT_DESCENT:
+			gradients_decend(model, gradients);
+		break;
+		default:
+		break;
+		}
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
@@ -1341,6 +1342,9 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 	lstm_free_model(gradients_entry);
 	lstm_free_model(gradients);
 
+	lstm_free_model(M);
+	lstm_free_model(R);
+
 	free(tmp);
 
 }
@@ -1350,7 +1354,7 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, lstm_model_t* layer2, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
 	int N,F,S, status = 0;
-	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count;
+	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count, trailing;
 	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
 	double initial_learning_rate = model->params->learning_rate;
@@ -1362,14 +1366,19 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	lstm_values_next_cache_t *d_next_layer_one = NULL;
 	lstm_values_next_cache_t *d_next_layer_two = NULL;
 	
-	lstm_model_t *gradients_layer_one, *gradients_entry_layer_one = NULL;
-	lstm_model_t *gradients_layer_two, *gradients_entry_layer_two = NULL;
+	lstm_model_t *gradients_layer_one, *gradients_entry_layer_one, *M1, *R1 = NULL;
+	lstm_model_t *gradients_layer_two, *gradients_entry_layer_two, *M2, *R2 = NULL;
 
 	N = model->N;
 	F = model->F;
 	S = model->S;
 
 	double first_layer_input[F];
+
+	lstm_zero_the_model(M1);
+	lstm_zero_the_model(R1);
+	lstm_zero_the_model(M2);
+	lstm_zero_the_model(R2);
 
 	caches_layer_one = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 	if ( caches_layer_one == NULL ) 
@@ -1386,16 +1395,17 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	lstm_values_next_cache_init(&d_next_layer_two, N, F);	
 	lstm_init_model(F, N, &gradients_entry_layer_two, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 
+	lstm_init_model(F, N, &M1, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+	lstm_init_model(F, N, &R1, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+	lstm_init_model(F, N, &M2, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+	lstm_init_model(F, N, &R2, YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+
 	i = 0;
-	while ( i < model->params->mini_batch_size ){
+	while ( i < model->params->mini_batch_size + 1 ){
 		caches_layer_one[i] = lstm_cache_container_init(N, F);
 		caches_layer_two[i] = lstm_cache_container_init(N, F);
 		++i;
 	}
-
-#ifdef GRADIENTS_CLIP
-	unsigned long clip_count = 0;
-#endif
 
 	i = 0; b = 0;
 	while ( n < iterations ){
@@ -1410,17 +1420,25 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 		unsigned int check = i % training_points;
 
-		while ( q < model->params->mini_batch_size ) {
-			e1 = q % model->params->mini_batch_size;
-			e2 = ( e1 + 1 ) % model->params->mini_batch_size;
+		trailing = model->params->mini_batch_size;
+
+		if ( i + model->params->mini_batch_size >= training_points ) {
+			trailing = training_points - i;
+		}
+
+		while ( q < trailing ) {
+			e1 = q;
+			e2 = q+1;
 			
 			e3 = i % training_points;
 
 			tmp_count = 0;
 			while ( tmp_count < F ){
-				first_layer_input[tmp_count] = tmp_count == X_train[e3] ? 1.0 : 0.0;
+				first_layer_input[tmp_count] = 0.0; 
 				++tmp_count;
 			}
+
+			first_layer_input[X_train[e3]] = 1.0;
 			/* Layer numbering starts at the output point of the net */
 			lstm_forward_propagate(layer2, first_layer_input, caches_layer_two[e1], caches_layer_two[e2], 0);
 			lstm_forward_propagate(layer1, caches_layer_two[e2]->probs, caches_layer_one[e1], caches_layer_one[e2], 1);
@@ -1472,50 +1490,27 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		assert(check == e3);
 
 
-#ifdef GRADIENTS_CLIP
-		if ( gradients_clip(gradients_layer_one, model->params->gradient_clip_limit) ){
-#ifdef DEBUG_PRINT	
-				printf("Clipped the gradients at iteration: %lu\n", n);
-#endif
-			clip_count++;
+		if ( model->params->gradient_clip )
+			gradients_clip(gradients_layer_two, model->params->gradient_clip_limit);
 
 
-#ifdef GRADIENT_CLIP_DECREASE_LR
-			model->params->learning_rate *= 0.99;
-			printf("New learning rate: %.20lf\n", model->params->learning_rate);
-#endif				
+		if ( model->params->gradient_fit )
+			gradients_fit(gradients_layer_one, model->params->gradient_clip_limit);
 
 
-			status = 1;
-		} 
-#endif
+		switch ( model->params->optimizer ) {
+		case OPTIMIZE_ADAM:
+			gradients_adam_optimizer(layer1, gradients_layer_one, M1, R1, n);
+			gradients_adam_optimizer(layer2, gradients_layer_two, M2, R2, n);
+		break;
+		case OPTIMIZE_GRADIENT_DESCENT:
+			gradients_decend(layer1, gradients_layer_one);
+			gradients_decend(layer2, gradients_layer_two);
+		break;
+		default:
+		break;
+		}
 
-#ifdef GRADIENTS_CLIP
-		if ( gradients_clip(gradients_layer_two, model->params->gradient_clip_limit) ){
-#ifdef DEBUG_PRINT	
-				printf("Clipped the gradients at iteration: %lu\n", n);
-#endif
-			clip_count++;
-			
-			status = 1;
-		} 
-#endif
-
-
-#ifdef GRADIENTS_FIT
-		if ( gradients_fit(gradients_layer_one, model->params->gradient_clip_limit) ){
-			status = 1;
-		} 	
-#endif
-
-#ifdef GRADIENTS_FIT
-		if ( gradients_fit(gradients_layer_two, model->params->gradient_clip_limit) ){
-			status = 1;
-		} 	
-#endif
-
-		gradients_decend(layer1, gradients_layer_one);
-		gradients_decend(layer2, gradients_layer_two);
 
 		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
 
@@ -1572,6 +1567,11 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		++i;
 	}
 
+
+	lstm_free_model(M2);
+	lstm_free_model(R2);
+	lstm_free_model(R1);
+	lstm_free_model(M1);
 	lstm_free_model(gradients_entry_layer_one);
 	lstm_free_model(gradients_layer_one);
 	lstm_free_model(gradients_entry_layer_two);
