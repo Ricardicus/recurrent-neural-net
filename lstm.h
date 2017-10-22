@@ -12,7 +12,7 @@
 #include "assert.h"
 
 
-#define NEURONS													64
+#define NEURONS												64
 
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
@@ -22,7 +22,7 @@
 #define MINI_BATCH_SIZE											10
 #define LOSS_MOVING_AVG											0.01
 
-#define LAYERS  												1
+#define LAYERS  												2
 
 #define GRADIENTS_CLIP											1
 #define GRADIENTS_FIT											0
@@ -41,7 +41,7 @@
 #define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE	1000000							
 
 // #define STORE_DURING_TRANING
-#define PRINT_EVERY_X_ITERATIONS								200
+#define PRINT_EVERY_X_ITERATIONS								1000
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
 

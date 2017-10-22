@@ -926,19 +926,24 @@ void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, s
 
 	double first_layer_input[F];
 
+	lstm_cache_container_set_start(caches_layer_twos[0]);
+	lstm_cache_container_set_start(caches_layer_ones[0]);
+
 	while ( i < length ) {
 
 		index = set_char_to_indx(char_index_mapping,input);
 
 		count = 0;
 		while ( count < F ) {
-			first_layer_input[count] = count == index ? 1.0 : 0.0;
+			first_layer_input[count] = 0.0;
 			++count;
 		}
 
+		first_layer_input[index] = 1.0;
+
 		lstm_forward_propagate(layer2, first_layer_input , caches_layer_twos[i%2], caches_layer_twos[(i+1)%2], 0);
-		lstm_forward_propagate(layer1, caches_layer_twos[i%2]->probs , caches_layer_ones[i%2], caches_layer_ones[(i+1)%2], 1);
-//		set_print(char_index_mapping, caches_layer_one->probs);
+		lstm_forward_propagate(layer1, caches_layer_twos[(i+1)%2]->probs , caches_layer_ones[i%2], caches_layer_ones[(i+1)%2], 1);
+
 		input = set_probability_choice(char_index_mapping, caches_layer_ones[(i+1)%2]->probs);
 		printf( "%c", input );
 		++i;
@@ -1375,11 +1380,6 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 	double first_layer_input[F];
 
-	lstm_zero_the_model(M1);
-	lstm_zero_the_model(R1);
-	lstm_zero_the_model(M2);
-	lstm_zero_the_model(R2);
-
 	caches_layer_one = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 	if ( caches_layer_one == NULL ) 
 		return;
@@ -1428,7 +1428,7 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 
 		while ( q < trailing ) {
 			e1 = q;
-			e2 = q+1;
+			e2 = q + 1;
 			
 			e3 = i % training_points;
 
@@ -1446,14 +1446,14 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 			++i; ++q;
 		}
 
-		loss_tmp /= (q+1); 
+		loss_tmp /= (q+1);
 
 		if ( loss < 0 )
 			loss = loss_tmp;
 
 		loss = loss_tmp * model->params->loss_moving_avg + (1 - model->params->loss_moving_avg) * loss;
 
-		if ( n == 0 ) 
+		if ( n == 0 )
 			record_keeper = loss;
 
 		if ( loss < record_keeper ){
@@ -1468,8 +1468,8 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		lstm_zero_d_next(d_next_layer_two, F);
  
 		while ( q > 0 ) {
-			e1 = q % model->params->mini_batch_size;
-			e2 = ( model->params->mini_batch_size + e1 - 1 ) % model->params->mini_batch_size;
+			e1 = q;
+			e2 = q - 1;
 
 			e3 = ( training_points + i - 1 ) % training_points;
 
@@ -1523,7 +1523,6 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 			printf("=====================================================\n");
 
 			lstm_output_string_two_layers(layer1, layer2, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
-//			lstm_output_string_from_string_two_layers_during_training(layer1, layer2, char_index_mapping, X_train, training_points, NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING);
 
 			printf("\n=====================================================\n");
 			
@@ -1539,11 +1538,13 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);
 
-
-		i = b + model->params->mini_batch_size;
-		if ( i >= training_points ){
-			i = 0;
+		if ( b + model->params->mini_batch_size > training_points )
 			epoch++;
+
+		i = (b + model->params->mini_batch_size) % training_points;
+
+		if ( i < model->params->mini_batch_size){
+			i = 0;
 		}
 
 
