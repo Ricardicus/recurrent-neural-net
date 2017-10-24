@@ -904,7 +904,9 @@ void lstm_output_string(lstm_model_t *model, set_T* char_index_mapping, char in,
 	}
 
 	lstm_cache_container_free(caches[0]);
+	free(caches[0]);
 	lstm_cache_container_free(caches[1]);
+	free(caches[0]);
 	free(caches);
 }
 
@@ -950,10 +952,14 @@ void lstm_output_string_two_layers(lstm_model_t *layer1, lstm_model_t *layer2, s
 	}
 
 	lstm_cache_container_free(caches_layer_ones[0]);
+	free(caches_layer_ones[0]);
 	lstm_cache_container_free(caches_layer_ones[1]);
+	free(caches_layer_ones[1]);
 
 	lstm_cache_container_free(caches_layer_twos[0]);
+	free(caches_layer_twos[0]);
 	lstm_cache_container_free(caches_layer_twos[1]);
+	free(caches_layer_twos[1]);
 
 	free(caches_layer_ones);
 	free(caches_layer_twos);
@@ -1010,6 +1016,8 @@ void lstm_output_string_from_string(lstm_model_t *model, set_T* char_index_mappi
 	printf("\n");
 
 	lstm_cache_container_free(cache);
+
+	free(cache);
 }
 
 
@@ -1069,7 +1077,9 @@ void lstm_output_string_from_string_two_layers(lstm_model_t *layer1, lstm_model_
 	printf("\n");
 
 	lstm_cache_container_free(caches_layer_one);
+	free(caches_layer_one);
 	lstm_cache_container_free(caches_layer_two);
+	free(caches_layer_two);
 }
 
 
@@ -1123,7 +1133,9 @@ void lstm_output_string_from_string_two_layers_during_training(lstm_model_t *lay
 	}
 
 	lstm_cache_container_free(caches_layer_one);
+	free(caches_layer_one);
 	lstm_cache_container_free(caches_layer_two);
+	free(caches_layer_two);
 }
 
 void lstm_store_progress(unsigned int n, double loss)
@@ -1354,7 +1366,6 @@ void lstm_train_the_net(lstm_model_t* model, set_T* char_index_mapping, unsigned
 
 }
 
-
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, lstm_model_t* layer2, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations)
 {
@@ -1582,6 +1593,392 @@ void lstm_train_the_net_two_layers(lstm_model_t* model, lstm_model_t* layer1, ls
 	free(caches_layer_two);
 
 }
+
+void lstm_init_fail(const char * msg)
+{
+	printf("%s",msg);
+	exit(-1);
+}
+
+void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_mapping, int first, int numbers_to_display, int layers)
+{
+	lstm_values_cache_t ***caches_layer;
+	int i = 0, count, index, p = 0, b = 0;
+	char input = set_char_to_indx(char_index_mapping, first);
+	int F = model_layers[0]->F;
+
+	caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
+
+	if ( caches_layer == NULL )
+		lstm_init_fail("Failed to output string\n");
+
+	p = 0;
+	while ( p < layers ) {
+		caches_layer[p] = calloc(2, sizeof(lstm_values_cache_t*));
+		b = 0;
+		while ( b < 2 ) {
+			caches_layer[p][b] = lstm_cache_container_init(model_layers[p]->N, model_layers[p]->F); 
+			++b;
+		}
+		++p;
+	}
+
+	double first_layer_input[F];
+
+	lstm_cache_container_set_start(caches_layer[0][0]);
+	lstm_cache_container_set_start(caches_layer[0][0]);
+
+	while ( i < numbers_to_display ) {
+
+		index = set_char_to_indx(char_index_mapping,input);
+
+		count = 0;
+		while ( count < F ) {
+			first_layer_input[count] = 0.0;
+			++count;
+		}
+
+		first_layer_input[index] = 1.0;
+
+		p = layers - 1;
+		lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);
+
+		if ( p > 0 ) {
+			--p;
+			while ( p >= 0 ) {
+				lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);	
+				--p;
+			}
+			p = 0;
+		}
+
+
+		input = set_probability_choice(char_index_mapping, caches_layer[0][(i+1)%2]->probs);
+		printf ( "%c", input );
+
+		++i;
+	}
+
+	p = 0;
+	while ( p < layers ) {
+
+		b = 0;
+		while ( b < 2 ) {
+			lstm_cache_container_free( caches_layer[p][b]);
+			free(caches_layer[p][b]);
+			++b;
+		}
+
+		++p;
+	}
+
+	free(caches_layer);
+}
+
+//						model, number of training points, X_train, Y_train, number of iterations
+void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations, int layers)
+{
+	int N,F,S, status = 0, p = 0;
+	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count, trailing;
+	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
+	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
+	double initial_learning_rate = model->params->learning_rate;
+	time_t time_iter;
+	char time_buffer[40];
+
+	lstm_values_cache_t ***cache_layers;
+
+	lstm_values_next_cache_t **d_next_layers;
+	
+	lstm_model_t **gradient_layers, **gradient_layers_entry,  **M_layers, **R_layers;
+
+	N = model->N;
+	F = model->F;
+	S = model->S;
+
+	double first_layer_input[F];
+
+	i = 0;
+	cache_layers = calloc(layers, sizeof(lstm_values_cache_t**));
+
+	if ( cache_layers == NULL )
+		lstm_init_fail("Failed to allocate memory for the caches\n");
+
+	while ( i < layers ) {
+		cache_layers[i] = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
+		if ( cache_layers[i] == NULL )
+			lstm_init_fail("Failed to allocate memory for the caches\n");
+
+		n = 0;
+		while ( n < model->params->mini_batch_size + 1 ){
+			cache_layers[i][n] = lstm_cache_container_init(N, F);
+			if ( cache_layers[i][n] == NULL )
+				lstm_init_fail("Failed to allocate memory for the caches\n");		
+			++n;
+		}
+
+		++i;
+	}
+
+	gradient_layers = calloc(layers, sizeof(lstm_model_t*) );
+	if ( gradient_layers == NULL )
+		lstm_init_fail("Failed to allocate memory for gradients\n");
+
+	gradient_layers_entry = calloc(layers, sizeof(lstm_model_t*) );
+	if ( gradient_layers == NULL )
+		lstm_init_fail("Failed to allocate memory for gradients\n");
+
+	d_next_layers = calloc(layers, sizeof(lstm_values_next_cache_t *));
+	if ( gradient_layers == NULL )
+		lstm_init_fail("Failed to allocate memory for backprop through time deltas\n");
+
+	if ( model->params->optimizer == OPTIMIZE_ADAM ) {
+
+		M_layers = calloc(layers, sizeof(lstm_model_t*) );
+		R_layers = calloc(layers, sizeof(lstm_model_t*) );
+
+	}
+
+	if ( M_layers == NULL || R_layers == NULL ) {
+		lstm_init_fail("Failed to init M or R dicts for adam optimization\n");
+	}
+
+	i = 0;
+	while ( i < layers ) {
+		lstm_init_model(F, N, &gradient_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+		lstm_values_next_cache_init(&d_next_layers[i], N, F);
+
+		if ( model->params->optimizer == OPTIMIZE_ADAM ) {
+			lstm_init_model(F, N, &M_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+			lstm_init_model(F, N, &R_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+		}
+
+		++i;
+	}
+
+	i = 0; b = 0;
+	while ( n < iterations ){
+		b = i;
+
+		loss_tmp = 0.0;
+
+		q = 0;
+
+		while ( q < layers ) {
+			lstm_cache_container_set_start(cache_layers[q][0]);
+			++q;
+		}
+
+		unsigned int check = i % training_points;
+
+		trailing = model->params->mini_batch_size;
+
+		if ( i + model->params->mini_batch_size >= training_points ) {
+			trailing = training_points - i;
+		}
+
+		q = 0;
+
+		while ( q < trailing ) {
+			e1 = q;
+			e2 = q + 1;
+			
+			e3 = i % training_points;
+
+			tmp_count = 0;
+			while ( tmp_count < F ){
+				first_layer_input[tmp_count] = 0.0; 
+				++tmp_count;
+			}
+
+			first_layer_input[X_train[e3]] = 1.0;
+
+
+			/* Layer numbering starts at the output point of the net */
+			p = layers - 1;
+			lstm_forward_propagate(model_layers[p], first_layer_input, cache_layers[p][e1], cache_layers[p][e2], p == 0);
+
+			if ( p > 0 ) {
+				--p;
+				while ( p >= 0 ) {
+					lstm_forward_propagate(model_layers[p], first_layer_input, cache_layers[p][e1], cache_layers[p][e2], p == 0);	
+					--p;
+				}
+				p = 0;
+			}
+
+			loss_tmp += cross_entropy( cache_layers[p][e2]->probs, Y_train[e3]);
+			++i; ++q;
+		}
+
+		loss_tmp /= (q+1);
+
+		if ( loss < 0 )
+			loss = loss_tmp;
+
+		loss = loss_tmp * model->params->loss_moving_avg + (1 - model->params->loss_moving_avg) * loss;
+
+		if ( n == 0 )
+			record_keeper = loss;
+
+		if ( loss < record_keeper ){
+			record_keeper = loss;
+			record_iteration = n;
+		}
+
+		p = 0;
+		while ( p < layers ) {
+			lstm_zero_the_model(gradient_layers[p]);
+			lstm_zero_d_next(d_next_layers[p], F);
+			++p;
+		}
+ 
+		while ( q > 0 ) {
+			e1 = q;
+			e2 = q - 1;
+
+			e3 = ( training_points + i - 1 ) % training_points;
+
+			p = 0;
+			while ( p < layers ) {
+				lstm_zero_the_model(gradient_layers_entry[p]);
+				++p;
+			}
+
+			p = 0;
+			lstm_backward_propagate(model_layers[p], cache_layers[p][e1]->probs, layers == 0 ? -1 : Y_train[e3], d_next_layers[p], cache_layers[p][e1], gradient_layers_entry[0], d_next_layers[p]);
+
+			if ( p < layers ) {
+				++p;
+				while ( p < layers ) {
+					lstm_backward_propagate(model_layers[p], d_next_layers[p-1]->dldY_pass, -1, d_next_layers[p], cache_layers[p][e1], gradient_layers_entry[p], d_next_layers[p]);	
+					++p;
+				}
+			}
+
+			p = 0; 
+
+			while ( p < layers ) {
+				sum_gradients(gradient_layers[p], gradient_layers_entry[p]);
+				++p;
+			}
+
+			i--; q--;
+		}
+
+		assert(check == e3);
+
+
+		p = 0;
+		while ( p < layers ) {
+
+			if ( model->params->gradient_clip )
+				gradients_clip(gradient_layers[p], model->params->gradient_clip_limit);
+
+			if ( model->params->gradient_fit )
+				gradients_fit(gradient_layers[p], model->params->gradient_clip_limit);
+
+			++p;
+		}
+
+		p = 0;
+
+		switch ( model->params->optimizer ) {
+		case OPTIMIZE_ADAM:
+			while ( p < layers ) {
+				gradients_adam_optimizer(gradient_layers[p], gradient_layers[p], M_layers[p], R_layers[p], n);
+				++p;
+			}
+		break;
+		case OPTIMIZE_GRADIENT_DESCENT:
+			while ( p < layers ) {
+				gradients_decend(model_layers[p], gradient_layers[p]);
+				++p;
+			}
+		break;
+		default:
+		break;
+		}
+
+
+		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
+
+			status = 0;
+			memset(time_buffer, '\0', sizeof time_buffer);
+			time(&time_iter);
+			strftime(time_buffer, sizeof time_buffer, "%X", localtime(&time_iter));
+
+			printf("%s Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", time_buffer, n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
+			printf("=====================================================\n");
+
+			lstm_output_string_layers(model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
+
+			printf("\n=====================================================\n");
+			
+			// Flushing stdout
+			fflush(stdout);
+		}
+
+#ifdef STORE_DURING_TRANING
+		if ( !(n % STORE_EVERY_X_ITERATIONS ) && n > 0 )
+			lstm_store_net_two_layers(layer1, layer2, STD_LOADABLE_NET_NAME);
+#endif
+
+		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
+			lstm_store_progress(n, loss);
+
+		if ( b + model->params->mini_batch_size > training_points )
+			epoch++;
+
+		i = (b + model->params->mini_batch_size) % training_points;
+
+		if ( i < model->params->mini_batch_size){
+			i = 0;
+		}
+
+
+#ifdef DECREASE_LR
+		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+//		printf("learning rate: %lf\n", model->params->learning_rate);
+#endif
+
+		++n;
+	}
+
+	p = 0;
+
+	while ( p < layers ) {
+		lstm_values_next_cache_free(d_next_layers[p]);
+
+		i = 0;
+		while ( i < model->params->mini_batch_size) {
+			lstm_cache_container_free(cache_layers[p][i]);
+			free(cache_layers[p][i]);
+			lstm_cache_container_free(cache_layers[p][i]);
+			free(cache_layers[p][i]);
+			++i;
+		}
+
+		lstm_free_model(M_layers[p]);
+		lstm_free_model(R_layers[p]);
+
+		lstm_free_model(gradient_layers_entry[p]);
+		lstm_free_model(gradient_layers[p]);
+
+		++p;
+	}
+
+	free(cache_layers);
+	free(gradient_layers);
+	free(M_layers);
+	free(R_layers);
+
+}
+
+
+
+
+
 
 
 
