@@ -182,6 +182,8 @@ void lstm_store_progress(unsigned int, double);
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train_the_net(lstm_model_t*, set_T*, unsigned int, int*, int*, unsigned long);
 void lstm_train_the_net_two_layers(lstm_model_t*, lstm_model_t*, lstm_model_t*, set_T*, unsigned int, int*, int*, unsigned long);
+
+void lstm_train(lstm_model_t*, lstm_model_t**, set_T*, unsigned int, int*, int*, unsigned long, int);
 // Used to output a given number of characters from the net based on an input char
 void lstm_output_string(lstm_model_t *, set_T*, char, int);
 void lstm_output_string_from_string(lstm_model_t *, set_T*, char *, int); 

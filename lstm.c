@@ -1652,8 +1652,7 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 			p = 0;
 		}
 
-
-		input = set_probability_choice(char_index_mapping, caches_layer[0][(i+1)%2]->probs);
+		input = set_probability_choice(char_index_mapping, caches_layer[p][(i+1)%2]->probs);
 		printf ( "%c", input );
 
 		++i;
@@ -1668,7 +1667,7 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 			free(caches_layer[p][b]);
 			++b;
 		}
-
+		free(caches_layer[p]);
 		++p;
 	}
 
@@ -1709,12 +1708,12 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( cache_layers[i] == NULL )
 			lstm_init_fail("Failed to allocate memory for the caches\n");
 
-		n = 0;
-		while ( n < model->params->mini_batch_size + 1 ){
-			cache_layers[i][n] = lstm_cache_container_init(N, F);
-			if ( cache_layers[i][n] == NULL )
+		p = 0;
+		while ( p < model->params->mini_batch_size + 1 ){
+			cache_layers[i][p] = lstm_cache_container_init(N, F);
+			if ( cache_layers[i][p] == NULL )
 				lstm_init_fail("Failed to allocate memory for the caches\n");		
-			++n;
+			++p;
 		}
 
 		++i;
@@ -1725,11 +1724,11 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		lstm_init_fail("Failed to allocate memory for gradients\n");
 
 	gradient_layers_entry = calloc(layers, sizeof(lstm_model_t*) );
-	if ( gradient_layers == NULL )
+	if ( gradient_layers_entry == NULL )
 		lstm_init_fail("Failed to allocate memory for gradients\n");
 
 	d_next_layers = calloc(layers, sizeof(lstm_values_next_cache_t *));
-	if ( gradient_layers == NULL )
+	if ( d_next_layers == NULL )
 		lstm_init_fail("Failed to allocate memory for backprop through time deltas\n");
 
 	if ( model->params->optimizer == OPTIMIZE_ADAM ) {
@@ -1746,6 +1745,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	i = 0;
 	while ( i < layers ) {
 		lstm_init_model(F, N, &gradient_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+		lstm_init_model(F, N, &gradient_layers_entry[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
 		lstm_values_next_cache_init(&d_next_layers[i], N, F);
 
 		if ( model->params->optimizer == OPTIMIZE_ADAM ) {
@@ -1793,7 +1793,6 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 			first_layer_input[X_train[e3]] = 1.0;
 
-
 			/* Layer numbering starts at the output point of the net */
 			p = layers - 1;
 			lstm_forward_propagate(model_layers[p], first_layer_input, cache_layers[p][e1], cache_layers[p][e2], p == 0);
@@ -1832,7 +1831,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			lstm_zero_d_next(d_next_layers[p], F);
 			++p;
 		}
- 
+
 		while ( q > 0 ) {
 			e1 = q;
 			e2 = q - 1;
@@ -1844,6 +1843,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 				lstm_zero_the_model(gradient_layers_entry[p]);
 				++p;
 			}
+
 
 			p = 0;
 			lstm_backward_propagate(model_layers[p], cache_layers[p][e1]->probs, layers == 0 ? -1 : Y_train[e3], d_next_layers[p], cache_layers[p][e1], gradient_layers_entry[0], d_next_layers[p]);
@@ -1868,7 +1868,6 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 		assert(check == e3);
 
-
 		p = 0;
 		while ( p < layers ) {
 
@@ -1886,7 +1885,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		switch ( model->params->optimizer ) {
 		case OPTIMIZE_ADAM:
 			while ( p < layers ) {
-				gradients_adam_optimizer(gradient_layers[p], gradient_layers[p], M_layers[p], R_layers[p], n);
+				gradients_adam_optimizer(model_layers[p], gradient_layers[p], M_layers[p], R_layers[p], n);
 				++p;
 			}
 		break;
@@ -1918,11 +1917,6 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			// Flushing stdout
 			fflush(stdout);
 		}
-
-#ifdef STORE_DURING_TRANING
-		if ( !(n % STORE_EVERY_X_ITERATIONS ) && n > 0 )
-			lstm_store_net_two_layers(layer1, layer2, STD_LOADABLE_NET_NAME);
-#endif
 
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);

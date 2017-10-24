@@ -44,7 +44,7 @@ void store_the_net_one_layer(int signo)
 
 int main(int argc, char *argv[])
 {
-	int i = 0, c;
+	int i = 0, c, p = 0;
 	size_t file_size = 0, sz = 0;
 	int *X_train, *Y_train;
 	char * clean;
@@ -162,6 +162,42 @@ int main(int argc, char *argv[])
 			lstm_train_the_net_two_layers(layer1, layer1, layer2, &set, file_size, X_train, Y_train, ITERATIONS);
 		}
 
+		free(X_train);
+
+	} else {
+
+		int layers = LAYERS;
+
+		params.layers = layers;
+
+		lstm_model_t ** model_layers = calloc(layers, sizeof(lstm_model_t*));
+
+		if ( model_layers == NULL ) {
+			printf("Error in init!\n");
+			exit(-1);
+		}
+
+		p = 0;
+
+		while ( p < layers ) {
+			lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);	
+			++p;
+		}
+
+		printf("LSTM Neural net compiled: %s %s, %d Layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, layers, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+
+		lstm_train(
+			model_layers[0],
+			model_layers,
+			&set,
+			file_size,
+			X_train,
+			Y_train,
+			ITERATIONS,
+			layers
+		);
+
+		free(model_layers);
 		free(X_train);
 
 	}
