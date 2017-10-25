@@ -2,11 +2,10 @@
 /* 
 * Dealing with FC layers, forward and backward
 *
-* ==================== WARNING ====================
+* ==================== NOTE: ====================
 * 	The caller should have thought about the memory 
 *	   allocation, these functions assumes that 
-*	   everything is OK. If not used with care, 
-*		prohibted reads/writes might occur.
+*	   			  everything is OK. 
 * =================================================
 *
 */
