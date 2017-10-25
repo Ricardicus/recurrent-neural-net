@@ -599,11 +599,7 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	fully_connected_forward(cache_out->probs, model->Wy, cache_out->h, model->by, F, N);
 	if  (softmax > 0 ){
 		softmax_layers_forward(cache_out->probs, cache_out->probs, F, model->params->softmax_temp);
-	} /* else {
-		// This was not good.
-		copy_vector(cache_out->probs_before_sigma, cache_out->probs, F);
-		sigmoid_forward(cache_out->probs, cache_out->probs_before_sigma, F);
-	} */
+	} 
 
 	copy_vector(cache_out->X, X_one_hot, S);
 
@@ -731,42 +727,6 @@ void lstm_cache_container_set_start(lstm_values_cache_t * cache)
 	// State variables set to zero
 	vector_set_to_zero(cache->h, NEURONS); 
 	vector_set_to_zero(cache->c, NEURONS); 
-
-/*	vector_set_to_zero(cache->c_old, NEURONS); 
-	vector_set_to_zero(cache->h_old, NEURONS); 
-	vector_set_to_zero(cache->X, NEURONS); 
-	vector_set_to_zero(cache->hf, NEURONS); 
-	vector_set_to_zero(cache->hi, NEURONS); 
-	vector_set_to_zero(cache->ho, NEURONS); 
-	vector_set_to_zero(cache->hc, NEURONS); 
-	vector_set_to_zero(cache->tanh_c_cache, NEURONS);  */
-}
-
-
-void lstm_store_net(lstm_model_t* model, const char * filename) 
-{
-	FILE * fp;
-
-	fp = fopen(filename, "w");
-
-	if ( fp == NULL ) {
-		printf("Failed to open file: %s for writing.\n", filename);
-		return;
-	}
-
-	vector_store(model->Wy, model->F * model->N, fp);
-	vector_store(model->Wi, model->N * model->S, fp);
-	vector_store(model->Wc, model->N * model->S, fp);
-	vector_store(model->Wo, model->N * model->S, fp);
-	vector_store(model->Wf, model->N * model->S, fp);
-
-	vector_store(model->by, model->F, fp);
-	vector_store(model->bi, model->N, fp);
-	vector_store(model->bc, model->N, fp);
-	vector_store(model->bf, model->N, fp);
-	vector_store(model->bo, model->N, fp);
-
-	fclose(fp);
 
 }
 
