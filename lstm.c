@@ -1646,7 +1646,7 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 		if ( p > 0 ) {
 			--p;
 			while ( p >= 0 ) {
-				lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);	
+				lstm_forward_propagate(model_layers[p], caches_layer[p+1][(i+1)%2]->probs, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);	
 				--p;
 			}
 			p = 0;
@@ -1800,7 +1800,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			if ( p > 0 ) {
 				--p;
 				while ( p >= 0 ) {
-					lstm_forward_propagate(model_layers[p], first_layer_input, cache_layers[p][e1], cache_layers[p][e2], p == 0);	
+					lstm_forward_propagate(model_layers[p], cache_layers[p+1][e2]->probs, cache_layers[p][e1], cache_layers[p][e2], p == 0);	
 					--p;
 				}
 				p = 0;
@@ -1846,7 +1846,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 
 			p = 0;
-			lstm_backward_propagate(model_layers[p], cache_layers[p][e1]->probs, layers == 0 ? -1 : Y_train[e3], d_next_layers[p], cache_layers[p][e1], gradient_layers_entry[0], d_next_layers[p]);
+			lstm_backward_propagate(model_layers[p], cache_layers[p][e1]->probs, Y_train[e3], d_next_layers[p], cache_layers[p][e1], gradient_layers_entry[0], d_next_layers[p]);
 
 			if ( p < layers ) {
 				++p;
