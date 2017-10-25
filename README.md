@@ -15,8 +15,11 @@ Otherwise:
 Download the program. 
 Open a terminal window and type:
 "git clone https://github.com/Ricardicus/recurrent-neural-net/" (You may have to install 'git', if you don't already have it!)
+
 "cd recurrent-neural-net" 
+
 "make" - this will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'. 
+
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
 Then run the program:
@@ -27,7 +30,7 @@ over time.
 Check out the file "lstm.h".
 
 In lstm.h you can edit the program. 
-Set the number of layers (2/3 is best I think)
+Set the number of layers (2/3 is best I think). 
 Set how often it should output data. 
 
 # Comments
