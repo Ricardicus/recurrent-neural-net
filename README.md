@@ -33,24 +33,6 @@ In lstm.h you can edit the program.
 Set the number of layers (2/3 is best I think). 
 Set how often it should output data. 
 
-# It will produce samples over time
-
-For example:
-
-18:45:50 Iteration: 146000 (epoch: 37), Loss: 1.066265, record: 1.038003 (iteration: 145815), LR: 0.001000
-=====================================================
- which revialy romonsopinese, tief the willece goxilagen. Heaning dided it, andeald leaster. The cintlergy inflencess tilling fifennce, and Gothoseasial interest as hompesion. Ationer their mivided it
-=====================================================
-18:45:59 Iteration: 147000 (epoch: 37), Loss: 1.112723, record: 1.031639 (iteration: 146052), LR: 0.001000
-=====================================================
- in in the elicties in sime tate evils. The miquine of latical of sumntiant effection we are trom one eecreed upon mary insed of shew men hind, heains ty are the plais sour'e belief in cimunaticas, an
-=====================================================
-18:46:08 Iteration: 148000 (epoch: 37), Loss: 1.065434, record: 1.031639 (iteration: 146052), LR: 0.001000
-=====================================================
- its the contar, the frincioural litterte cany of otherity of the seen entrion brititors they bes for weakll. We butain oballiajy frue, and the supprical fated anweln of ecamined effectientians smanke
-=====================================================
-
-
 # Comments
 
 For now I have just started with the implementation.
