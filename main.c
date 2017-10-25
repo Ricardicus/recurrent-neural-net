@@ -12,34 +12,20 @@
 #define ITERATIONS 	100000000
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
+lstm_model_t **model_layers;
 
-void store_the_net_two_layer(int signo)
+void store_the_net_layers(int signo)
 {
-	if ( layer1 != NULL && layer2 != NULL ){
-		lstm_store_net_two_layers(layer1, layer2, STD_LOADABLE_NET_NAME);
+	if ( model_layers != NULL ){
+		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME);
 		printf("\nStored the net\n");
 	} else {
-		printf("Failed to store the net!");
+		printf("\nFailed to store the net!\n");
 		exit(-1);
 	}
 
 	exit(0);
 	return;	
-}
-
-void store_the_net_one_layer(int signo)
-{
-
-	if ( model != NULL ){
-		lstm_store_net(model, STD_LOADABLE_NET_NAME);
-		printf("\nStored the net\n");	
-	} else {
-		printf("Failed to store the net!");
-		exit(-1);
-	}
-
-	exit(0);
-	return;
 }
 
 int main(int argc, char *argv[])
@@ -110,81 +96,43 @@ int main(int argc, char *argv[])
 		X_train[sz++] = set_char_to_indx(&set,c);
 	fclose(fp);
 
-	if ( params.layers == 1 ) {
+	int layers = LAYERS;
 
-		lstm_init_model(set_get_features(&set), NEURONS, &model, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
+	params.layers = layers;
 
-		if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
-			lstm_read_net(model, argv[3]);
-		}
+	model_layers = calloc(layers, sizeof(lstm_model_t*));
 
-		if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
-			do {
-				clean = strchr(argv[5], '_');
-				if ( clean != NULL )
-					*clean = ' ';
-			} while ( clean != NULL );
-			lstm_output_string_from_string(model, &set, argv[5], 100);
-		} else {
-			printf("LSTM Neural net compiled: %s %s, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n", __DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
-			signal(SIGINT, store_the_net_one_layer);
-			lstm_train_the_net(model, &set, file_size, X_train, Y_train, ITERATIONS);
-		}
+	if ( model_layers == NULL ) {
+		printf("Error in init!\n");
+		exit(-1);
+	}
 
-		free(X_train);
+	p = 0;
 
-	} else if ( params.layers == 2 ) {
+	while ( p < layers ) {
+		lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);	
+		++p;
+	}
 
-		lstm_init_model(set_get_features(&set), NEURONS, &layer1, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
-		lstm_init_model(set_get_features(&set), NEURONS, &layer2, YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);
+	if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
+		lstm_read_net_layers(model_layers, argv[3]);
+	}
 
-		if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
-			lstm_read_net_two_layers(layer1, layer2, argv[3]);
-		}
 
-		if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
-			do {
-				clean = strchr(argv[5], '_');
-				if ( clean != NULL )
-					*clean = ' ';
-			} while ( clean != NULL );
+	if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
+		do {
+			clean = strchr(argv[5], '_');
+			if ( clean != NULL )
+				*clean = ' ';
+		} while ( clean != NULL );
 
-			lstm_output_string_from_string_two_layers(layer1, layer2, &set, argv[5], 100);
-		} else {
-		#ifdef DECREASE_LR
-			printf("LSTM Neural net compiled: %s %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
-		#else
-			printf("LSTM Neural net compiled: %s %s, Two layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf\n", __DATE__, __TIME__, NEURONS, params.learning_rate, params.momentum, params.lambda);
-		#endif
-
-			signal(SIGINT, store_the_net_two_layer);
-
-			lstm_train_the_net_two_layers(layer1, layer1, layer2, &set, file_size, X_train, Y_train, ITERATIONS);
-		}
-
-		free(X_train);
+		lstm_output_string_from_string_layers(model_layers, &set, argv[5], 100);
 
 	} else {
 
-		int layers = LAYERS;
-
-		params.layers = layers;
-
-		lstm_model_t ** model_layers = calloc(layers, sizeof(lstm_model_t*));
-
-		if ( model_layers == NULL ) {
-			printf("Error in init!\n");
-			exit(-1);
-		}
-
-		p = 0;
-
-		while ( p < layers ) {
-			lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);	
-			++p;
-		}
-
 		printf("LSTM Neural net compiled: %s %s, %d Layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, layers, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+
+		signal(SIGINT, store_the_net_layers);
 
 		lstm_train(
 			model_layers[0],
@@ -197,10 +145,11 @@ int main(int argc, char *argv[])
 			layers
 		);
 
-		free(model_layers);
-		free(X_train);
-
 	}
+
+
+	free(model_layers);
+	free(X_train);
 
 
 
