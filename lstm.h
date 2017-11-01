@@ -12,17 +12,19 @@
 #include "assert.h"
 
 
-#define NEURONS												64
+#define NEURONS													128
 
 #define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
 #define STD_LAMBDA												0.05
 #define SOFTMAX_TEMP											1.0
 #define GRADIENT_CLIP_LIMIT										5.0
-#define MINI_BATCH_SIZE											10
+#define MINI_BATCH_SIZE											100
 #define LOSS_MOVING_AVG											0.01
 
-#define LAYERS  											3
+#define LAYERS  												3
+
+// #define INTERLAYER_SIGMOID_ACTIVATION								
 
 #define GRADIENTS_CLIP											1
 #define GRADIENTS_FIT											0
@@ -41,7 +43,7 @@
 #define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE	1000000							
 
 // #define STORE_DURING_TRANING
-#define PRINT_EVERY_X_ITERATIONS								1000
+#define PRINT_EVERY_X_ITERATIONS								100
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
 
