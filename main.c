@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 
 	} else {
 
-		printf("LSTM Neural net compiled: %s %s, %d Layers, Neurons: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, layers, NEURONS, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+		printf("LSTM Neural net compiled: %s %s, %d Layers, Neurons: %d, Backprop Through Time: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, layers, NEURONS, MINI_BATCH_SIZE, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
 
 		signal(SIGINT, store_the_net_layers);
 

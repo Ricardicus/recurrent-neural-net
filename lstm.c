@@ -600,6 +600,12 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	if  (softmax > 0 ){
 		softmax_layers_forward(cache_out->probs, cache_out->probs, F, model->params->softmax_temp);
 	} 
+#ifdef INTERLAYER_SIGMOID_ACTIVATION
+ 	else {
+		sigmoid_forward(cache_out->probs, cache_out->probs, F);
+		copy_vector(cache_out->probs_before_sigma, cache_out->probs, F);
+	} 
+#endif
 
 	copy_vector(cache_out->X, X_one_hot, S);
 
@@ -633,7 +639,12 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 	if ( y_correct >= 0 ){
 		dldy[y_correct] -= 1.0;
 	}
-
+#ifdef INTERLAYER_SIGMOID_ACTIVATION
+	else {
+		sigmoid_backward(dldy, cache_in->probs_before_sigma, dldy, F);
+	}
+#endif
+	
 	fully_connected_backward(dldy, model->Wy, h, gradients->Wy, dldh, gradients->by, F, N);
 	vectors_add(dldh, dldh_next, N);
 
