@@ -1273,12 +1273,12 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( b + model->params->mini_batch_size > training_points )
 			epoch++;
 
-		i = (b + model->params->mini_batch_size) % training_points;
+		i = (b + 1) % training_points;
 
-		if ( i < model->params->mini_batch_size){
+/*		if ( i < model->params->mini_batch_size){
 			i = 0;
 		}
-
+*/
 
 #ifdef DECREASE_LR
 		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
