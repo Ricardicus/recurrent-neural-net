@@ -1270,7 +1270,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
 			lstm_store_progress(n, loss);
 
-		if ( b + model->params->mini_batch_size > training_points )
+		if ( b == training_points )
 			epoch++;
 
 		i = (b + 1) % training_points;
