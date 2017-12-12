@@ -733,6 +733,13 @@ void lstm_zero_d_next(lstm_values_next_cache_t * d_next, int features)
 	vector_set_to_zero(d_next->dldY_pass, features );
 }
 
+void lstm_d_next_copy(lstm_values_next_cache_t * dest, lstm_values_next_cache_t * source, int features)
+{
+	copy_vector(dest->dldh_next, source->dldh_next, NEURONS);
+	copy_vector(dest->dldc_next, source->dldc_next, NEURONS);
+	copy_vector(dest->dldY_pass, source->dldY_pass, features );
+}
+
 void lstm_cache_container_set_start(lstm_values_cache_t * cache)
 {
 	// State variables set to zero
@@ -1046,6 +1053,26 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 	double first_layer_input[F];
 
+#ifdef STATEFUL
+	printf("STATEFUL");
+	lstm_values_next_cache_t *** stateful_d_next;
+	stateful_d_next = calloc(layers, sizeof(lstm_values_cache_t**));
+	if ( stateful_d_next == NULL )
+		lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas\n");
+	i = 0;
+	while ( i < layers) {
+		stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_next_cache_t*));
+		if ( stateful_d_next[i] == NULL )
+			lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas, inner in layer\n");
+		b = 0;
+		while ( b < training_points/model->params->mini_batch_size + 1 ) {
+			lstm_values_next_cache_init(&stateful_d_next[i][b], N, F);
+			++b;
+		}
+		++i;
+	}
+#endif
+
 	i = 0;
 	cache_layers = calloc(layers, sizeof(lstm_values_cache_t**));
 
@@ -1178,6 +1205,9 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		while ( p < layers ) {
 			lstm_zero_the_model(gradient_layers[p]);
 			lstm_zero_d_next(d_next_layers[p], F);
+#ifdef STATEFUL
+			lstm_d_next_copy(d_next_layers[p], stateful_d_next[p][i / model->params->mini_batch_size], F);
+#endif
 			++p;
 		}
 
@@ -1205,6 +1235,8 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 				}
 			}
 
+
+
 			p = 0; 
 
 			while ( p < layers ) {
@@ -1215,6 +1247,13 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			i--; q--;
 		}
 
+#ifdef STATEFUL
+		p = 0;
+		while ( p < layers ) {
+			lstm_d_next_copy(stateful_d_next[p][i / model->params->mini_batch_size],d_next_layers[p], F);
+			++p;
+		}
+#endif
 		assert(check == e3);
 
 		p = 0;
@@ -1273,12 +1312,11 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( b == training_points )
 			epoch++;
 
-		i = (b + 1) % training_points;
+		i = (b + model->params->mini_batch_size) % training_points;
 
-/*		if ( i < model->params->mini_batch_size){
+		if ( i < model->params->mini_batch_size){
 			i = 0;
 		}
-*/
 
 #ifdef DECREASE_LR
 		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
@@ -1289,16 +1327,13 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	}
 
 	p = 0;
-
 	while ( p < layers ) {
 		lstm_values_next_cache_free(d_next_layers[p]);
 
 		i = 0;
 		while ( i < model->params->mini_batch_size) {
 			lstm_cache_container_free(cache_layers[p][i]);
-			free(cache_layers[p][i]);
 			lstm_cache_container_free(cache_layers[p][i]);
-			free(cache_layers[p][i]);
 			++i;
 		}
 
@@ -1310,6 +1345,20 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 		++p;
 	}
+
+#ifdef STATEFUL
+	i = 0;
+	while ( i < layers) {
+		b = 0;
+		while ( b < training_points/model->params->mini_batch_size + 1 ) {
+			lstm_values_next_cache_free(stateful_d_next[i][b]);
+			++b;
+		}
+		free(stateful_d_next[i]);
+		++i;
+	}
+	free(stateful_d_next);
+#endif
 
 	free(cache_layers);
 	free(gradient_layers);

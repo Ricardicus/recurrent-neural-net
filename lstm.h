@@ -22,7 +22,9 @@
 #define MINI_BATCH_SIZE											100
 #define LOSS_MOVING_AVG											0.01
 
-#define LAYERS  											3
+#define LAYERS  												3
+
+#define STATEFUL												1
 
 // #define INTERLAYER_SIGMOID_ACTIVATION								
 
