@@ -737,7 +737,6 @@ void lstm_d_next_copy(lstm_values_next_cache_t * dest, lstm_values_next_cache_t 
 {
 	copy_vector(dest->dldh_next, source->dldh_next, NEURONS);
 	copy_vector(dest->dldc_next, source->dldc_next, NEURONS);
-	copy_vector(dest->dldY_pass, source->dldY_pass, features );
 }
 
 void lstm_cache_container_set_start(lstm_values_cache_t * cache)
@@ -1054,7 +1053,6 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	double first_layer_input[F];
 
 #ifdef STATEFUL
-	printf("STATEFUL");
 	lstm_values_next_cache_t *** stateful_d_next;
 	stateful_d_next = calloc(layers, sizeof(lstm_values_cache_t**));
 	if ( stateful_d_next == NULL )
