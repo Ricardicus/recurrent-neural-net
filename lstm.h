@@ -24,7 +24,7 @@
 
 #define LAYERS  												3
 
-#define STATEFUL												1
+//#define STATEFUL												1
 
 // #define INTERLAYER_SIGMOID_ACTIVATION								
 
