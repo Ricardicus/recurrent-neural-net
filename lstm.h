@@ -24,7 +24,7 @@
 
 #define LAYERS  												3
 
-//#define STATEFUL												1
+#define STATEFUL												1
 
 // #define INTERLAYER_SIGMOID_ACTIVATION								
 
@@ -149,6 +149,11 @@ typedef struct lstm_values_cache_t {
 	double* tanh_c_cache;
 } lstm_values_cache_t;
 
+typedef struct lstm_values_state_t {
+	double* c;
+	double* h;
+} lstm_values_state_t;
+
 typedef struct lstm_values_next_cache_t {
 	double* dldh_next;
 	double* dldc_next;
@@ -167,6 +172,9 @@ void lstm_free_model(lstm_model_t*);
 void lstm_forward_propagate(lstm_model_t*, double*, lstm_values_cache_t*, lstm_values_cache_t*, int);
 //							model, y_probabilities, y_correct, the next deltas, state and cache values, &gradients, &the next deltas
 void lstm_backward_propagate(lstm_model_t*, double*, int, lstm_values_next_cache_t*, lstm_values_cache_t*, lstm_model_t*, lstm_values_next_cache_t*);
+
+void lstm_values_state_init(lstm_values_state_t** d_next_to_set, int N);
+void lstm_values_next_state_free(lstm_values_state_t* d_next);
 
 lstm_values_cache_t*  lstm_cache_container_init(int N, int F);
 void lstm_cache_container_free(lstm_values_cache_t*);
