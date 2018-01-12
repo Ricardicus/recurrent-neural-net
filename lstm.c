@@ -1079,20 +1079,16 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	double first_layer_input[F];
 
 #ifdef STATEFUL
-	lstm_values_state_t *** stateful_d_next;
-	stateful_d_next = calloc(layers, sizeof(lstm_values_state_t**));
+	lstm_values_state_t ** stateful_d_next;
+	stateful_d_next = calloc(layers, sizeof(lstm_values_state_t*));
 	if ( stateful_d_next == NULL )
 		lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas\n");
 	i = 0;
 	while ( i < layers) {
-		stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_state_t*));
+		stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_state_t));
 		if ( stateful_d_next[i] == NULL )
 			lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas, inner in layer\n");
-		b = 0;
-		while ( b < training_points/model->params->mini_batch_size + 1 ) {
-			lstm_values_state_init(&stateful_d_next[i][b], N);
-			++b;
-		}
+		lstm_values_state_init(&stateful_d_next[i], N);
 		++i;
 	}
 #endif
@@ -1169,7 +1165,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			if ( q == 0 ) 
 				lstm_cache_container_set_start(cache_layers[q][0]);
 			else 
-				lstm_next_state_copy(stateful_d_next[q][i / model->params->mini_batch_size ], cache_layers[q][0], 0);
+				lstm_next_state_copy(stateful_d_next[q], cache_layers[q][0], 0);
 #else 
 			lstm_cache_container_set_start(cache_layers[q][0]);
 #endif
@@ -1235,7 +1231,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 #ifdef STATEFUL
 		p = 0;
 		while ( p < layers ) {
-			lstm_next_state_copy(stateful_d_next[p][i / model->params->mini_batch_size ], cache_layers[p][e2], 1);
+			lstm_next_state_copy(stateful_d_next[p], cache_layers[p][e2], 1);
 			++p;
 		}
 		p = 0;
@@ -1377,11 +1373,6 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 #ifdef STATEFUL
 	i = 0;
 	while ( i < layers) {
-		b = 0;
-		while ( b < training_points/model->params->mini_batch_size + 1 ) {
-			lstm_values_next_state_free(stateful_d_next[i][b]);
-			++b;
-		}
 		free(stateful_d_next[i]);
 		++i;
 	}
