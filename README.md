@@ -33,6 +33,18 @@ In lstm.h you can edit the program.
 Set the number of layers (2/3 is best I think). 
 Set how often it should output data. 
 
+# Examples
+I trained this program to read the first Harry Potter book, It produced quotes such as this: 
+
+"Iteration: 303400, Loss: 0.07877, output: ed Aunt Petunia suggested
+timidly, hours later, but Uncle Vernon was pointing at what had a thing while the next day. The Dursleys swut them on, the boy. "
+
+It has definately learned something. 
+
+For more activity based on this neural network, check out my twitter bot: 
+https://twitter.com/RicardicusPi
+
+
 # Comments
 
 For now I have just started with the implementation.
