@@ -1,7 +1,7 @@
 # Reccurent neural network
 
 This program will learn to produce text similar to the one that
-it has been training on using a recurrent neural network. Inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn
+it has been training on using a recurrent neural network. Inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
 
 # How do I use it? 
 
