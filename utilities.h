@@ -16,6 +16,8 @@ void 	vectors_substract_scalar_multiply(double*, double*, int, double);
 void 	vectors_add_scalar(double*, double, int );
 void 	vectors_div(double*, double*, int);
 void 	vector_sqrt(double*, int);
+void 	vector_store_json(double*, int, FILE *);
+void 	vector_store_as_matrix_json(double*, int, int, FILE *);
 //		A = A + B		A,		B,    R, C
 void 	matrix_add(double**, double**, int, int);
 void 	matrix_substract(double**, double**, int, int);

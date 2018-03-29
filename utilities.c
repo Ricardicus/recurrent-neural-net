@@ -524,6 +524,78 @@ void 	vector_read(double * V, int L, FILE * fp)
 }
 
 /*
+* 	This function is used to store a JSON file representation
+* 	of a LSTM neural network that can be read by a HTML application.
+*/
+void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
+{
+	int r = 0, c = 0;
+	size_t i = 0;
+	void * p;
+
+	if ( fp == NULL )
+		return; // No file, nothing to do. 
+
+	fprintf(fp, "[");
+
+	r = 0;
+
+	while ( r < R ) {
+
+		if ( r > 0 )
+			fprintf(fp, ",");
+
+		fprintf(fp,"[");
+
+		c = 0;
+		while ( c < C ) {
+
+			if ( c > 0 )
+				fprintf(fp, ",");
+
+			fprintf(fp,"%.15f", V[r*C + c]);
+
+			++c;
+		}
+
+		fprintf(fp,"]");
+
+		++r;
+	}
+
+	fprintf(fp, "]");
+}
+
+
+/*
+* 	This function is used to store a JSON file representation
+* 	of a LSTM neural network that can be read by a HTML application.
+*/
+void 	vector_store_json(double* V, int L, FILE * fp)
+{
+	int l = 0;
+	size_t i = 0;
+	void * p;
+
+	if ( fp == NULL )
+		return; // No file, nothing to do. 
+
+	fprintf(fp, "[");
+
+	while ( l < L ){
+
+		if ( l > 0 )
+			fprintf(fp, ",");
+
+		fprintf(fp,"%.15f", V[l]);
+
+		++l;
+	}
+
+	fprintf(fp, "]");
+}
+
+/*
 * Gaussian generator: https://phoxis.org/2013/05/04/generating-random-numbers-from-normal-distribution-in-c/
 */
 double

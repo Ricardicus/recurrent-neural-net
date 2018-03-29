@@ -18,6 +18,7 @@ void store_the_net_layers(int signo)
 {
 	if ( model_layers != NULL ){
 		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME);
+		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME);
 		printf("\nStored the net\n");
 	} else {
 		printf("\nFailed to store the net!\n");
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
 	srand( time ( NULL ) );
 
 	if ( argc < 2 ) {
-		printf("Usage: ./binary datafile [-r name_of_net_to_load]\n");
+		printf("Usage: %s datafile [-r name_of_net_to_load]\n", argv[0]);
 		return -1;
 	}
 
