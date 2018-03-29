@@ -14,7 +14,7 @@
 
 #define NEURONS													128
 
-#define STD_LEARNING_RATE										0.01
+#define STD_LEARNING_RATE										0.001
 #define STD_MOMENTUM											0.0
 #define STD_LAMBDA												0.05
 #define SOFTMAX_TEMP											1.0
@@ -187,7 +187,7 @@ void sum_gradients(lstm_model_t*, lstm_model_t*);
 //					model (already init), name
 void lstm_read_net_layers(lstm_model_t**, const char*);
 void lstm_store_net_layers(lstm_model_t**, const char *);
-void lstm_store_net_layers_as_json(lstm_model_t**, const char *); 
+void lstm_store_net_layers_as_json(lstm_model_t**, const char *,set_T *); 
 void lstm_read_net_layers(lstm_model_t**, const char *);
 void lstm_store_progress(unsigned int, double);
 

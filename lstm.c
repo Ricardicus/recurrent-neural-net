@@ -806,7 +806,7 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename)
 
 }
 
-void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename) 
+void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, set_T *set) 
 {
 	FILE * fp;
 	int p = 0, r = 0, c = 0;
@@ -818,7 +818,10 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename)
 		return;
 	}
 
-	fprintf(fp, "{\n\"LSTM layers\": %d,\n", LAYERS);
+	fprintf(fp, "{\n\"Feature mapping\": ");
+	set_store_as_json(set, fp);
+
+	fprintf(fp, ",\n\"LSTM layers\": %d,\n", LAYERS);
 
 	while ( p < LAYERS ) {
 

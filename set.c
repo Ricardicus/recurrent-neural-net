@@ -1,6 +1,5 @@
 #include "set.h"
 
-
 void 
 initialize_set(set_T * set) 
 {
@@ -109,4 +108,26 @@ set_greedy_argmax(set_T* set, double* probs)
 	}
 
 	return set->values[max_i];
+}
+
+void
+set_store_as_json(set_T *set, FILE*fp)
+{
+	int i = 0;
+
+	if ( fp == NULL )
+		return; 
+
+	fprintf(fp, "{");
+
+	while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
+		
+		if ( i > 0 )
+			fprintf(fp, ",");
+
+		fprintf(fp, "\"%d\": \"%d\"", i, set->values[i]);
+		++i;
+	}
+
+	fprintf(fp, "}");
 }

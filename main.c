@@ -13,12 +13,13 @@
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
 lstm_model_t **model_layers;
+set_T set;
 
 void store_the_net_layers(int signo)
 {
 	if ( model_layers != NULL ){
 		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME);
-		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME);
+		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, &set);
 		printf("\nStored the net\n");
 	} else {
 		printf("\nFailed to store the net!\n");
@@ -26,7 +27,7 @@ void store_the_net_layers(int signo)
 	}
 
 	exit(0);
-	return;	
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -36,7 +37,6 @@ int main(int argc, char *argv[])
 	int *X_train, *Y_train;
 	char * clean;
 	FILE * fp;
-	set_T set;
 
 	lstm_model_parameters_t params;
 
