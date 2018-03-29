@@ -525,7 +525,7 @@ void 	vector_read(double * V, int L, FILE * fp)
 
 /*
 * 	This function is used to store a JSON file representation
-* 	of a LSTM neural network that can be read by a HTML application.
+* 	of a LSTM neural network that can be read by an HTML application.
 */
 void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
 {
@@ -569,7 +569,7 @@ void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
 
 /*
 * 	This function is used to store a JSON file representation
-* 	of a LSTM neural network that can be read by a HTML application.
+* 	of a LSTM neural network that can be read by an HTML application.
 */
 void 	vector_store_json(double* V, int L, FILE * fp)
 {
