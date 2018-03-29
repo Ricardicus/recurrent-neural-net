@@ -818,7 +818,7 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename)
 		return;
 	}
 
-	fprintf(fp, "{\n\"LSTM layers\": \"%d\",\n", LAYERS);
+	fprintf(fp, "{\n\"LSTM layers\": %d,\n", LAYERS);
 
 	while ( p < LAYERS ) {
 
