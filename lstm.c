@@ -818,7 +818,7 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
 		return;
 	}
 
-	fprintf(fp, "{\n\"Feature mapping\": ");
+	fprintf(fp, "{\n\"%s\": ", JSON_KEY_NAME_SET);
 	set_store_as_json(set, fp);
 
 	fprintf(fp, ",\n\"LSTM layers\": %d,\n", LAYERS);
@@ -831,7 +831,7 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
 		fprintf(fp, "\"Layer %d\": {\n", p+1);
 
 		fprintf(fp, "\t\"Wy\": ");
-		vector_store_as_matrix_json(model[p]->Wy, model[p]->N, model[p]->F, fp);
+		vector_store_as_matrix_json(model[p]->Wy, model[p]->F, model[p]->N, fp);
 		fprintf(fp, ",\n\t\"Wi\": ");
 		vector_store_as_matrix_json(model[p]->Wi, model[p]->N, model[p]->S, fp);
 		fprintf(fp, ",\n\t\"Wc\": ");

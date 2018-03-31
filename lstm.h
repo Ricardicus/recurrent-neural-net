@@ -58,6 +58,9 @@
 #define STD_JSON_NET_NAME										"lstm_net.json"
 #define PROGRESS_FILE_NAME										"progress.csv"
 
+#define JSON_KEY_NAME_SET										"Feature mapping"
+
+
 typedef struct lstm_model_parameters_t {
 	// For progress monitoring
 	double loss_moving_avg;
