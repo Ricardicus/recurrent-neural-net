@@ -685,7 +685,6 @@ document.addEventListener("keydown", function(event) {
 document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
 document.getElementById('next-btn').addEventListener('click', debug_monitor_lstm, false);
 document.getElementById('reset-btn').addEventListener('click', function(e){
-	reset_state(LSTM_model["LSTM Layers"]);
 	result = "";
 	input = "";
 	document.getElementById("chars").innerHTML = "";
