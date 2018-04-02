@@ -112,7 +112,7 @@ function floatinput(charcode) {
 	</center>
 </div>
 	<h2 id="h2-descriptor">LSTM Neural Network, sample output viewer</h2>
-	<p>This feature will load a LSTM network trained with <a href="https://github.com/Ricardicus/recurrent-neural-net">an LSTM implementation</a> then given a random input from the feature set, display the probability distribution of the next feature. Given this distribution a new input is sampled and fed into the network again.</p>
+	<p>This feature will load a LSTM network trained with <a href="https://github.com/Ricardicus/recurrent-neural-net">an LSTM implementation</a> then given a random input from the feature set, display the probability distribution of the next feature. Given this distribution a new input is sampled and fed into the network again. </p>
 
 	<p><b>Import model (JSON file only!)</b>: <input type="file" id="fileinput" /></p>
 	<div id="input-div">
@@ -333,7 +333,7 @@ function display_report(report) {
 		var proggress_bar_id = "out-" + i + "-progress-bar";
 
 		try {
-			document.getElementById(p_id).innerHTML = "<pre>'" + report[i]["feature"] + "'</pre>";
+			document.getElementById(p_id).innerHTML = "<pre>'" + report[i]["feature"] + "' (" + Math.round(report[i]["probability"]*100) + " %)</pre>";
 			document.getElementById(proggress_bar_id).style.width = Math.round(report[i]["probability"]*100) + "%";
 		} catch(e){;}
 
