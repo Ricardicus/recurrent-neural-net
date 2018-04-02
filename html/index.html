@@ -121,12 +121,12 @@ function floatinput(charcode) {
 	<div id="input-div">
 	</div>
 <br>
-<p>Output:</p>
-<pre id="chars"></pre>
-<br>
 <button id="next-btn" style="height:20px;width:200px;font-size:14px;">Sample next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
 <br><br>
 <p>Or enter characters:</p><input id="chars-input"></input><button  style="height:20px;width:200px;font-size:14px;" id="chars-input-btn">Enter characters</button>
+<br>
+<p>Output:</p>
+<pre id="chars"></pre>
 <br>
 <p>Features and their probabilities:</p>
 <div id="next_char_view">
@@ -716,7 +716,7 @@ function read_from_chars(i, time_in_between=500){
 	input = char;
 
 	try {
-		
+
 		debug_monitor_lstm();
 		setTimeout(function() {
 			read_from_chars(i+1);
@@ -728,10 +728,6 @@ function read_from_chars(i, time_in_between=500){
 }
 
 document.getElementById('chars-input-btn').addEventListener('click', function(e){
-
-	var string = document.getElementById('chars-input').value;
-
-	var i = 0;
 
 	clearTimeout(last_timeout);
 
