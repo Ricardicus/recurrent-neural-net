@@ -92,6 +92,9 @@ div.reference-bar {
     position: absolute;
 }
 
+input {
+	width: 200px;
+}
 
 </style>
 <script type="text/javascript">
@@ -119,10 +122,12 @@ function floatinput(charcode) {
 	</div>
 <br>
 <p>Output:</p>
-<p id="chars"></p>
+<pre id="chars"></pre>
 <br>
-<button id="next-btn" style="height:20px;width:200px;font-size:14px;">Generate next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
+<button id="next-btn" style="height:20px;width:200px;font-size:14px;">Sample next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
 <br><br>
+<p>Or enter characters:</p><input id="chars-input"></input><button  style="height:20px;width:200px;font-size:14px;" id="chars-input-btn">Enter characters</button>
+<br>
 <p>Features and their probabilities:</p>
 <div id="next_char_view">
 
@@ -592,7 +597,7 @@ function init_gui(filename) {
 		l++;
 	}
 
-	reset_state(layers, N);
+	reset_state(layers);
 
 	LSTM_model = data; 
 
@@ -609,16 +614,14 @@ function init_gui(filename) {
 	document.getElementById("next_char_view").innerHTML = html;
 
 	write_positive_msg("LSTM model successfully loaded!");
-	debug_monitor_lstm("H");
+
 }
 
 function debug_monitor_lstm() {
 	debug = true;
 	var start = false;
 
-	var i = 0;
-
-	if ( input == "" ) {
+	if ( input == "" || typeof input === 'undefined') {
 		input =  String.fromCharCode(  index_to_value[  Math.round( Math.random() * F )  ]  )  ;
 		start = true;
 	}
@@ -630,10 +633,6 @@ function debug_monitor_lstm() {
 	display_report(report);
 
 	input = sample_feature_based_on_report ( report );
-	i++;
-
-	console.log("==== RESULT ====");
-	console.log(result);
 
 }
 
@@ -690,6 +689,49 @@ document.getElementById('reset-btn').addEventListener('click', function(e){
 	result = "";
 	input = "";
 	document.getElementById("chars").innerHTML = "";
+	document.getElementById("chars-input").value = "";
+}, false);
+
+var last_timeout;
+
+function read_from_chars(i, time_in_between=500){
+	var string = document.getElementById('chars-input').value;
+
+	if ( i == string.length ) {
+		document.getElementById('chars-input').value = "";
+		return;
+	}
+
+	char = string[i];
+
+	if ( typeof char == "undefined" )
+		return;
+
+	if (! ( ( ("" + char).charCodeAt() ) in value_to_index ) ) {
+		write_error_msg("The entered character was not in the feature map of a given LSTM");
+		document.getElementById('chars-input').value = "";
+		return;
+	}
+
+	input = char;
+
+	debug_monitor_lstm();
+	
+	setTimeout(function() {
+		read_from_chars(i+1);
+	}, time_in_between);
+}
+
+document.getElementById('chars-input-btn').addEventListener('click', function(e){
+
+	var string = document.getElementById('chars-input').value;
+
+	var i = 0;
+
+	clearTimeout(last_timeout);
+
+	read_from_chars(0);
+
 }, false);
 
 </script>
