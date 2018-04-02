@@ -715,11 +715,16 @@ function read_from_chars(i, time_in_between=500){
 
 	input = char;
 
-	debug_monitor_lstm();
+	try {
+		
+		debug_monitor_lstm();
+		setTimeout(function() {
+			read_from_chars(i+1);
+		}, time_in_between);
+
+	} catch (e) {;}
 	
-	setTimeout(function() {
-		read_from_chars(i+1);
-	}, time_in_between);
+
 }
 
 document.getElementById('chars-input-btn').addEventListener('click', function(e){
