@@ -59,9 +59,17 @@ I will give this some time and hopefully I figure out a way that
 optimizes the program even more for speed.. Until then, have a go at this 
 little program and edit it as you please! 
 
-# make
+# Build
 
 I use GCC and compile with with: 
 gcc *.c -O3 -Ofast -msse3 -lm
 
 Try to optimize it the way you want using the compiler at hand!
+
+# Additional fun-factors
+
+Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
+
+Below is an image of this GUI and how one can interact with it. 
+<img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
+
