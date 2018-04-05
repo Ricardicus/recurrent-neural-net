@@ -14,11 +14,14 @@ Otherwise:
 
 Download the program. 
 Open a terminal window and type:
-"git clone https://github.com/Ricardicus/recurrent-neural-net/" (You may have to install 'git', if you don't already have it!)
 
-"cd recurrent-neural-net" 
-
-"make" - this will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'. 
+<pre>
+# (You may have to install 'git', if you don't already have it!)
+git clone https://github.com/Ricardicus/recurrent-neural-net/
+cd recurrent-neural-net
+# This will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'.
+make
+</pre>
 
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
