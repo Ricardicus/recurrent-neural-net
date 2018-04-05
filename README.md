@@ -1,5 +1,7 @@
 # Reccurent neural network
 
+We are all interested in the process of learning and intelligence as such. In the process of designing
+systems that adapt and learns patterns we explore on a basic, fundamental, level theories about how our brain works.
 This program will learn to produce text similar to the one that
 it has been training on using a recurrent neural network. Inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
 
