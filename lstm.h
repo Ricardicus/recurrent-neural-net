@@ -55,7 +55,11 @@
 #define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE		0
 
 #define STD_LOADABLE_NET_NAME									"lstm_net.net"
+#define STD_JSON_NET_NAME										"lstm_net.json"
 #define PROGRESS_FILE_NAME										"progress.csv"
+
+#define JSON_KEY_NAME_SET										"Feature mapping"
+
 
 typedef struct lstm_model_parameters_t {
 	// For progress monitoring
@@ -186,6 +190,7 @@ void sum_gradients(lstm_model_t*, lstm_model_t*);
 //					model (already init), name
 void lstm_read_net_layers(lstm_model_t**, const char*);
 void lstm_store_net_layers(lstm_model_t**, const char *);
+void lstm_store_net_layers_as_json(lstm_model_t**, const char *,set_T *); 
 void lstm_read_net_layers(lstm_model_t**, const char *);
 void lstm_store_progress(unsigned int, double);
 

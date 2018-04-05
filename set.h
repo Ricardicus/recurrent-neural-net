@@ -23,4 +23,6 @@ void set_print(set_T*, double*);
 
 void initialize_set(set_T*);
 
+void set_store_as_json(set_T *, FILE*);
+
 #endif

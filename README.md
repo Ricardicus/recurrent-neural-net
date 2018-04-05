@@ -1,7 +1,7 @@
 # Reccurent neural network
 
 This program will learn to produce text similar to the one that
-it has been training on using a recurrent neural network. 
+it has been training on using a recurrent neural network. Inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
 
 # How do I use it? 
 
@@ -14,11 +14,14 @@ Otherwise:
 
 Download the program. 
 Open a terminal window and type:
-"git clone https://github.com/Ricardicus/recurrent-neural-net/" (You may have to install 'git', if you don't already have it!)
 
-"cd recurrent-neural-net" 
-
-"make" - this will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'. 
+<pre>
+# (You may have to install 'git', if you don't already have it!)
+git clone https://github.com/Ricardicus/recurrent-neural-net/
+cd recurrent-neural-net
+# This will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'.
+make
+</pre>
 
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
@@ -32,6 +35,18 @@ Check out the file "lstm.h".
 In lstm.h you can edit the program. 
 Set the number of layers (2/3 is best I think). 
 Set how often it should output data. 
+
+# Examples
+I trained this program to read the first Harry Potter book, It produced quotes such as this: 
+
+"Iteration: 303400, Loss: 0.07877, output: ed Aunt Petunia suggested
+timidly, hours later, but Uncle Vernon was pointing at what had a thing while the next day. The Dursleys swut them on, the boy. "
+
+It has definately learned something. 
+
+For more activity based on this neural network, check out my twitter bot: 
+https://twitter.com/RicardicusPi
+
 
 # Comments
 

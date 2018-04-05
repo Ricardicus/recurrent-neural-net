@@ -806,6 +806,64 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename)
 
 }
 
+void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, set_T *set) 
+{
+	FILE * fp;
+	int p = 0, r = 0, c = 0;
+
+	fp = fopen(filename, "w");
+
+	if ( fp == NULL ) {
+		printf("Failed to open file: %s for writing.\n", filename);
+		return;
+	}
+
+	fprintf(fp, "{\n\"%s\": ", JSON_KEY_NAME_SET);
+	set_store_as_json(set, fp);
+
+	fprintf(fp, ",\n\"LSTM layers\": %d,\n", LAYERS);
+
+	while ( p < LAYERS ) {
+
+		if ( p > 0 ) 
+			fprintf(fp, ",\n");
+
+		fprintf(fp, "\"Layer %d\": {\n", p+1);
+
+		fprintf(fp, "\t\"Wy\": ");
+		vector_store_as_matrix_json(model[p]->Wy, model[p]->F, model[p]->N, fp);
+		fprintf(fp, ",\n\t\"Wi\": ");
+		vector_store_as_matrix_json(model[p]->Wi, model[p]->N, model[p]->S, fp);
+		fprintf(fp, ",\n\t\"Wc\": ");
+		vector_store_as_matrix_json(model[p]->Wc, model[p]->N, model[p]->S, fp);
+		fprintf(fp, ",\n\t\"Wo\": ");
+		vector_store_as_matrix_json(model[p]->Wo, model[p]->N, model[p]->S, fp);
+		fprintf(fp, ",\n\t\"Wf\": ");
+		vector_store_as_matrix_json(model[p]->Wf, model[p]->N, model[p]->S, fp);
+
+		fprintf(fp, ",\n\t\"by\": ");
+		vector_store_json(model[p]->by, model[p]->F, fp);
+		fprintf(fp, ",\n\t\"bi\": ");
+		vector_store_json(model[p]->bi, model[p]->N, fp);
+		fprintf(fp, ",\n\t\"bc\": ");
+		vector_store_json(model[p]->bc, model[p]->N, fp);
+		fprintf(fp, ",\n\t\"bf\": ");
+		vector_store_json(model[p]->bf, model[p]->N, fp);
+		fprintf(fp, ",\n\t\"bo\": ");
+		vector_store_json(model[p]->bo, model[p]->N, fp);
+
+		fprintf(fp, "}\n");
+
+		++p;
+	}
+
+	fprintf(fp, "}\n");
+
+	fclose(fp);
+
+}
+
+
 void lstm_read_net_layers(lstm_model_t** model, const char * filename) 
 {
 	// Will only work for ( layer1->N, layer1->F ) == ( layer2->N, layer2->F )

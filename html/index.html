@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html>
+<!--<script type="text/javascript" src="weights.js"></script>-->
+<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+<style>
+
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	background-color: #fefefe;
+}
+
+
+input {
+	border-radius: 10px;
+}
+
+
+button {
+	width: 200px;
+	height: 60px;
+	border-radius: 30px;
+ 	font-size: 30px;
+}
+
+input.slider {
+
+	width: 400px;
+
+}
+
+div.error-header {
+	background-color: #ff0000;
+	width: 100%;
+	height: 20px;
+	border-radius: 5px;
+	color: white;
+}
+
+div.positive-header {
+	background-color: #00ff00;
+	width: 100%;
+	height: 20px;
+	border-radius: 5px;
+	color: white;
+}
+
+div.progress {
+	height: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+	box-sizing: border-box;
+}
+
+div.progress-bar {
+	float: left;
+    height: 100%;
+    font-size: 12px;
+    line-height: 20px;
+    color: #fff;
+    text-align: center;
+    background-color: #337ab7;
+    -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+    -webkit-transition: width .6s ease;
+    -o-transition: width .6s ease;
+    transition: width .6s ease;
+    opacity: 0.5;
+    width: 0%;
+}
+
+div.reference-bar {
+	float: left;
+    height: 20px;
+    left: 0%;
+    font-size: 12px;
+    line-height: 20px;
+    color: #f00;
+    text-align: center;
+    background-color: #ff0000;
+    -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+    -webkit-transition: width .6s ease;
+    -o-transition: width .6s ease;
+    transition: width .6s ease;
+    width: 1%;
+    position: absolute;
+}
+
+input {
+	width: 200px;
+}
+
+</style>
+<script type="text/javascript">
+function floatinput(charcode) {
+	return (charcode >= 48 && charcode <= 57) || charcode == 45 || charcode == 46 || charcode == 0
+}
+</script>
+<head>
+<title>LSTM Neural Network</title>
+</head>
+<body>
+<div class="error-header" id="error-h" style="display:none;">
+	<center id="error-msg">
+	</center>
+</div>
+<div class="positive-header" id="positive-h" style="display:none;">
+	<center id="positive-msg">
+	</center>
+</div>
+	<h2 id="h2-descriptor">LSTM Neural Network, sample output viewer</h2>
+	<p>This feature will load a LSTM network trained with <a href="https://github.com/Ricardicus/recurrent-neural-net">an LSTM implementation</a> then given a random input from the feature set, display the probability distribution of the next feature. Given this distribution a new input is sampled and fed into the network again. </p>
+
+	<p><b>Import model (JSON file only!)</b>: <input type="file" id="fileinput" /></p>
+	<div id="input-div">
+	</div>
+<br>
+<button id="next-btn" style="height:20px;width:200px;font-size:14px;">Sample next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
+<br><br>
+<p>Or enter characters:</p><input id="chars-input"></input><button  style="height:20px;width:200px;font-size:14px;" id="chars-input-btn">Enter characters</button>
+<br>
+<p>Output:</p>
+<pre id="chars"></pre>
+<br>
+<p>Features and their probabilities:</p>
+<div id="next_char_view">
+
+
+</div>
+	
+<script type="text/javascript">
+		
+
+var index_to_value = {} // Included as the "Feature mapping" from the JSON file, used to map the ANN ohe index to a real value, such as a char
+var value_to_index = {} // The reversed version of the "Feature mapping" from the JSON file, used to map a char to a value that can be used as an index
+
+// The LSTM model weights are stored in this dictionary
+var LSTM_model = {}
+
+var N; // Number of neuron in each layer
+var F; // Nunber of output and input features (the same)
+var S; // The sum of N and F, used since I stack rows of the inputs with the state.
+
+var hs; // The state vectors of each layer
+var cs; // The control vectors of each layer
+
+var debug = false;
+
+var data;
+
+var last_timeout;
+
+var input = "";
+var result = "";
+
+function write_positive_msg(msg, timeout=4) {
+
+	// Hide error header
+	document.getElementById("error-h").style.display = "none";
+
+	// Show positive header
+	document.getElementById("positive-msg").innerHTML = msg;
+	document.getElementById("positive-h").style.display = "inherit";
+
+	// Hide the positive-header after timeout seconds
+	clearTimeout(last_timeout);
+	last_timeout = setTimeout(function(){
+		document.getElementById("positive-h").style.display = "none";
+
+	}, timeout * 1000 );
+}
+
+function write_error_msg(msg, timeout=10) {
+
+	// Hide positive header
+	document.getElementById("positive-h").style.display = "none";
+
+	document.getElementById("error-msg").innerHTML = msg;
+	document.getElementById("error-h").style.display = "inherit";
+
+	// Hide the error-header after timeout seconds
+	clearTimeout(last_timeout);
+	last_timeout = setTimeout(function(){
+		document.getElementById("error-h").style.display = "none";
+
+	}, timeout * 1000 );
+
+} 
+
+/* 
+* Element wise multiplication of two vectors 
+*/ 
+function vec_mult(a,b) {
+	var result = [];
+	var i = 0;
+
+	while ( i < a.length ) {
+		result.push(a[i] * b[i]);
+		i++;
+	}
+
+	return result;
+}
+
+/* 
+* Element wise addition of two vectors 
+*/ 
+function vec_add(a,b) {
+	var result = [];
+	var i = 0;
+
+	while ( i < a.length ) {
+		result.push(a[i] + b[i]);
+		i++;
+	}
+
+	return result;
+}
+
+/*
+* Stack two vectors 
+*/
+function vec_stack(a,b) {
+	var result = [];
+	var i = 0;
+
+	while( i < a.length ) {
+		result.push(a[i]);
+		i++;
+	}
+
+	i = 0;
+	while( i < b.length ) {
+		result.push(b[i]);
+		i++;
+	}
+
+	return result;
+}
+
+function fully_connected_feed_forward(x, A, b) {
+	// Will do a fully connected feed forward, Y = Ax + b
+	// A must be a MxN array where N is the length of the input
+	var result = []
+	for ( var r = 0; r < A.length; r++ ) {
+		result.push([]);
+		var sum = 0.;
+		for (var c = 0; c < A[0].length; c++ ) {
+			sum += A[r][c] * x[c]
+		}
+		result[r] = sum + b[r];
+	}
+
+	return result;
+}
+
+function tanh(y) {
+	var res = []
+	for ( var i = 0; i < y.length; i++ ) {
+		res.push(  Math.tanh(y[i] )  );
+	}
+	return res;
+}
+
+function relu(y) {
+	var res = []
+	for ( var i = 0; i < y.length; i++ ) {
+		if ( y[i] > 0. ) {
+			res.push(  Math.tanh(y[i] )  );
+		} else {
+			res.push( 0. );
+		}
+	}
+	return res;
+}
+
+function linear(y) {
+	return y;
+}
+
+function softmax(y) {
+	var res = [];
+
+	var total = 0.;
+	var logits = [];
+	for ( var i = 0; i < y.length; i++ ) {
+
+		var logit = Math.exp(y[i]);
+		if ( isNaN(logit) ){
+			write_error_msg("ERROR: logit is NaN!");
+			return;
+		}
+		total += logit;
+		logits.push(logit);
+	}
+
+
+	for ( var i = 0; i < y.length; i++ ) {
+		res.push( logits[i] / total );
+	}
+
+	return res;
+}
+
+function sigmoid(y) {
+	var res = []
+	for ( var i = 0; i < y.length; i++ ) {
+		res.push(  1.0 / ( 1.0 + Math.exp( -1.0 * y[i] ) ) );
+	}
+	return res;
+}
+
+function average_outputs(y_s){
+	var average = []
+	
+	for ( var i = 0; i < y_s[0].length; i++ ) {
+		average.push(0.0);
+		for (var q = 0; q < y_s.length; q++ ) {
+			average[i] += y_s[q][i];
+		}
+		average[i] /= y_s.length;
+	}
+
+	return average;
+}
+
+function display_report(report) {
+
+	var i = 0;
+	while ( i < report.length ) {
+		var p_id = "out-" + i + "-p";
+		var proggress_bar_id = "out-" + i + "-progress-bar";
+
+		try {
+			document.getElementById(p_id).innerHTML = "<pre>'" + report[i]["feature"] + "' (" + Math.round(report[i]["probability"]*100) + " %)</pre>";
+			document.getElementById(proggress_bar_id).style.width = Math.round(report[i]["probability"]*100) + "%";
+		} catch(e){;}
+
+		i++;
+	}
+
+	document.getElementById("chars").innerHTML = result;
+}
+
+function reset_state(layers) {
+	// Resetting the hidden values and the control
+	// for each layer in the LSTM
+
+	var l = 0;
+
+	hs = [];
+	cs = [];
+
+	while ( l < layers ){
+
+		hs.push([]);
+		cs.push([]);
+
+		// Initializing the hidden values (h and c) for this layer
+		for ( var i = 0 ; i < N; i++ ) {
+			hs[l].push(0.);
+			cs[l].push(0.);
+		}
+
+		l++;
+	}
+
+}
+
+/*
+* A function used to sort a list of feature probability in the function 'LSTM_feed_forward'
+*/
+function sort_feature_entries(a,b) {
+
+	if ( a["probability"] < b["probability"] ) {
+		return 1;
+	} else if (a["probability"] == b["probability"]) {
+		return 0;
+	}
+
+	return -1;
+}
+
+/*
+* The input value is a charcode. 
+* The input will be translated into a one-hot-encoded representation
+* where the one should be placed at the index given by the 'value_to_index'
+* dictionary. 
+*/
+function LSTM_feed_forward( input_value, start_state=false ) {
+
+	var layers = LSTM_model["LSTM layers"];
+
+	var ohe_input_index = parseInt( value_to_index["" + input_value] );
+
+	var ohe_input = [];
+
+	var l = layers - 1;
+
+	var x; // Will hold the 'ohe' input information for every layer
+	var y; // WIll hold the output from each layer
+
+	var i = 0;
+	
+	while ( i < F ) {
+		ohe_input.push(0.);
+		i++;
+	}
+
+	ohe_input[ohe_input_index] = 1.0; 
+
+	if ( start_state ) {
+		reset_state(layers);
+	} 
+
+	// Setting the input to the one-hot encoded representation of the input
+	x = ohe_input;
+
+	while ( l >= 0 ) {
+
+		var layer_data = LSTM_model["Layer " + (l+1)];
+
+		// Retrieveing the weights for this layer
+		Wf = layer_data["Wf"];
+		Wi = layer_data["Wi"];
+		Wc = layer_data["Wc"];
+		Wo = layer_data["Wo"];
+		Wy = layer_data["Wy"];
+
+		bf = layer_data["bf"];
+		bi = layer_data["bi"];
+		bc = layer_data["bc"];
+		bo = layer_data["bo"];
+		by = layer_data["by"];
+
+		// Appending the input with the hidden state
+		x = vec_stack(hs[l], x); 
+
+		hf = sigmoid( fully_connected_feed_forward(x,Wf,bf) );
+		hi = sigmoid( fully_connected_feed_forward(x,Wi,bi) );
+		ho = sigmoid( fully_connected_feed_forward(x,Wo,bo) );
+		hc = tanh( fully_connected_feed_forward(x,Wc,bc) );
+
+		// Updating the control signal for the layer
+		cs[l] = vec_add( vec_mult(hf, cs[l]) , vec_mult(hi, hc)  );
+		// Updating hidden state and output of the layer
+		hs[l] = vec_mult(ho, tanh(cs[l]));
+
+		// Computing the output
+		y = fully_connected_feed_forward(hs[l], Wy, by);
+
+		// Setting the output of this layer to the input for the next layer.
+		x = y;
+
+		l--;
+	} 
+
+	// Computing the probability of the features
+	var probability = softmax(y);
+
+	// Summary of each features probability
+	var report = [];
+
+	var i = 0;
+	while ( i < F ) {
+		var feature = String.fromCharCode( parseInt( index_to_value[""+i] ) );
+		var prob = probability[i];
+		var entry = {}
+
+		entry["feature"] = feature;
+		entry["probability"] = prob;
+		entry["index"] = i;
+
+		report.push(entry);
+
+		i++;
+	}	
+
+	report.sort(sort_feature_entries);
+
+
+
+	if ( debug ) {
+	/*
+		i = 0;
+		console.log("====== Top 10 probability (input: " + String.fromCharCode(parseInt(input_value)) + ")======");
+		while ( i < 10 && i < F ) {
+			console.log((i+1) + ". " + report[i]["feature"] + ": " + report[i]["probability"]);
+			i++;
+		}
+	*/
+	} 
+
+
+	return report;
+}
+
+function sample_feature_based_on_report(report) {
+
+	var i = 0;
+	var sum = 0.0;
+
+	var random = Math.random()
+
+	while ( i < report.length ) {
+
+		sum += report[i]["probability"];
+
+		if ( sum > random ) 
+			return report[i]["feature"];
+
+		i++;
+	}
+
+	return report[report.length-1]["feature"];
+
+}
+
+function init_gui(filename) {
+	/*
+	*
+	* This feature will only work if each layer has the same 
+	* number of neurons. 
+	*
+	*/
+
+	var layers = data["LSTM layers"];
+	var feature_mapping = data["Feature mapping"];
+
+	var l = 0;
+
+	if ( typeof layers === 'undefined' ) {
+
+		write_error_msg("Key: 'LSTM layers' not found. The JSON file is incorrect and cannot be used for this feature.");
+		return;
+
+	} 
+
+	if ( typeof feature_mapping === 'undefined' ) {
+
+		write_error_msg("Key: 'Feature mapping' not found. The JSON file is incorrect and cannot be used for this feature.");
+		return;
+
+	}
+
+	index_to_value = feature_mapping;
+
+	value_to_index = {}
+
+	for ( key in index_to_value ) {
+		// Setting up the reversed mapping
+		value_to_index[index_to_value[key]] = key;
+	}
+
+	N = 0;
+	F = 0;
+
+	hs = [];
+	cs = [];
+
+	while ( l < layers ) {
+		// Setting the h's and c's to zero.
+
+		var layer = data["Layer " + (l+1)];
+
+		if ( typeof layer === 'undefined' ) {
+			write_error_msg("Key: 'Layer " + (l+1) + "'' not found. The JSON file is incorrect and cannot be used for this feature.");
+			return;
+
+		} else {
+
+			// Getting the value of neurons and output features (N and F)
+			Wy = layer["Wy"];
+
+			if ( N == 0 ){
+				N = Wy[0].length;
+			} else if ( Wy[0].length != N ) {
+				write_error_msg("ValueError: 'Layer " + (l+1) + "'' has: " + Wy[0].length + " neurons. Previous layer has " + N + " neurons. This application only works for LSTM networks with an equal number of neurons in each layer.");
+				return;
+			}
+
+			if ( F == 0 ) {
+				F = Wy.length;
+			} else if ( Wy.length != F ) {
+				write_error_msg("ValueError: 'Layer " + (l+1) + "'' has: " + Wy.length + " features. Previous layer has " + F + " features. This application only works for LSTM networks with an equal number of features for each layer.");
+				return;
+			}
+
+		}
+
+		l++;
+	}
+
+	reset_state(layers);
+
+	LSTM_model = data; 
+
+	// writing some progress bars to the DOM
+	var html = "";
+	var i = 0;
+
+	while ( i < F ) {
+
+		html += "<div> <p id='out-" + i + "-p'><div class='progress'><div id='out-" + i + "-progress-bar' class='progress-bar'></div></div></div>";
+		i++;
+	}
+
+	document.getElementById("next_char_view").innerHTML = html;
+
+	write_positive_msg("LSTM model successfully loaded!");
+
+}
+
+function debug_monitor_lstm() {
+	debug = true;
+	var start = false;
+
+	if ( input == "" || typeof input === 'undefined') {
+		input =  String.fromCharCode(  index_to_value[  Math.round( Math.random() * F )  ]  )  ;
+		start = true;
+	}
+
+	result += input;
+	// Greedy output becomes input.. 
+	report = LSTM_feed_forward(input.charCodeAt(), start);
+
+	display_report(report);
+
+	input = sample_feature_based_on_report ( report );
+
+}
+
+window.addEventListener("load", function() {
+//	data = weights();
+//	init_gui();
+});
+
+function readSingleFile(evt) {
+	//Retrieve the first (and only!) File from the FileList object
+	var f = evt.target.files[0]; 
+
+	if (f) {
+		var r = new FileReader();
+		r.onload = function(e) { 
+			var contents = e.target.result;
+
+			try {
+				data = JSON.parse(contents);
+			} catch (e) {
+				write_error_msg("The file was not correctly formatted as a JSON string.");
+				return;
+			}
+
+			try {
+				init_gui(f.name);
+			} catch(e) {
+				write_error_msg("Failed to load file: " + f.name);
+				console.log(e);
+			}
+
+		}
+		r.readAsText(f);
+	} else { 
+		write_error_msg("No model was loaded");
+	}
+}
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+    	try	{
+			debug_monitor_lstm();
+    	} catch(e){
+    		;
+    	}
+    	
+    }
+});
+
+document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+document.getElementById('next-btn').addEventListener('click', debug_monitor_lstm, false);
+document.getElementById('reset-btn').addEventListener('click', function(e){
+	result = "";
+	input = "";
+	document.getElementById("chars").innerHTML = "";
+	document.getElementById("chars-input").value = "";
+}, false);
+
+var last_timeout;
+
+function read_from_chars(i, time_in_between=500){
+	var string = document.getElementById('chars-input').value;
+
+	if ( i == string.length ) {
+		document.getElementById('chars-input').value = "";
+		return;
+	}
+
+	char = string[i];
+
+	if ( typeof char == "undefined" )
+		return;
+
+	if (! ( ( ("" + char).charCodeAt() ) in value_to_index ) ) {
+		write_error_msg("The entered character was not in the feature map of a given LSTM");
+		document.getElementById('chars-input').value = "";
+		return;
+	}
+
+	input = char;
+
+	try {
+
+		debug_monitor_lstm();
+		setTimeout(function() {
+			read_from_chars(i+1);
+		}, time_in_between);
+
+	} catch (e) {;}
+	
+
+}
+
+document.getElementById('chars-input-btn').addEventListener('click', function(e){
+
+	clearTimeout(last_timeout);
+
+	read_from_chars(0);
+
+}, false);
+
+</script>
+
+
+</script>
+
+</body>
+</html>
