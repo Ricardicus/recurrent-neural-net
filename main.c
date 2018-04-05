@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 				*clean = ' ';
 		} while ( clean != NULL );
 
-		lstm_output_string_from_string_layers(model_layers, &set, argv[5], 100);
+		lstm_output_string_from_string_layers(model_layers, &set, argv[5], 128);
 
 	} else {
 

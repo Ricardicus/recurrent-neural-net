@@ -841,6 +841,84 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename)
 	fclose(fp);
 }
 
+void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers, set_T* char_index_mapping, int first, int numbers_to_display, int layers)
+{
+        lstm_values_cache_t ***caches_layer;
+        int i = 0, count, index, p = 0, b = 0;
+        char input = set_char_to_indx(char_index_mapping, first);
+        int F = model_layers[0]->F;
+
+	if ( fp == NULL ) 
+		return;
+
+        caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
+
+        if ( caches_layer == NULL )
+                lstm_init_fail("Failed to output string\n");
+
+        p = 0;
+        while ( p < layers ) {
+                caches_layer[p] = calloc(2, sizeof(lstm_values_cache_t*));
+                b = 0;
+                while ( b < 2 ) {
+                        caches_layer[p][b] = lstm_cache_container_init(model_layers[p]->N, model_layers[p]->F); 
+                        ++b;
+                }
+                ++p;
+        }
+
+        double first_layer_input[F];
+
+        lstm_cache_container_set_start(caches_layer[0][0]);
+        lstm_cache_container_set_start(caches_layer[0][0]);
+
+        while ( i < numbers_to_display ) {
+
+                index = set_char_to_indx(char_index_mapping,input);
+
+                count = 0;
+                while ( count < F ) {
+                        first_layer_input[count] = 0.0;
+                        ++count;
+                }
+
+                first_layer_input[index] = 1.0;
+
+                p = layers - 1;
+                lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);
+
+                if ( p > 0 ) {
+                        --p;
+                        while ( p >= 0 ) {
+                                lstm_forward_propagate(model_layers[p], caches_layer[p+1][(i+1)%2]->probs, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);   
+                                --p;
+                        }
+                        p = 0;
+                }
+
+                input = set_probability_choice(char_index_mapping, caches_layer[p][(i+1)%2]->probs);
+                fprintf (fp, "%c", input );
+
+                ++i;
+        }
+
+        p = 0;
+        while ( p < layers ) {
+
+                b = 0;
+                while ( b < 2 ) {
+                        lstm_cache_container_free( caches_layer[p][b]);
+                        free(caches_layer[p][b]);
+                        ++b;
+                }
+                free(caches_layer[p]);
+                ++p;
+        }
+
+        free(caches_layer);
+}
+
+
 void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_mapping, int first, int numbers_to_display, int layers)
 {
 	lstm_values_cache_t ***caches_layer;
@@ -1335,6 +1413,20 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 		if ( b + model->params->mini_batch_size >= training_points )
 			epoch++;
+#ifdef TWEET_PROGRESS
+
+		if ( !(n % TWEET_PROGRESS) ) {
+			FILE * fp_tweet = fopen("tweet_progress.txt","w");
+			if ( fp_tweet != NULL ) {
+				fprintf(fp_tweet, "Iteration: %u\nLoss: %.5lf\n", n, loss);
+				lstm_output_string_layers_to_file(fp_tweet, model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
+				fclose(fp_tweet);
+			}
+	
+
+		}
+
+#endif
 
 		i = (b + model->params->mini_batch_size) % training_points;
 
