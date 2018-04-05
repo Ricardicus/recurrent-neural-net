@@ -71,5 +71,6 @@ Try to optimize it the way you want using the compiler at hand!
 Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
 
 Below is an image of this GUI and how one can interact with it. 
+
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
 
