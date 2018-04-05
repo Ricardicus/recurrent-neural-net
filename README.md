@@ -66,7 +66,7 @@ gcc *.c -O3 -Ofast -msse3 -lm
 
 Try to optimize it the way you want using the compiler at hand!
 
-# Additional fun-factors
+# Additional interesting stuff
 
 Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
 
