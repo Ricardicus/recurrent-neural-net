@@ -12,7 +12,8 @@ Here is an example of how it is used. In this example I have hit the "Sample nex
 
 <ol>
   <li>Train a model</li>
-  <li>Load the <pre>.json</pre> file into the GUI</li>
+  <li>Stop the training process when it is sufficiently trained, by hitting CTRL-C or by first editing code with a stopping condition.</li>
+  <li>Load the JSON-file into the GUI</li>
   <li>Either sample a character one-by-one using <i>Sample next</i></li>
   <li>.. or: Give it a sequence of characters to start it off</li>
 </ol>
