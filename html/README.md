@@ -6,6 +6,13 @@ It can be used for debugging purposes but also just to play around with an exist
 
 # What does it look like?
 
-Here is an example of how it is used. In this example I have hit the "sample next" button to generate each character.
+Here is an example of how it is used. In this example I have hit the "Sample next" button to generate each character.
 
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
+
+<ol>
+  <li>Train a model</li>
+  <li>Load the <pre>.json<pre> file into the GUI</li>
+  <li>Either sample a character one-by-one using <i>Sample next</i></li>
+  <li>.. or: Give it a sequence of characters to start it off</li>
+</ol>
