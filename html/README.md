@@ -13,7 +13,7 @@ Here is an example of how it is used. In this example I have hit the "Sample nex
 <i>Steps needed to be taken:</i>
 <ol>
   <li>Train a model</li>
-  <li>Stop the training process when it is sufficiently trained, by hitting CTRL-C or by first editing code with a stopping condition.</li>
+  <li>Stop the training process when the model is sufficiently trained. This can be done either by hitting CTRL-C or by editing the code and inserting a stopping condition other than the number of iterations into the function "lstm_train" (in "lstm.c")</li>
   <li>Load the JSON-file into the GUI</li>
   <li>Either sample a character one-by-one using <i>Sample next</i></li>
   <li>.. or: Give it a sequence of characters to start it off</li>
