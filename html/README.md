@@ -10,6 +10,7 @@ Here is an example of how it is used. In this example I have hit the "Sample nex
 
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
 
+<i>Steps needed to be taken:</i>
 <ol>
   <li>Train a model</li>
   <li>Stop the training process when it is sufficiently trained, by hitting CTRL-C or by first editing code with a stopping condition.</li>
