@@ -3,7 +3,7 @@
 We are all interested in the process of learning and intelligence. In the process of designing
 systems that can adapt and learn patterns we explore on a basic, fundamental, level theories about how our brain works.
 A recurrent neural network is a system that contains feedback loops and can store information from the past. 
-This is necessary in order to model long-term dependencies such as can be found in natural language processing. A popular type of recurrent neural network is called LSTM and stands for Long Short-Term Memory and was was proposed in 1997 by Sepp Hochreiter and Jürgen Schmidhuber and improved in 2000 by Felix Gers and others. 
+This is necessary in order to model long-term dependencies such as can be found in natural language processing. A popular type of recurrent neural network is called LSTM and stands for Long Short-Term Memory and was proposed in 1997 by Sepp Hochreiter and Jürgen Schmidhuber. 
 
 This program will learn to produce text similar to the one that
 it has been training on using a LSTM network implemented in C. The repo is inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
