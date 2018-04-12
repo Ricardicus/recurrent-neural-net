@@ -79,4 +79,4 @@ Below is an image of this GUI and how one can interact with it.
 
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
 
-In the image of the GUI above, we see that a word is about to be formed starting with the letter "<i>i</i>", where the words <i>if</i>, <i>in</i> and <i>it</i> are most likely to be formed. 
+In the image of the GUI above, we see that a word is about to be formed starting with the letter "i". The most likely words to be formed are: <i>if</i>, <i>in</i> and <i>it</i>. 
