@@ -18,3 +18,6 @@ Here is an example of how it is used. In this example I have hit the "Sample nex
   <li>Either sample a character one-by-one using <i>Sample next</i></li>
   <li>.. or: Give it a sequence of characters to start it off</li>
 </ol>
+
+<h>Use the example model</h>
+Include the .json file in the "models" folder to analyze the behaviour of an already trained model, having read the first Harry Potter book many times.  
