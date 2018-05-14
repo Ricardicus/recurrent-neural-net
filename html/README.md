@@ -19,5 +19,6 @@ Here is an example of how it is used. In this example I have hit the "Sample nex
   <li>.. or: Give it a sequence of characters to start it off</li>
 </ol>
 
-<h>Use the example model</h>
-Include the .json file in the "models" folder to analyze the behaviour of an already trained model, having read the first Harry Potter book many times.  
+## Use the example model
+
+Include the .json file in the "models" folder to analyze the behaviour of an already trained model, having read the first Harry Potter book many times. 
