@@ -121,7 +121,7 @@ function floatinput(charcode) {
 	<div id="input-div">
 	</div>
 <br>
-<button id="next-btn" style="height:20px;width:200px;font-size:14px;">Sample next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
+<button id="next-greedy-btn" style="height:20px;width:200px;font-size:14px;">Greedy next</button><button id="next-btn" style="height:20px;width:200px;font-size:14px;">Sample next</button><button id="reset-btn" style="height:20px;width:200px;font-size:14px;">Reset state</button>
 <br><br>
 <p>Or enter characters:</p><input id="chars-input"></input><button  style="height:20px;width:200px;font-size:14px;" id="chars-input-btn">Enter characters</button>
 <br>
@@ -522,6 +522,28 @@ function sample_feature_based_on_report(report) {
 
 }
 
+function highest_feature_based_on_report(report) {
+
+	var maxind = 0;
+	var max = -99;
+	var i = 0;
+
+	while ( i < report.length ) {
+
+		if (  report[i]["probability"] >= max ){
+			maxind = i;
+			max = report[i]["probability"];
+			console.log("max: " + max);
+		} 
+
+		i++;
+
+	}
+
+	return report[maxind]["feature"];
+
+}
+
 function init_gui(filename) {
 	/*
 	*
@@ -636,6 +658,26 @@ function debug_monitor_lstm() {
 
 }
 
+
+function greedy_monitor_lstm() {
+	debug = true;
+	var start = false;
+
+	if ( input == "" || typeof input === 'undefined') {
+		input =  String.fromCharCode(  index_to_value[  Math.round( Math.random() * F )  ]  )  ;
+		start = true;
+	}
+
+	result += input;
+	// Greedy output becomes input.. 
+	report = LSTM_feed_forward(input.charCodeAt(), start);
+
+	display_report(report);
+
+	input = highest_feature_based_on_report ( report );
+
+}
+
 window.addEventListener("load", function() {
 //	data = weights();
 //	init_gui();
@@ -684,6 +726,7 @@ document.addEventListener("keydown", function(event) {
 
 document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
 document.getElementById('next-btn').addEventListener('click', debug_monitor_lstm, false);
+document.getElementById('next-greedy-btn').addEventListener('click', greedy_monitor_lstm, false);
 document.getElementById('reset-btn').addEventListener('click', function(e){
 	result = "";
 	input = "";
