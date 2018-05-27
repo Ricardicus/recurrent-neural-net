@@ -31,7 +31,10 @@ make
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
 Then run the program:
-"./net datafile" 
+<pre>
+./net datafile 
+</pre>
+
 where datafile is a file with the traning data and it will start traning on it. You can see the progress 
 over time. 
 
