@@ -35,7 +35,7 @@ Then run the program:
 ./net datafile 
 </pre>
 
-where datafile is a file with the traning data and it will start traning on it. You can see the progress 
+where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
 
 Check out the file "lstm.h".
