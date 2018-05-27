@@ -40,9 +40,7 @@ over time.
 
 Check out the file "lstm.h".
 
-In lstm.h you can edit the program. 
-Set the number of layers (2/3 is best I think). 
-Set how often it should output data. 
+In lstm.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". Enjoy! :) 
 
 # Examples
 I trained this program to read the first Harry Potter book, It produced quotes such as this: 
