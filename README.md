@@ -13,7 +13,7 @@ it has been training on using a LSTM network implemented in C. The repo is inspi
 Do you have a mac or a Linux machine? 
 In that case it is super easy to download and run.
 
-However, I don't really know how to compile this program in Windows since I am not using Windows myself. I have used a program called MinGW  compile my own C programs in the past. But Maybe check this out if you are on Windows: https://sourceforge.net/projects/mingw/files/
+However, I don't really know how to compile this program in Windows since I am not using Windows myself. I have used a program called MinGW to compile my own C programs in the past. But maybe check this out if you are on Windows: https://sourceforge.net/projects/mingw/files/
 
 Otherwise:
 
