@@ -1,14 +1,19 @@
 # Reccurent neural network
 
+We are all interested in the process of learning and intelligence. In the process of designing
+systems that can adapt and learn patterns we explore on a basic, fundamental, level theories about how our brain works.
+A recurrent neural network is a system that contains feedback loops and can store information from the past. 
+This is necessary in order to model long-term dependencies such as can be found in natural language processing. A popular type of recurrent neural network is called LSTM and stands for Long Short-Term Memory and was proposed in 1997 by Sepp Hochreiter and Jürgen Schmidhuber. 
+
 This program will learn to produce text similar to the one that
-it has been training on using a recurrent neural network. Inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
+it has been training on using a LSTM network implemented in C. The repo is inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
 
 # How do I use it? 
 
 Do you have a mac or a Linux machine? 
 In that case it is super easy to download and run.
 
-However, I don't really know how to compile this program in Windows since I am not using Windows myself. I have used a program called MinGW  compile my own C programs in the past. But Maybe check this out if you are on Windows: https://sourceforge.net/projects/mingw/files/
+However, I don't really know how to compile this program in Windows since I am not using Windows myself. I have used a program called MinGW to compile my own C programs in the past. But maybe check this out if you are on Windows: https://sourceforge.net/projects/mingw/files/
 
 Otherwise:
 
@@ -26,15 +31,16 @@ make
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
 Then run the program:
-"./net datafile" 
-where datafile is a file with the traning data and it will start traning on it. You can see the progress 
+<pre>
+./net datafile 
+</pre>
+
+where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
 
 Check out the file "lstm.h".
 
-In lstm.h you can edit the program. 
-Set the number of layers (2/3 is best I think). 
-Set how often it should output data. 
+In lstm.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". Enjoy! :) 
 
 # Examples
 I trained this program to read the first Harry Potter book, It produced quotes such as this: 
@@ -59,9 +65,19 @@ I will give this some time and hopefully I figure out a way that
 optimizes the program even more for speed.. Until then, have a go at this 
 little program and edit it as you please! 
 
-# make
+# Build
 
 I use GCC and compile with with: 
 gcc *.c -O3 -Ofast -msse3 -lm
 
 Try to optimize it the way you want using the compiler at hand!
+
+# Additional interesting stuff
+
+Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
+
+Below is an image of this GUI and how one can interact with it. 
+
+<img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/Screendump_example.png"></img>
+
+In the image of the GUI above, we see that a word is about to be formed starting with the letter <i>i</i>. The most likely words to be formed are: <i>if</i>, <i>in</i> and <i>it</i>. 
