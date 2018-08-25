@@ -1,6 +1,6 @@
 # Reccurent neural network
 
-In the process of designing systems that can adapt and learn patterns we explore on a basic, fundamental, level theories about how our brain works. I find this very fascinating. A recurrent neural network is a system that contains feedback loops and can store information from the past. 
+In the process of designing systems that can adapt and learn patterns we explore on a basic, fundamental, level theories about how complex biological systems, such as human brains, work. I find this very fascinating. A recurrent neural network is a system that contains feedback loops and can store information from the past. 
 This is necessary in order to model long-term dependencies such as can be found in natural language processing. A popular type of recurrent neural network is called LSTM and stands for Long Short-Term Memory and was proposed in 1997 by Sepp Hochreiter and Jürgen Schmidhuber. 
 
 This program will learn to produce text similar to the one that
