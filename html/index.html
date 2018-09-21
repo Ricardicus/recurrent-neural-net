@@ -160,6 +160,14 @@ var last_timeout;
 var input = "";
 var result = "";
 
+// The pre cannot display characters such as '<', '>' or '&' correctly
+// this map is necessary to make them displayed
+var special_chars = {
+	'<' : "&lt",
+	'>' : "&gt",
+	'&' : "&amp"
+}
+
 function write_positive_msg(msg, timeout=4) {
 
 	// Hide error header
@@ -649,7 +657,7 @@ function debug_monitor_lstm() {
 		start = true;
 	}
 
-	result += input;
+	result += input in special_chars ? special_chars[input] : input;
 	// Greedy output becomes input.. 
 	report = LSTM_feed_forward(input.charCodeAt(), start);
 
@@ -669,7 +677,7 @@ function greedy_monitor_lstm() {
 		start = true;
 	}
 
-	result += input;
+	result += input in special_chars ? special_chars[input] : input;
 	// Greedy output becomes input.. 
 	report = LSTM_feed_forward(input.charCodeAt(), start);
 
