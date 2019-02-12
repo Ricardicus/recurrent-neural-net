@@ -47,8 +47,11 @@
 #define PRINT_EVERY_X_ITERATIONS								100
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
-#define PRINT_PROGRESS 											1 // set to 0 to disable printing
-#define PRINT_SAMPLE_OUTPUT 									1 // set to 0 to disable output sampling
+#define PRINT_PROGRESS 											1   // set to 0 to disable printing
+#define PRINT_SAMPLE_OUTPUT 									1   // set to 0 to disable output sampling
+#define PRINT_SAMPLE_OUTPUT_TO_FILE								0   // set to 0 to disable output sampling to file
+#define PRINT_SAMPLE_OUTPUT_TO_FILE_ARG							"a" // used as an argument to fopen (goes with "w" or "a")
+#define PRINT_SAMPLE_OUTPUT_TO_FILE_NAME						"progress_output.txt" // name of the file containing samples
 
 #define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
 
@@ -89,6 +92,10 @@ typedef struct lstm_model_parameters_t {
 	long print_progress_iterations;
 	int  print_progress_sample_output;
 	int  print_progress;
+	int  print_progress_to_file;
+	int  print_progress_number_of_chars;
+	char *print_sample_output_to_file_name;
+	char *print_sample_output_to_file_arg;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;

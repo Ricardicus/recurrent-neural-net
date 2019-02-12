@@ -69,9 +69,14 @@ int main(int argc, char *argv[])
 
 	params.optimizer = OPTIMIZE_ADAM;
 
+	// Interaction configuration with the training of the network
 	params.print_progress = PRINT_PROGRESS;
 	params.print_progress_iterations = PRINT_EVERY_X_ITERATIONS;
 	params.print_progress_sample_output = PRINT_SAMPLE_OUTPUT;
+	params.print_progress_to_file = PRINT_SAMPLE_OUTPUT_TO_FILE;
+	params.print_progress_number_of_chars = NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING;
+	params.print_sample_output_to_file_arg = PRINT_SAMPLE_OUTPUT_TO_FILE_ARG;
+	params.print_sample_output_to_file_name = PRINT_SAMPLE_OUTPUT_TO_FILE_NAME;
 
 	srand( time ( NULL ) );
 

@@ -1206,6 +1206,10 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	int print_progress = model->params->print_progress;
 	int print_progress_iterations = model->params->print_progress_iterations;
 	int print_progress_sample_output = model->params->print_progress_sample_output;
+	int print_progress_to_file = model->params->print_progress_to_file;
+	int print_progress_number_of_chars = model->params->print_progress_number_of_chars;
+	char *print_progress_to_file_name = model->params->print_sample_output_to_file_name;
+	char *print_progress_to_file_arg = model->params->print_sample_output_to_file_arg;
 
 	lstm_values_state_t ** stateful_d_next;
 	lstm_values_cache_t ***cache_layers;
@@ -1472,8 +1476,17 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 
 			if ( print_progress_sample_output ) {
 				printf("=====================================================\n");
-				lstm_output_string_layers(model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
+				lstm_output_string_layers(model_layers, char_index_mapping, X_train[b], print_progress_number_of_chars, layers);
 				printf("\n=====================================================\n");
+			}
+
+			if ( print_progress_to_file ) {
+				FILE * fp_progress_output = fopen(print_progress_to_file_name, print_progress_to_file_arg);
+				if ( fp_progress_output != NULL ) {
+					fprintf(fp_progress_output, "%s====== Iteration: %lu, loss: %.5lf ======\n", n==0 ? "" : "\n", n, loss);
+					lstm_output_string_layers_to_file(fp_progress_output, model_layers, char_index_mapping, X_train[b], print_progress_number_of_chars, layers);
+					fclose(fp_progress_output);
+				}
 			}
 			
 			// Flushing stdout
@@ -1485,20 +1498,6 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 
 		if ( b + model->params->mini_batch_size >= training_points )
 			epoch++;
-#ifdef TWEET_PROGRESS
-
-		if ( !(n % TWEET_PROGRESS) ) {
-			FILE * fp_tweet = fopen("tweet_progress.txt","w");
-			if ( fp_tweet != NULL ) {
-				fprintf(fp_tweet, "Iteration: %u\nLoss: %.5lf\n", n, loss);
-				lstm_output_string_layers_to_file(fp_tweet, model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
-				fclose(fp_tweet);
-			}
-	
-
-		}
-
-#endif
 
 		i = (b + model->params->mini_batch_size) % training_points;
 
