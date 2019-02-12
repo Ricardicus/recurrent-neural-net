@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 	FILE * fp;
 
 	lstm_model_parameters_t params;
+	memset(&params, 0, sizeof(params));
 
 	params.loss_moving_avg = LOSS_MOVING_AVG;
 	params.learning_rate = STD_LEARNING_RATE;
@@ -50,17 +51,24 @@ int main(int argc, char *argv[])
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
 
+	params.stateful = STATEFUL;
+
 	params.beta1 = 0.9;
 	params.beta2 = 0.999;
 
 	params.gradient_fit = GRADIENTS_FIT;
 	params.gradient_clip = GRADIENTS_CLIP;
+	params.decrease_lr = DECREASE_LR;
 
 	params.model_regularize = MODEL_REGULARIZE;
 
 	params.layers = LAYERS;
 
 	params.optimizer = OPTIMIZE_ADAM;
+
+	params.print_progress = PRINT_PROGRESS;
+	params.print_progress_iterations = PRINT_EVERY_X_ITERATIONS;
+	params.print_progress_sample_output = PRINT_SAMPLE_OUTPUT;
 
 	srand( time ( NULL ) );
 

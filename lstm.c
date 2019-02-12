@@ -1201,9 +1201,14 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	double initial_learning_rate = model->params->learning_rate;
 	time_t time_iter;
 	char time_buffer[40];
+	int stateful = model->params->stateful, decrease_lr = model->params->decrease_lr;
+	// configuration for output printing during training
+	int print_progress = model->params->print_progress;
+	int print_progress_iterations = model->params->print_progress_iterations;
+	int print_progress_sample_output = model->params->print_progress_sample_output;
 
+	lstm_values_state_t ** stateful_d_next;
 	lstm_values_cache_t ***cache_layers;
-
 	lstm_values_next_cache_t **d_next_layers;
 	
 	lstm_model_t **gradient_layers, **gradient_layers_entry,  **M_layers, **R_layers;
@@ -1214,20 +1219,19 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 	double first_layer_input[F];
 
-#ifdef STATEFUL
-	lstm_values_state_t ** stateful_d_next;
-	stateful_d_next = calloc(layers, sizeof(lstm_values_state_t*));
-	if ( stateful_d_next == NULL )
-		lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas\n");
-	i = 0;
-	while ( i < layers) {
-		stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_state_t));
-		if ( stateful_d_next[i] == NULL )
-			lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas, inner in layer\n");
-		lstm_values_state_init(&stateful_d_next[i], N);
-		++i;
+	if ( stateful ) {
+		stateful_d_next = calloc(layers, sizeof(lstm_values_state_t*));
+		if ( stateful_d_next == NULL )
+			lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas\n");
+		i = 0;
+		while ( i < layers) {
+			stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_state_t));
+			if ( stateful_d_next[i] == NULL )
+				lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas, inner in layer\n");
+			lstm_values_state_init(&stateful_d_next[i], N);
+			++i;
+		}
 	}
-#endif
 
 	i = 0;
 	cache_layers = calloc(layers, sizeof(lstm_values_cache_t**));
@@ -1297,14 +1301,14 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		q = 0;
 
 		while ( q < layers ) {
-#ifdef STATEFUL
-			if ( q == 0 ) 
+			if ( stateful ) {
+				if ( q == 0 )
+					lstm_cache_container_set_start(cache_layers[q][0]);
+				else
+					lstm_next_state_copy(stateful_d_next[q], cache_layers[q][0], 0);
+			} else {
 				lstm_cache_container_set_start(cache_layers[q][0]);
-			else 
-				lstm_next_state_copy(stateful_d_next[q], cache_layers[q][0], 0);
-#else 
-			lstm_cache_container_set_start(cache_layers[q][0]);
-#endif
+			}
 			++q;
 		}
 
@@ -1364,14 +1368,14 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			record_iteration = n;
 		}
 
-#ifdef STATEFUL
-		p = 0;
-		while ( p < layers ) {
-			lstm_next_state_copy(stateful_d_next[p], cache_layers[p][e2], 1);
-			++p;
+		if ( stateful ) {
+			p = 0;
+			while ( p < layers ) {
+				lstm_next_state_copy(stateful_d_next[p], cache_layers[p][e2], 1);
+				++p;
+			}
 		}
-		p = 0;
-#endif
+
 
 		p = 0;
 		while ( p < layers ) {
@@ -1444,11 +1448,20 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			}
 		break;
 		default:
+			fprintf( stderr,
+"Failed to update gradients, no acceptible optimization algorithm provided.\n\
+lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
+    %d: Adam gradients optimizer algorithm\n\
+    %d: Gradients descent algorithm.\n",
+    		OPTIMIZE_ADAM,
+    		OPTIMIZE_GRADIENT_DESCENT
+			);
+			exit(1);
 		break;
 		}
 
 
-		if ( !( n % PRINT_EVERY_X_ITERATIONS ) ) {
+		if ( print_progress && !( n % print_progress_iterations ) ) {
 
 			status = 0;
 			memset(time_buffer, '\0', sizeof time_buffer);
@@ -1456,11 +1469,12 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			strftime(time_buffer, sizeof time_buffer, "%X", localtime(&time_iter));
 
 			printf("%s Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", time_buffer, n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
-			printf("=====================================================\n");
 
-			lstm_output_string_layers(model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
-
-			printf("\n=====================================================\n");
+			if ( print_progress_sample_output ) {
+				printf("=====================================================\n");
+				lstm_output_string_layers(model_layers, char_index_mapping, X_train[b], NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING, layers);
+				printf("\n=====================================================\n");
+			}
 			
 			// Flushing stdout
 			fflush(stdout);
@@ -1492,10 +1506,10 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			i = 0;
 		}
 
-#ifdef DECREASE_LR
-		model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
-//		printf("learning rate: %lf\n", model->params->learning_rate);
-#endif
+		if ( decrease_lr ) {
+			model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+//			printf("learning rate: %lf\n", model->params->learning_rate);
+		}
 
 		++n;
 	}
@@ -1520,14 +1534,15 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		++p;
 	}
 
-#ifdef STATEFUL
-	i = 0;
-	while ( i < layers) {
-		free(stateful_d_next[i]);
-		++i;
+	if ( stateful ) {
+		i = 0;
+		while ( i < layers) {
+			free(stateful_d_next[i]);
+			++i;
+		}
+		free(stateful_d_next);
 	}
-	free(stateful_d_next);
-#endif
+
 
 	free(cache_layers);
 	free(gradient_layers);

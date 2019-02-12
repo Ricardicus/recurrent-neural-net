@@ -31,12 +31,11 @@
 #define GRADIENTS_CLIP											1
 #define GRADIENTS_FIT											0
 
-//#define DECREASE_LR 
-
 #define MODEL_REGULARIZE										0
 	
 #define OPTIMIZE_ADAM											0
 #define OPTIMIZE_GRADIENT_DESCENT								1
+#define DECREASE_LR 											0 // set to 0 to disable decreasing learning rate
 
 // #define DEBUG_PRINT
 
@@ -48,6 +47,8 @@
 #define PRINT_EVERY_X_ITERATIONS								100
 #define STORE_EVERY_X_ITERATIONS								8000
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
+#define PRINT_PROGRESS 											1 // set to 0 to disable printing
+#define PRINT_SAMPLE_OUTPUT 									1 // set to 0 to disable output sampling
 
 #define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
 
@@ -81,6 +82,13 @@ typedef struct lstm_model_parameters_t {
 	int optimizer;
 
 	int model_regularize;
+
+	int stateful;
+	int decrease_lr;
+
+	long print_progress_iterations;
+	int  print_progress_sample_output;
+	int  print_progress;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;
