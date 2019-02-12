@@ -20,7 +20,10 @@ void store_the_net_layers(int signo)
 	if ( model_layers != NULL ){
 		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME);
 		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, &set);
-		printf("\nStored the net as: '%s'\n", STD_JSON_NET_NAME);
+		printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
+			STD_JSON_NET_NAME);
+		printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
+to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
 	} else {
 		printf("\nFailed to store the net!\n");
 		exit(-1);
