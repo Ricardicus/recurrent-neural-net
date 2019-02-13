@@ -42,8 +42,6 @@
 
 #define STATEFUL												1
 
-// #define INTERLAYER_SIGMOID_ACTIVATION								
-
 #define GRADIENTS_CLIP											1
 #define GRADIENTS_FIT											0
 
@@ -51,13 +49,16 @@
 
 #define DECREASE_LR 											0 // set to 0 to disable decreasing learning rate
 
-// #define DEBUG_PRINT
-
 #define STD_LEARNING_RATE_DECREASE								100000
 #define STD_LEARNING_RATE_THRESHOLD								10000
 #define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE	1000000							
 
-// #define STORE_DURING_TRANING
+/*
+* These defines modify how the program interacts with the user
+* of the program during the training phase. Here you can
+* decide how often it should output its progress and wether or not
+* it should write to file among other things.
+*/
 #define PRINT_EVERY_X_ITERATIONS								100
 #define STORE_EVERY_X_ITERATIONS								8000
 #define PRINT_PROGRESS 											1   // set to 0 to disable printing
@@ -67,13 +68,24 @@
 #define PRINT_SAMPLE_OUTPUT_TO_FILE_NAME						"progress_output.txt" // name of the file containing samples
 #define STORE_PROGRESS_EVERY_X_ITERATIONS						1000 // set to 0 to disable writing loss value to file during training
 #define PROGRESS_FILE_NAME										"progress.csv"
-
 #define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
 
+/*
+* Once the network has been trained it is stored to these files.
+* The .net extenction is not to be confused with microsoft,
+* it is just an extension i picked that alludes to it being
+* a 'network' in its rawest form. It can be parsed by the program
+* but not by the interactive HTML application.
+* For that, the .json program is intended to be used.
+*/
 #define STD_LOADABLE_NET_NAME									"lstm_net.net"
 #define STD_JSON_NET_NAME										"lstm_net.json"
 
+// ================== DO NOT CHANGE THE FOLLOWING DEFINES ======================
+// Don't change this one, else the HTML application will not work.
 #define JSON_KEY_NAME_SET										"Feature mapping"
-
+// This define should be undeffed, it was defined during experimentation
+// #define INTERLAYER_SIGMOID_ACTIVATION
+// =============================================================================
 
 #endif
