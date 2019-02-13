@@ -65,7 +65,7 @@
 #define PRINT_SAMPLE_OUTPUT_TO_FILE								0   // set to 0 to disable output sampling to file
 #define PRINT_SAMPLE_OUTPUT_TO_FILE_ARG							"a" // used as an argument to fopen (goes with "w" or "a")
 #define PRINT_SAMPLE_OUTPUT_TO_FILE_NAME						"progress_output.txt" // name of the file containing samples
-#define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
+#define STORE_PROGRESS_EVERY_X_ITERATIONS						1000 // set to 0 to disable writing loss value to file during training
 #define PROGRESS_FILE_NAME										"progress.csv"
 
 #define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
