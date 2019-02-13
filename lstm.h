@@ -1,3 +1,25 @@
+/*
+* This file is part of the LSTM Network implementation In C made by Rickard Hallerbäck
+* 
+*                 Copyright (c) 2018 Rickard Hallerbäck
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+* software and associated documentation files (the "Software"), 
+* to deal in the Software without restriction, including without limitation the rights 
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+* Software, and to permit persons to whom the Software is furnished to do so, subject to 
+* the following conditions:
+* The above copyright notice and this permission notice shall be included in all copies 
+* or substantial portions of the Software.
+*
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+* INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+* PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
+* FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+* OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+* OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 #ifndef LSTM_H
 #define LSTM_H
 
@@ -11,59 +33,8 @@
 #include "layers.h"
 #include "assert.h"
 
-
-#define NEURONS													128
-
-#define STD_LEARNING_RATE										0.001
-#define STD_MOMENTUM											0.0
-#define STD_LAMBDA												0.05
-#define SOFTMAX_TEMP											1.0
-#define GRADIENT_CLIP_LIMIT										5.0
-#define MINI_BATCH_SIZE											100
-#define LOSS_MOVING_AVG											0.01
-
-#define LAYERS  												3
-
-#define STATEFUL												1
-
-// #define INTERLAYER_SIGMOID_ACTIVATION								
-
-#define GRADIENTS_CLIP											1
-#define GRADIENTS_FIT											0
-
-#define MODEL_REGULARIZE										0
-	
-#define OPTIMIZE_ADAM											0
+#define	OPTIMIZE_ADAM											0
 #define OPTIMIZE_GRADIENT_DESCENT								1
-#define DECREASE_LR 											0 // set to 0 to disable decreasing learning rate
-
-// #define DEBUG_PRINT
-
-#define STD_LEARNING_RATE_DECREASE								100000
-#define STD_LEARNING_RATE_THRESHOLD								10000
-#define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE	1000000							
-
-// #define STORE_DURING_TRANING
-#define PRINT_EVERY_X_ITERATIONS								100
-#define STORE_EVERY_X_ITERATIONS								8000
-#define STORE_PROGRESS_EVERY_X_ITERATIONS						1000
-#define PRINT_PROGRESS 											1   // set to 0 to disable printing
-#define PRINT_SAMPLE_OUTPUT 									1   // set to 0 to disable output sampling
-#define PRINT_SAMPLE_OUTPUT_TO_FILE								0   // set to 0 to disable output sampling to file
-#define PRINT_SAMPLE_OUTPUT_TO_FILE_ARG							"a" // used as an argument to fopen (goes with "w" or "a")
-#define PRINT_SAMPLE_OUTPUT_TO_FILE_NAME						"progress_output.txt" // name of the file containing samples
-
-#define NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING				200
-
-#define YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE				1
-#define YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE		0
-
-#define STD_LOADABLE_NET_NAME									"lstm_net.net"
-#define STD_JSON_NET_NAME										"lstm_net.json"
-#define PROGRESS_FILE_NAME										"progress.csv"
-
-#define JSON_KEY_NAME_SET										"Feature mapping"
-
 
 typedef struct lstm_model_parameters_t {
 	// For progress monitoring
@@ -73,22 +44,19 @@ typedef struct lstm_model_parameters_t {
 	double momentum;
 	double lambda;
 	double softmax_temp;
-
 	double beta1;
 	double beta2;
-
-	int layers;
-
 	int gradient_clip;
 	int gradient_fit;
-
 	int optimizer;
-
 	int model_regularize;
-
 	int stateful;
 	int decrease_lr;
 
+	// How many layers
+	int layers;
+
+	// Output configuration for interactivity
 	long print_progress_iterations;
 	int  print_progress_sample_output;
 	int  print_progress;
@@ -96,6 +64,8 @@ typedef struct lstm_model_parameters_t {
 	int  print_progress_number_of_chars;
 	char *print_sample_output_to_file_name;
 	char *print_sample_output_to_file_arg;
+	int  store_progress_evert_x_iterations;
+	char *store_progress_file_name;
 
 	int learning_rate_decrease_threshold;
 	double learning_rate_decrease;
@@ -182,8 +152,8 @@ typedef struct lstm_values_next_cache_t {
 //					 F,   N,  &lstm model,    zeros, parameters
 int lstm_init_model(int, int, lstm_model_t**, int, lstm_model_parameters_t *);
 void lstm_zero_the_model(lstm_model_t*);
-void lstm_zero_d_next(lstm_values_next_cache_t *, int);
-void lstm_cache_container_set_start(lstm_values_cache_t *);
+void lstm_zero_d_next(lstm_values_next_cache_t *, int, int);
+void lstm_cache_container_set_start(lstm_values_cache_t *, int);
 
 //					 lstm model to be freed
 void lstm_free_model(lstm_model_t*);
@@ -203,17 +173,16 @@ void sum_gradients(lstm_model_t*, lstm_model_t*);
 
 // For storing and loading of net data
 //					model (already init), name
-void lstm_read_net_layers(lstm_model_t**, const char*);
-void lstm_store_net_layers(lstm_model_t**, const char *);
-void lstm_store_net_layers_as_json(lstm_model_t**, const char *,set_T *); 
-void lstm_read_net_layers(lstm_model_t**, const char *);
-void lstm_store_progress(unsigned int, double);
+void lstm_read_net_layers(lstm_model_t**, const char*, int);
+void lstm_store_net_layers(lstm_model_t**, const char *, int);
+void lstm_store_net_layers_as_json(lstm_model_t**, const char *, const char *, set_T *, int);
+void lstm_store_progress(const char*, unsigned int, double);
 
 // The main entry point
 //						model, number of training points, X_train, Y_train, number of iterations
 void lstm_train(lstm_model_t*, lstm_model_t**, set_T*, unsigned int, int*, int*, unsigned long, int);
 // Used to output a given number of characters from the net based on an input char
 void lstm_output_string_layers(lstm_model_t **, set_T*, int, int, int);
-void lstm_output_string_from_string_layers(lstm_model_t **, set_T*, char *, int);
+void lstm_output_string_from_string_layers(lstm_model_t **, set_T*, char *, int, int);
 
 #endif

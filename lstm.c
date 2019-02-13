@@ -1,3 +1,26 @@
+/*
+* This file is part of the LSTM Network implementation In C made by Rickard Hallerbäck
+* 
+*                 Copyright (c) 2018 Rickard Hallerbäck
+* 
+* Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+* software and associated documentation files (the "Software"), 
+* to deal in the Software without restriction, including without limitation the rights 
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+* Software, and to permit persons to whom the Software is furnished to do so, subject to 
+* the following conditions:
+* The above copyright notice and this permission notice shall be included in all copies 
+* or substantial portions of the Software.
+*
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+* INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+* PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
+* FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+* OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+* OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 #include "lstm.h"
 
 void lstm_init_fail(const char * msg)
@@ -744,36 +767,36 @@ void lstm_zero_the_model(lstm_model_t * model)
 	vector_set_to_zero(model->dldXf, model->S);
 }
 
-void lstm_zero_d_next(lstm_values_next_cache_t * d_next, int features)
+void lstm_zero_d_next(lstm_values_next_cache_t * d_next, int features, int neurons)
 {
-	vector_set_to_zero(d_next->dldh_next, NEURONS);
-	vector_set_to_zero(d_next->dldc_next, NEURONS);
+	vector_set_to_zero(d_next->dldh_next, neurons);
+	vector_set_to_zero(d_next->dldc_next, neurons);
 	vector_set_to_zero(d_next->dldY_pass, features );
 }
 
-void lstm_next_state_copy(lstm_values_state_t * state, lstm_values_cache_t * cache, int write )
+void lstm_next_state_copy(lstm_values_state_t * state, lstm_values_cache_t * cache, int neurons, int write)
 {
 	if ( write ) {
 		// Write to the state carrying unit
-		copy_vector(state->h, cache->h, NEURONS);
-		copy_vector(state->c, cache->c, NEURONS);
+		copy_vector(state->h, cache->h, neurons);
+		copy_vector(state->c, cache->c, neurons);
 	} else {
 		// Withdraw from the state carrying unit
-		copy_vector(cache->h, state->h, NEURONS);
-		copy_vector(cache->c, state->c, NEURONS);
+		copy_vector(cache->h, state->h, neurons);
+		copy_vector(cache->c, state->c, neurons);
 	}
 
 }
 
-void lstm_cache_container_set_start(lstm_values_cache_t * cache)
+void lstm_cache_container_set_start(lstm_values_cache_t * cache, int neurons)
 {
 	// State variables set to zero
-	vector_set_to_zero(cache->h, NEURONS); 
-	vector_set_to_zero(cache->c, NEURONS); 
+	vector_set_to_zero(cache->h, neurons);
+	vector_set_to_zero(cache->c, neurons);
 
 }
 
-void lstm_store_net_layers(lstm_model_t** model, const char * filename) 
+void lstm_store_net_layers(lstm_model_t** model, const char * filename, int layers) 
 {
 	FILE * fp;
 	int p = 0;
@@ -785,7 +808,7 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename)
 		return;
 	}
 
-	while ( p < LAYERS ) {
+	while ( p < layers ) {
 
 		vector_store(model[p]->Wy, model[p]->F * model[p]->N, fp);
 		vector_store(model[p]->Wi, model[p]->N * model[p]->S, fp);
@@ -806,7 +829,7 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename)
 
 }
 
-void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, set_T *set) 
+void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, const char *set_name, set_T *set, int layers)
 {
 	FILE * fp;
 	int p = 0, r = 0, c = 0;
@@ -818,12 +841,12 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
 		return;
 	}
 
-	fprintf(fp, "{\n\"%s\": ", JSON_KEY_NAME_SET);
+	fprintf(fp, "{\n\"%s\": ", set_name);
 	set_store_as_json(set, fp);
 
-	fprintf(fp, ",\n\"LSTM layers\": %d,\n", LAYERS);
+	fprintf(fp, ",\n\"LSTM layers\": %d,\n", layers);
 
-	while ( p < LAYERS ) {
+	while ( p < layers ) {
 
 		if ( p > 0 ) 
 			fprintf(fp, ",\n");
@@ -864,7 +887,7 @@ void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
 }
 
 
-void lstm_read_net_layers(lstm_model_t** model, const char * filename) 
+void lstm_read_net_layers(lstm_model_t** model, const char * filename, int layers)
 {
 	// Will only work for ( layer1->N, layer1->F ) == ( layer2->N, layer2->F )
 	FILE * fp;
@@ -878,7 +901,7 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename)
 		return;
 	}
 
-	while ( p < LAYERS ) {
+	while ( p < layers ) {
 
 		vector_read(model[p]->Wy, model[p]->F * model[p]->N, fp);
 		vector_read(model[p]->Wi, model[p]->N * model[p]->S, fp);
@@ -901,79 +924,79 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename)
 
 void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers, set_T* char_index_mapping, int first, int numbers_to_display, int layers)
 {
-        lstm_values_cache_t ***caches_layer;
-        int i = 0, count, index, p = 0, b = 0;
-        char input = set_char_to_indx(char_index_mapping, first);
-        int F = model_layers[0]->F;
+    lstm_values_cache_t ***caches_layer;
+    int i = 0, count, index, p = 0, b = 0;
+    char input = set_char_to_indx(char_index_mapping, first);
+    int F = model_layers[0]->F;
+    int N = model_layers[0]->N;
+    double first_layer_input[F];
 
 	if ( fp == NULL ) 
 		return;
 
-        caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
+    caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
 
-        if ( caches_layer == NULL )
-                lstm_init_fail("Failed to output string\n");
+    if ( caches_layer == NULL )
+            lstm_init_fail("Failed to output string\n");
 
-        p = 0;
-        while ( p < layers ) {
-                caches_layer[p] = calloc(2, sizeof(lstm_values_cache_t*));
-                b = 0;
-                while ( b < 2 ) {
-                        caches_layer[p][b] = lstm_cache_container_init(model_layers[p]->N, model_layers[p]->F); 
-                        ++b;
-                }
-                ++p;
-        }
+    p = 0;
+    while ( p < layers ) {
+            caches_layer[p] = calloc(2, sizeof(lstm_values_cache_t*));
+            b = 0;
+            while ( b < 2 ) {
+                    caches_layer[p][b] = lstm_cache_container_init(model_layers[p]->N, model_layers[p]->F);
+                    ++b;
+            }
+            ++p;
+    }
 
-        double first_layer_input[F];
+    lstm_cache_container_set_start(caches_layer[0][0], N);
+    lstm_cache_container_set_start(caches_layer[0][0], N);
 
-        lstm_cache_container_set_start(caches_layer[0][0]);
-        lstm_cache_container_set_start(caches_layer[0][0]);
+    while ( i < numbers_to_display ) {
 
-        while ( i < numbers_to_display ) {
+            index = set_char_to_indx(char_index_mapping,input);
 
-                index = set_char_to_indx(char_index_mapping,input);
+            count = 0;
+            while ( count < F ) {
+                    first_layer_input[count] = 0.0;
+                    ++count;
+            }
 
-                count = 0;
-                while ( count < F ) {
-                        first_layer_input[count] = 0.0;
-                        ++count;
-                }
+            first_layer_input[index] = 1.0;
 
-                first_layer_input[index] = 1.0;
+            p = layers - 1;
+            lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);
 
-                p = layers - 1;
-                lstm_forward_propagate(model_layers[p], first_layer_input, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);
+            if ( p > 0 ) {
+                    --p;
+                    while ( p >= 0 ) {
+                            lstm_forward_propagate(model_layers[p], caches_layer[p+1][(i+1)%2]->probs, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);
+                            --p;
+                    }
+                    p = 0;
+            }
 
-                if ( p > 0 ) {
-                        --p;
-                        while ( p >= 0 ) {
-                                lstm_forward_propagate(model_layers[p], caches_layer[p+1][(i+1)%2]->probs, caches_layer[p][i % 2], caches_layer[p][(i+1)%2], p == 0);   
-                                --p;
-                        }
-                        p = 0;
-                }
+            input = set_probability_choice(char_index_mapping, caches_layer[p][(i+1)%2]->probs);
+            fprintf (fp, "%c", input );
 
-                input = set_probability_choice(char_index_mapping, caches_layer[p][(i+1)%2]->probs);
-                fprintf (fp, "%c", input );
+            ++i;
+    }
 
-                ++i;
-        }
+    p = 0;
+    while ( p < layers ) {
 
-        p = 0;
-        while ( p < layers ) {
+            b = 0;
+            while ( b < 2 ) {
+                    lstm_cache_container_free( caches_layer[p][b]);
+                    free(caches_layer[p][b]);
+                    ++b;
+            }
+            free(caches_layer[p]);
+            ++p;
+    }
 
-                b = 0;
-                while ( b < 2 ) {
-                        lstm_cache_container_free( caches_layer[p][b]);
-                        free(caches_layer[p][b]);
-                        ++b;
-                }
-                free(caches_layer[p]);
-                ++p;
-        }
-
-        free(caches_layer);
+    free(caches_layer);
 }
 
 
@@ -983,6 +1006,8 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 	int i = 0, count, index, p = 0, b = 0;
 	char input = set_char_to_indx(char_index_mapping, first);
 	int F = model_layers[0]->F;
+	int N = model_layers[0]->N;
+	double first_layer_input[F];
 
 	caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
 
@@ -1000,10 +1025,8 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 		++p;
 	}
 
-	double first_layer_input[F];
-
-	lstm_cache_container_set_start(caches_layer[0][0]);
-	lstm_cache_container_set_start(caches_layer[0][0]);
+	lstm_cache_container_set_start(caches_layer[0][0], N);
+	lstm_cache_container_set_start(caches_layer[0][0], N);
 
 	while ( i < numbers_to_display ) {
 
@@ -1051,14 +1074,12 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 	free(caches_layer);
 }
 
-void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* char_index_mapping, char * input_string, int out_length) 
+void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* char_index_mapping, char * input_string, int layers, int out_length)
 {
 	lstm_values_cache_t ***caches_layers;
 	int i = 0, count, index, in_len;
 	char input;
 	int F = model_layers[0]->F;
-
-	int layers = LAYERS;
 
 	int p = 0;
 
@@ -1069,7 +1090,7 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 		exit(-1);
 	}
 
-	while ( p < LAYERS ) {
+	while ( p < layers ) {
 		caches_layers[p] = calloc(2, sizeof(lstm_values_cache_t*));
 		
 		i = 0; 
@@ -1145,7 +1166,7 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 	printf("\n");
 
 	p = 0;
-	while ( p < LAYERS ) {
+	while ( p < layers ) {
 
 		i = 0; 
 		while ( i < 2 ){
@@ -1162,11 +1183,11 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 	free(caches_layers);
 }
 
-void lstm_store_progress(unsigned int n, double loss)
+void lstm_store_progress(const char* filename, unsigned int n, double loss)
 {
 	FILE * fp;
 
-	fp = fopen(PROGRESS_FILE_NAME, "a");
+	fp = fopen(filename, "a");
 	if ( fp != NULL ) {
 		fprintf(fp, "%u,%lf\n",n,loss);
 		fclose(fp);
@@ -1210,6 +1231,8 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	int print_progress_number_of_chars = model->params->print_progress_number_of_chars;
 	char *print_progress_to_file_name = model->params->print_sample_output_to_file_name;
 	char *print_progress_to_file_arg = model->params->print_sample_output_to_file_arg;
+	int store_progress_evert_x_iterations = model->params->store_progress_evert_x_iterations;
+	char *store_progress_file_name = model->params->store_progress_file_name;
 
 	lstm_values_state_t ** stateful_d_next;
 	lstm_values_cache_t ***cache_layers;
@@ -1284,13 +1307,13 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 	i = 0;
 	while ( i < layers ) {
-		lstm_init_model(F, N, &gradient_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
-		lstm_init_model(F, N, &gradient_layers_entry[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+		lstm_init_model(F, N, &gradient_layers[i], 1, model->params);
+		lstm_init_model(F, N, &gradient_layers_entry[i], 1, model->params);
 		lstm_values_next_cache_init(&d_next_layers[i], N, F);
 
 		if ( model->params->optimizer == OPTIMIZE_ADAM ) {
-			lstm_init_model(F, N, &M_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
-			lstm_init_model(F, N, &R_layers[i], YES_FILL_IT_WITH_A_BUNCH_OF_ZEROS_PLEASE, model->params);
+			lstm_init_model(F, N, &M_layers[i], 1, model->params);
+			lstm_init_model(F, N, &R_layers[i], 1, model->params);
 		}
 
 		++i;
@@ -1307,11 +1330,11 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		while ( q < layers ) {
 			if ( stateful ) {
 				if ( q == 0 )
-					lstm_cache_container_set_start(cache_layers[q][0]);
+					lstm_cache_container_set_start(cache_layers[q][0], N);
 				else
-					lstm_next_state_copy(stateful_d_next[q], cache_layers[q][0], 0);
+					lstm_next_state_copy(stateful_d_next[q], cache_layers[q][0], N, 0);
 			} else {
-				lstm_cache_container_set_start(cache_layers[q][0]);
+				lstm_cache_container_set_start(cache_layers[q][0], N);
 			}
 			++q;
 		}
@@ -1375,7 +1398,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( stateful ) {
 			p = 0;
 			while ( p < layers ) {
-				lstm_next_state_copy(stateful_d_next[p], cache_layers[p][e2], 1);
+				lstm_next_state_copy(stateful_d_next[p], cache_layers[p][e2], N, 1);
 				++p;
 			}
 		}
@@ -1384,7 +1407,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		p = 0;
 		while ( p < layers ) {
 			lstm_zero_the_model(gradient_layers[p]);
-			lstm_zero_d_next(d_next_layers[p], F);
+			lstm_zero_d_next(d_next_layers[p], F, N);
 			++p;
 		}
 
@@ -1493,8 +1516,8 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 			fflush(stdout);
 		}
 
-		if ( !(n % STORE_PROGRESS_EVERY_X_ITERATIONS ))
-			lstm_store_progress(n, loss);
+		if ( store_progress_evert_x_iterations && !(n % store_progress_evert_x_iterations ))
+			lstm_store_progress(store_progress_file_name, n, loss);
 
 		if ( b + model->params->mini_batch_size >= training_points )
 			epoch++;

@@ -36,9 +36,9 @@ Then run the program:
 where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
 
-Check out the file "lstm.h".
+Check out the file "std_conf.h".
 
-In lstm.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". Enjoy! :) 
+In std_conf.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". Enjoy! :) 
 
 # Examples
 I trained this program to read the first Harry Potter book, It produced quotes such as this: 

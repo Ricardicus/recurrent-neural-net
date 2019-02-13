@@ -9,6 +9,8 @@
 #include "layers.h"
 #include "utilities.h"
 
+#include "std_conf.h"
+
 #define ITERATIONS 	100000000
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
@@ -18,8 +20,8 @@ set_T set;
 void store_the_net_layers(int signo)
 {
 	if ( model_layers != NULL ){
-		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME);
-		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, &set);
+		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME, LAYERS);
+		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, LAYERS);
 		printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
 			STD_JSON_NET_NAME);
 		printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
@@ -53,22 +55,15 @@ int main(int argc, char *argv[])
 	params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
 	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
 	params.learning_rate_decrease_threshold = STD_LEARNING_RATE_THRESHOLD;
-
 	params.stateful = STATEFUL;
-
 	params.beta1 = 0.9;
 	params.beta2 = 0.999;
-
 	params.gradient_fit = GRADIENTS_FIT;
 	params.gradient_clip = GRADIENTS_CLIP;
 	params.decrease_lr = DECREASE_LR;
-
 	params.model_regularize = MODEL_REGULARIZE;
-
 	params.layers = LAYERS;
-
 	params.optimizer = OPTIMIZE_ADAM;
-
 	// Interaction configuration with the training of the network
 	params.print_progress = PRINT_PROGRESS;
 	params.print_progress_iterations = PRINT_EVERY_X_ITERATIONS;
@@ -77,6 +72,8 @@ int main(int argc, char *argv[])
 	params.print_progress_number_of_chars = NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING;
 	params.print_sample_output_to_file_arg = PRINT_SAMPLE_OUTPUT_TO_FILE_ARG;
 	params.print_sample_output_to_file_name = PRINT_SAMPLE_OUTPUT_TO_FILE_NAME;
+	params.store_progress_evert_x_iterations = STORE_PROGRESS_EVERY_X_ITERATIONS;
+	params.store_progress_file_name = PROGRESS_FILE_NAME;
 
 	srand( time ( NULL ) );
 
@@ -127,12 +124,12 @@ int main(int argc, char *argv[])
 	p = 0;
 
 	while ( p < layers ) {
-		lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], YES_FILL_IT_WITH_A_BUNCH_OF_RANDOM_NUMBERS_PLEASE, &params);	
+		lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], 0, &params);	
 		++p;
 	}
 
 	if ( argc >= 4 && !strcmp(argv[2], "-r") ) {
-		lstm_read_net_layers(model_layers, argv[3]);
+		lstm_read_net_layers(model_layers, argv[3], LAYERS);
 	}
 
 
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
 				*clean = ' ';
 		} while ( clean != NULL );
 
-		lstm_output_string_from_string_layers(model_layers, &set, argv[5], 128);
+		lstm_output_string_from_string_layers(model_layers, &set, argv[5], LAYERS, 128);
 
 	} else {
 
