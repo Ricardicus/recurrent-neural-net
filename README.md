@@ -48,7 +48,7 @@ Usage: ./net datafile [flag value]*
 
 Flags can be used to change the training procedure.
 The flags require a value to be passed as the following argument.
-    E.g., this is how you traing with a learning rate set to 0.03:
+    E.g., this is how you train with a learning rate set to 0.03:
         ./net datafile -lr 0.03
 
 The following flags are available:

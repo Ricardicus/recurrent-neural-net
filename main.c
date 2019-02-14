@@ -40,7 +40,7 @@ void usage(char *argv[]) {
 	printf("\n");
 	printf("Flags can be used to change the training procedure.\n");
 	printf("The flags require a value to be passed as the following argument.\n");
-	printf("    E.g., this is how you traing with a learning rate set to 0.03:\n");
+	printf("    E.g., this is how you train with a learning rate set to 0.03:\n");
 	printf("        %s datafile -lr 0.03\n", argv[0]);
 	printf("\n");
 	printf("The following flags are available:\n");
