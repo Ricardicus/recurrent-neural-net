@@ -38,7 +38,36 @@ over time.
 
 Check out the file "std_conf.h".
 
-In std_conf.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". Enjoy! :) 
+In std_conf.h you can edit the program. You can edit the hyperparameters such as learning rate etc, set the number of layers (2/3 is best I think), set how often it should output data etc. If you edit this file, you edit the source code and you will need to rebuild the program with the command "make". You can also use input arguments to set some of the behaviour.
+
+Running the program with no arguments triggers the help output to be displayed. This help shows what flags can be
+passed as arguments to the program to modify its behaviour. The output looks like this:
+
+<pre>
+Usage: ./net datafile [flag value]*
+
+Flags can be used to change the training procedure.
+The flags require a value to be passed as the following argument.
+    E.g., this is how you traing with a learning rate set to 0.03:
+        ./net datafile -lr 0.03
+
+The following flags are available:
+    -r : read a previously trained network, the name of which is currently configured to be 'lstm_net.net'.
+    -lr: learning rate that is to be used during training, see the example above.
+    -it: the number of iterations used for training (not to be confused with epochs).
+    -mb: mini batch size.
+    -dl: decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).
+    -st: number of iterations between how the network is continously stored during training (.json and .net).
+
+Check std_conf.h to see what default values are used, these are set during compilation.
+
+./net compiled Feb 14 2019 13:41:44
+</pre>
+
+The -st flags is great. Per default the network is stored upon interrupting the program with Ctrl-C. But using this argument, you can let the program train and have it store the network continously during the training process.
+In that case the network is avaiable for you even if the program is unexpectedly terminated.
+
+Enjoy! :)
 
 # Examples
 I trained this program to read the first Harry Potter book, It produced quotes such as this: 
