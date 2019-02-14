@@ -1212,27 +1212,29 @@ void lstm_model_regularization(lstm_model_t* model, lstm_model_t* gradients)
 	vectors_add_scalar_multiply(gradients->bf, model->bf, model->N, lambda);
 }
 
-//						model, number of training points, X_train, Y_train, number of iterations
-void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, unsigned long iterations, int layers)
+//						model, number of training points, X_train, Y_train
+void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params, set_T* char_index_mapping, unsigned int training_points, int* X_train, int* Y_train, int layers)
 {
 	int N,F,S, status = 0, p = 0;
 	unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count, trailing;
-	unsigned long n = 0, decrease_threshold = model->params->learning_rate_decrease_threshold, epoch = 0;
+	unsigned long n = 0, epoch = 0;
 	double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
-	double initial_learning_rate = model->params->learning_rate;
+	double initial_learning_rate = params->learning_rate;
 	time_t time_iter;
 	char time_buffer[40];
-	int stateful = model->params->stateful, decrease_lr = model->params->decrease_lr;
+	unsigned long iterations = params->iterations;
+	int stateful = params->stateful, decrease_lr = params->decrease_lr;
 	// configuration for output printing during training
-	int print_progress = model->params->print_progress;
-	int print_progress_iterations = model->params->print_progress_iterations;
-	int print_progress_sample_output = model->params->print_progress_sample_output;
-	int print_progress_to_file = model->params->print_progress_to_file;
-	int print_progress_number_of_chars = model->params->print_progress_number_of_chars;
-	char *print_progress_to_file_name = model->params->print_sample_output_to_file_name;
-	char *print_progress_to_file_arg = model->params->print_sample_output_to_file_arg;
-	int store_progress_evert_x_iterations = model->params->store_progress_evert_x_iterations;
-	char *store_progress_file_name = model->params->store_progress_file_name;
+	int print_progress = params->print_progress;
+	int print_progress_iterations = params->print_progress_iterations;
+	int print_progress_sample_output = params->print_progress_sample_output;
+	int print_progress_to_file = params->print_progress_to_file;
+	int print_progress_number_of_chars = params->print_progress_number_of_chars;
+	char *print_progress_to_file_name = params->print_sample_output_to_file_name;
+	char *print_progress_to_file_arg = params->print_sample_output_to_file_arg;
+	int store_progress_every_x_iterations = params->store_progress_every_x_iterations;
+	char *store_progress_file_name = params->store_progress_file_name;
+	int store_network_every = params->store_network_every;
 
 	lstm_values_state_t ** stateful_d_next;
 	lstm_values_cache_t ***cache_layers;
@@ -1240,9 +1242,9 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	
 	lstm_model_t **gradient_layers, **gradient_layers_entry,  **M_layers, **R_layers;
 
-	N = model->N;
-	F = model->F;
-	S = model->S;
+	N = model_layers[0]->N;
+	F = model_layers[0]->F;
+	S = model_layers[0]->S;
 
 	double first_layer_input[F];
 
@@ -1252,7 +1254,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 			lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas\n");
 		i = 0;
 		while ( i < layers) {
-			stateful_d_next[i] = calloc( training_points/model->params->mini_batch_size + 1, sizeof(lstm_values_state_t));
+			stateful_d_next[i] = calloc( training_points/params->mini_batch_size + 1, sizeof(lstm_values_state_t));
 			if ( stateful_d_next[i] == NULL )
 				lstm_init_fail("Failed to allocate memory for stateful backprop through time deltas, inner in layer\n");
 			lstm_values_state_init(&stateful_d_next[i], N);
@@ -1267,12 +1269,12 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		lstm_init_fail("Failed to allocate memory for the caches\n");
 
 	while ( i < layers ) {
-		cache_layers[i] = calloc(model->params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
+		cache_layers[i] = calloc(params->mini_batch_size + 1, sizeof(lstm_values_cache_t*));
 		if ( cache_layers[i] == NULL )
 			lstm_init_fail("Failed to allocate memory for the caches\n");
 
 		p = 0;
-		while ( p < model->params->mini_batch_size + 1 ){
+		while ( p < params->mini_batch_size + 1 ){
 			cache_layers[i][p] = lstm_cache_container_init(N, F);
 			if ( cache_layers[i][p] == NULL )
 				lstm_init_fail("Failed to allocate memory for the caches\n");		
@@ -1294,7 +1296,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 	if ( d_next_layers == NULL )
 		lstm_init_fail("Failed to allocate memory for backprop through time deltas\n");
 
-	if ( model->params->optimizer == OPTIMIZE_ADAM ) {
+	if ( params->optimizer == OPTIMIZE_ADAM ) {
 
 		M_layers = calloc(layers, sizeof(lstm_model_t*) );
 		R_layers = calloc(layers, sizeof(lstm_model_t*) );
@@ -1307,13 +1309,13 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 	i = 0;
 	while ( i < layers ) {
-		lstm_init_model(F, N, &gradient_layers[i], 1, model->params);
-		lstm_init_model(F, N, &gradient_layers_entry[i], 1, model->params);
+		lstm_init_model(F, N, &gradient_layers[i], 1, params);
+		lstm_init_model(F, N, &gradient_layers_entry[i], 1, params);
 		lstm_values_next_cache_init(&d_next_layers[i], N, F);
 
-		if ( model->params->optimizer == OPTIMIZE_ADAM ) {
-			lstm_init_model(F, N, &M_layers[i], 1, model->params);
-			lstm_init_model(F, N, &R_layers[i], 1, model->params);
+		if ( params->optimizer == OPTIMIZE_ADAM ) {
+			lstm_init_model(F, N, &M_layers[i], 1, params);
+			lstm_init_model(F, N, &R_layers[i], 1, params);
 		}
 
 		++i;
@@ -1341,9 +1343,9 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 
 		unsigned int check = i % training_points;
 
-		trailing = model->params->mini_batch_size;
+		trailing = params->mini_batch_size;
 
-		if ( i + model->params->mini_batch_size >= training_points ) {
+		if ( i + params->mini_batch_size >= training_points ) {
 			trailing = training_points - i;
 		}
 
@@ -1385,7 +1387,7 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		if ( loss < 0 )
 			loss = loss_tmp;
 
-		loss = loss_tmp * model->params->loss_moving_avg + (1 - model->params->loss_moving_avg) * loss;
+		loss = loss_tmp * params->loss_moving_avg + (1 - params->loss_moving_avg) * loss;
 
 		if ( n == 0 )
 			record_keeper = loss;
@@ -1450,18 +1452,18 @@ void lstm_train(lstm_model_t* model, lstm_model_t** model_layers, set_T* char_in
 		p = 0;
 		while ( p < layers ) {
 
-			if ( model->params->gradient_clip )
-				gradients_clip(gradient_layers[p], model->params->gradient_clip_limit);
+			if ( params->gradient_clip )
+				gradients_clip(gradient_layers[p], params->gradient_clip_limit);
 
-			if ( model->params->gradient_fit )
-				gradients_fit(gradient_layers[p], model->params->gradient_clip_limit);
+			if ( params->gradient_fit )
+				gradients_fit(gradient_layers[p], params->gradient_clip_limit);
 
 			++p;
 		}
 
 		p = 0;
 
-		switch ( model->params->optimizer ) {
+		switch ( params->optimizer ) {
 		case OPTIMIZE_ADAM:
 			while ( p < layers ) {
 				gradients_adam_optimizer(model_layers[p], gradient_layers[p], M_layers[p], R_layers[p], n);
@@ -1495,7 +1497,7 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 			time(&time_iter);
 			strftime(time_buffer, sizeof time_buffer, "%X", localtime(&time_iter));
 
-			printf("%s Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", time_buffer, n, epoch, loss, record_keeper, record_iteration, model->params->learning_rate);
+			printf("%s Iteration: %lu (epoch: %lu), Loss: %lf, record: %lf (iteration: %d), LR: %lf\n", time_buffer, n, epoch, loss, record_keeper, record_iteration, params->learning_rate);
 
 			if ( print_progress_sample_output ) {
 				printf("=====================================================\n");
@@ -1516,20 +1518,29 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 			fflush(stdout);
 		}
 
-		if ( store_progress_evert_x_iterations && !(n % store_progress_evert_x_iterations ))
+		if ( store_progress_every_x_iterations && !(n % store_progress_every_x_iterations ))
 			lstm_store_progress(store_progress_file_name, n, loss);
 
-		if ( b + model->params->mini_batch_size >= training_points )
+		if ( store_network_every && !(n % store_network_every) ) {
+			lstm_store_net_layers(model_layers, params->store_network_name_raw, layers);
+			lstm_store_net_layers_as_json(model_layers, params->store_network_name_json, params->store_char_indx_map_name, char_index_mapping, layers);
+			printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
+				params->store_network_name_json);
+			printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
+to continue refining the weights.\n", params->store_network_name_raw); 
+		}
+
+		if ( b + params->mini_batch_size >= training_points )
 			epoch++;
 
-		i = (b + model->params->mini_batch_size) % training_points;
+		i = (b + params->mini_batch_size) % training_points;
 
-		if ( i < model->params->mini_batch_size){
+		if ( i < params->mini_batch_size){
 			i = 0;
 		}
 
 		if ( decrease_lr ) {
-			model->params->learning_rate = initial_learning_rate / ( 1.0 + n / model->params->learning_rate_decrease );
+			params->learning_rate = initial_learning_rate / ( 1.0 + n / params->learning_rate_decrease );
 //			printf("learning rate: %lf\n", model->params->learning_rate);
 		}
 
@@ -1541,7 +1552,7 @@ lstm_model_parameters_t has a field called 'optimizer'. Set this value to:\n\
 		lstm_values_next_cache_free(d_next_layers[p]);
 
 		i = 0;
-		while ( i < model->params->mini_batch_size) {
+		while ( i < params->mini_batch_size) {
 			lstm_cache_container_free(cache_layers[p][i]);
 			lstm_cache_container_free(cache_layers[p][i]);
 			++i;

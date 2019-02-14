@@ -52,6 +52,7 @@ typedef struct lstm_model_parameters_t {
 	int model_regularize;
 	int stateful;
 	int decrease_lr;
+	double learning_rate_decrease;
 
 	// How many layers
 	int layers;
@@ -64,14 +65,17 @@ typedef struct lstm_model_parameters_t {
 	int  print_progress_number_of_chars;
 	char *print_sample_output_to_file_name;
 	char *print_sample_output_to_file_arg;
-	int  store_progress_evert_x_iterations;
+	int  store_progress_every_x_iterations;
 	char *store_progress_file_name;
+	int  store_network_every;
+	char *store_network_name_raw;
+	char *store_network_name_json;
+	char *store_char_indx_map_name;
 
-	int learning_rate_decrease_threshold;
-	double learning_rate_decrease;
 	// General parameters
 	int mini_batch_size;
 	double gradient_clip_limit;
+	unsigned long iterations;
 } lstm_model_parameters_t;
 
 typedef struct lstm_model_t
@@ -180,7 +184,7 @@ void lstm_store_progress(const char*, unsigned int, double);
 
 // The main entry point
 //						model, number of training points, X_train, Y_train, number of iterations
-void lstm_train(lstm_model_t*, lstm_model_t**, set_T*, unsigned int, int*, int*, unsigned long, int);
+void lstm_train(lstm_model_t**, lstm_model_parameters_t*, set_T*, unsigned int, int*, int*, int);
 // Used to output a given number of characters from the net based on an input char
 void lstm_output_string_layers(lstm_model_t **, set_T*, int, int, int);
 void lstm_output_string_from_string_layers(lstm_model_t **, set_T*, char *, int, int);

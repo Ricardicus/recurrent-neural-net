@@ -50,7 +50,6 @@
 #define DECREASE_LR 											0 // set to 0 to disable decreasing learning rate
 
 #define STD_LEARNING_RATE_DECREASE								100000
-#define STD_LEARNING_RATE_THRESHOLD								10000
 #define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE	1000000							
 
 /*
