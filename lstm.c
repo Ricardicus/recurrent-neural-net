@@ -804,7 +804,7 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename, int laye
 	fp = fopen(filename, "w");
 
 	if ( fp == NULL ) {
-		printf("Failed to open file: %s for writing.\n", filename);
+		fprintf(stderr, "Failed to open file: %s for writing.\n", filename);
 		return;
 	}
 
@@ -898,7 +898,7 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename, int layer
 
 	if ( fp == NULL ) {
 		printf("Failed to open file: %s for reading.\n", filename);
-		return;
+		exit(1);
 	}
 
 	while ( p < layers ) {
@@ -918,7 +918,6 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename, int layer
 		++p;	
 	}
 
-	printf("Loaded the net: %s\n", filename);
 	fclose(fp);
 }
 

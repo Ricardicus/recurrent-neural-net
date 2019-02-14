@@ -17,6 +17,9 @@ lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
 lstm_model_t **model_layers;
 set_T set;
 
+static int write_output_directly_bytes = 0;
+static char *read_network = NULL;
+
 void store_the_net_layers(int signo)
 {
 	if ( model_layers != NULL ){
@@ -44,12 +47,13 @@ void usage(char *argv[]) {
 	printf("        %s datafile -lr 0.03\n", argv[0]);
 	printf("\n");
 	printf("The following flags are available:\n");
-	printf("    -r : read a previously trained network, the name of which is currently configured to be '%s'.\n", STD_LOADABLE_NET_NAME);
-	printf("    -lr: learning rate that is to be used during training, see the example above.\n");
-	printf("    -it: the number of iterations used for training (not to be confused with epochs).\n");
-	printf("    -mb: mini batch size.\n");
-	printf("    -dl: decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\n");
-	printf("    -st: number of iterations between how the network is continously stored during training (.json and .net).\n");
+	printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\n", STD_LOADABLE_NET_NAME);
+	printf("    -lr : learning rate that is to be used during training, see the example above.\n");
+	printf("    -it : the number of iterations used for training (not to be confused with epochs).\n");
+	printf("    -mb : mini batch size.\n");
+	printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\n");
+	printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\n");
+	printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\n");
 	printf("\n");
 	printf("Check std_conf.h to see what default values are used, these are set during compilation.\n");
 	printf("\n");
@@ -67,7 +71,7 @@ void parse_input_args(int argc, char** argv, lstm_model_parameters_t* params)
 			break; // All flags have values attributed to them
 
 		if ( !strcmp(argv[a], "-r") ) {
-			lstm_read_net_layers(model_layers, argv[a + 1], LAYERS);
+			read_network = argv[a + 1];
 		} else if ( !strcmp(argv[a], "-lr") ) {
 			params->learning_rate = atof(argv[a + 1]);
 			if ( params->learning_rate == 0.0 ) {
@@ -92,6 +96,11 @@ void parse_input_args(int argc, char** argv, lstm_model_parameters_t* params)
 		} else if ( !strcmp(argv[a], "-st") ) {
 			params->store_network_every = atoi(argv[a + 1]);
 			if ( params->store_network_every == 0 ) {
+				usage(argv);
+			}
+		} else if ( !strcmp(argv[a], "-out") ) {
+			write_output_directly_bytes = atoi(argv[a+1]);
+			if ( write_output_directly_bytes <= 0 ) {
 				usage(argv);
 			}
 		}
@@ -164,7 +173,7 @@ int main(int argc, char *argv[])
 		set_insert_symbol(&set, (char)c );
 		++file_size;
 	}
-	set_insert_symbol(&set, '.');
+
 	fclose(fp);
 
 	X_train = calloc(file_size+1, sizeof(int));
@@ -196,6 +205,23 @@ int main(int argc, char *argv[])
 	}
 
 	parse_input_args(argc, argv, &params);
+
+	if ( write_output_directly_bytes && read_network != NULL ) {
+
+		if ( read_network != NULL )
+			lstm_read_net_layers(model_layers, read_network, LAYERS);
+
+		lstm_output_string_layers(model_layers, &set, set_indx_to_char(&set, 0), write_output_directly_bytes, LAYERS);
+
+		free(model_layers);
+		free(X_train);
+		return 0;
+	} else if ( write_output_directly_bytes && read_network == NULL ) {
+		usage(argv);
+	} else if ( read_network != NULL ) {
+		lstm_read_net_layers(model_layers, read_network, LAYERS);
+		printf("Loaded the net: %s\n", read_network);
+	}
 
 	if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
 		do {

@@ -52,16 +52,18 @@ The flags require a value to be passed as the following argument.
         ./net datafile -lr 0.03
 
 The following flags are available:
-    -r : read a previously trained network, the name of which is currently configured to be 'lstm_net.net'.
-    -lr: learning rate that is to be used during training, see the example above.
-    -it: the number of iterations used for training (not to be confused with epochs).
-    -mb: mini batch size.
-    -dl: decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).
-    -st: number of iterations between how the network is continously stored during training (.json and .net).
+    -r  : read a previously trained network, the name of which is currently configured to be 'lstm_net.net'.
+    -lr : learning rate that is to be used during training, see the example above.
+    -it : the number of iterations used for training (not to be confused with epochs).
+    -mb : mini batch size.
+    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).
+    -st : number of iterations between how the network is continously stored during training (.json and .net).
+    -out: number of characters to output directly, note: a network and a datafile must be provided.
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Feb 14 2019 13:41:44
+./net compiled Feb 14 2019 14:41:42
+
 </pre>
 
 The -st flags is great. Per default the network is stored upon interrupting the program with Ctrl-C. But using this argument, you can let the program train and have it store the network continously during the training process.
