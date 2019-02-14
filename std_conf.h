@@ -50,7 +50,6 @@
 #define DECREASE_LR                                             0 // set to 0 to disable decreasing learning rate
 
 #define STD_LEARNING_RATE_DECREASE                              100000
-#define STD_NUMBER_OF_NO_RECORD_ITERATIONS_UNTIL_LR_DECREASE    1000000
 
 /*
 * These defines modify how the program interacts with the user
@@ -71,11 +70,11 @@
 
 /*
 * Once the network has been trained it is stored to these files.
-* The .net extenction is not to be confused with microsoft,
-* it is just an extension i picked that alludes to it being
+* The .net extension is not to be confused with microsoft,
+* it is just an extension I picked that alludes to it being
 * a 'network' in its rawest form. It can be parsed by the program
 * but not by the interactive HTML application.
-* For that, the .json program is intended to be used.
+* For that, the .json file is intended to be used.
 */
 #define STD_LOADABLE_NET_NAME                                   "lstm_net.net"
 #define STD_JSON_NET_NAME                                       "lstm_net.json"
