@@ -11,7 +11,7 @@ it has been training on using a LSTM network implemented in C. The repo is inspi
 Do you have a mac or a Linux machine? 
 In that case it is super easy to download and run.
 
-## Mac or Linux (Unix world)
+## Mac or Linux (UNIX types)
 
 Download the program. 
 Open a terminal window and type:
