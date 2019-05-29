@@ -37,10 +37,13 @@ over time.
 ## Windows
 
 I have only built it using Visual Studio Native Tools Command Prompt for VS2017. 
-But install CMake and Nmake. 
+
+Install CMake and Nmake (and git). 
 Then do:
 
 <pre>
+git clone https://github.com/Ricardicus/recurrent-neural-net/
+cd recurrent-neural-net
 cmake -G"NMake Makefiles"
 nmake
 </pre>
