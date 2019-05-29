@@ -6,14 +6,12 @@ This is necessary in order to model long-term dependencies such as can be found 
 This program will learn to produce text similar to the one that
 it has been training on using a LSTM network implemented in C. The repo is inspired by Andrej Karpathys <i>char-rnn</i>: https://github.com/karpathy/char-rnn but instead implemented in C to be used in more constrained environments.
 
-# How do I use it? 
+# Build 
 
 Do you have a mac or a Linux machine? 
 In that case it is super easy to download and run.
 
-However, I don't really know how to compile this program in Windows since I am not using Windows myself. I have used a program called MinGW to compile my own C programs in the past. But maybe check this out if you are on Windows: https://sourceforge.net/projects/mingw/files/
-
-Otherwise:
+## Mac or Linux (Unix world)
 
 Download the program. 
 Open a terminal window and type:
@@ -35,6 +33,19 @@ Then run the program:
 
 where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
+
+## Windows
+
+I have only built it using Visual Studio Native Tools Command Prompt for VS2017. 
+But install CMake and Nmake. 
+Then do:
+
+<pre>
+cmake -G"NMake Makefiles"
+nmake
+</pre>
+
+# Configure
 
 Check out the file "std_conf.h".
 
