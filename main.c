@@ -2,7 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+
+#ifdef WINDOWS
+
+#else
 #include <unistd.h>
+#endif
 
 #include "lstm.h"
 #include "set.h"

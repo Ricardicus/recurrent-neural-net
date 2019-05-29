@@ -54,8 +54,9 @@ set_insert_symbol(set_T * set, char c)
 char 
 set_indx_to_char(set_T* set, int indx)
 {
-	if ( indx >= SET_MAX_CHARS )
+	if ( indx >= SET_MAX_CHARS ){
 		return '\0';
+	}
 	return (char) set->values[indx];
 }
 
@@ -68,6 +69,7 @@ set_char_to_indx(set_T* set, char c)
 			return i;
 		++i;
 	}
+
 	return -1;
 }
 

@@ -456,14 +456,14 @@ void 	matrix_store(double ** A, int R, int C, FILE * fp)
 {
 	int r = 0, c = 0;
 	size_t i = 0;
-	void * p;
+	char *p;
 
 	while ( r < R ) {
 		c = 0;
 		while ( c < C ) {
-			i = 0; p = &A[r][c];
+			i = 0; p = (char*)&A[r][c];
 			while ( i < sizeof(double) ) {
-				fputc(*((char*)p), fp);
+				fputc(*(p), fp);
 				++i; ++p;
 			}
 			++c;
@@ -492,15 +492,15 @@ void 	matrix_read(double ** A, int R, int C, FILE * fp)
 {
 	int r = 0, c = 0;
 	size_t i = 0;
-	void * p;
+	char *p;
 	double value;
 
 	while ( r < R ) {
 		c = 0;
 		while ( c < C ) {
-			i = 0; p = &value;
+			i = 0; p = (char*)&value;
 			while ( i < sizeof(double) ) {
-				*((char *)p) = fgetc(fp);
+				*(p) = fgetc(fp);
 				++i; ++p;
 			}
 			A[r][c] = value;
@@ -515,12 +515,12 @@ void 	vector_store(double* V, int L, FILE * fp)
 {
 	int l = 0;
 	size_t i = 0;
-	void * p;
+	char *p;
 
 	while ( l < L ){
-		i = 0; p = &V[l];
+		i = 0; p = (char*)&V[l];
 		while ( i < sizeof(double)) {
-			fputc(*((char*)p), fp);
+			fputc(*(p), fp);
 			++i; ++p;
 		}
 		++l;
@@ -531,13 +531,13 @@ void 	vector_read(double * V, int L, FILE * fp)
 {
 	int l = 0;
 	size_t i = 0;
-	void * p;
+	char *p;
 	double value;
 
 	while ( l < L ) {
-		i = 0; p = &value;
+		i = 0; p = (char*)&value;
 		while ( i < sizeof(double) ) {
-			*((char *)p) = fgetc(fp);
+			*(p) = fgetc(fp);
 			++i; ++p;
 		}
 		V[l] = value;
@@ -554,7 +554,6 @@ void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
 {
 	int r = 0, c = 0;
 	size_t i = 0;
-	void * p;
 
 	if ( fp == NULL )
 		return; // No file, nothing to do. 
@@ -598,7 +597,6 @@ void 	vector_store_json(double* V, int L, FILE * fp)
 {
 	int l = 0;
 	size_t i = 0;
-	void * p;
 
 	if ( fp == NULL )
 		return; // No file, nothing to do. 

@@ -594,7 +594,18 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 	F = model->F;
 	S = model->S;
 
-	double tmp[N]; // VLA must be supported.. May cause portability problems.. If so use init_zeros_vector (will be slower).
+#ifdef WINDOWS
+	// MSVC is not a C99 compiler, and does not support variable length arrays
+	// MSVC is documented as conforming to C90
+	double *tmp;
+	if ( init_zero_vector(&tmp, N) ) {
+		fprintf(stderr, "%s.%s.%d init_zero_vector(.., %d) failed\r\n", 
+			__FILE__, __func__, __LINE__, N);
+		exit(1);
+	}
+#else
+	double tmp[N]; // VLA must be supported.. May cause portability problems.. If so use init_zero_vector (will be slower).
+#endif
 
 	copy_vector(cache_out->h_old, h_old, N);
 	copy_vector(cache_out->c_old, c_old, N);
@@ -649,6 +660,10 @@ void lstm_forward_propagate(lstm_model_t* model, double * input, lstm_values_cac
 #endif
 
 	copy_vector(cache_out->X, X_one_hot, S);
+
+#ifdef WINDOWS
+	free_vector(&tmp);
+#endif
 
 }
 //							model, y_probabilities, y_correct, the next deltas, state and cache values, &gradients, &the next deltas
@@ -925,13 +940,27 @@ void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers, s
 {
     lstm_values_cache_t ***caches_layer;
     int i = 0, count, index, p = 0, b = 0;
-    char input = set_char_to_indx(char_index_mapping, first);
+	int input = set_indx_to_char(char_index_mapping, first);
     int F = model_layers[0]->F;
     int N = model_layers[0]->N;
+#ifdef WINDOWS
+    double *first_layer_input;
+#else
     double first_layer_input[F];
+#endif
 
 	if ( fp == NULL ) 
 		return;
+
+#ifdef WINDOWS
+    first_layer_input = malloc(F*sizeof(double));
+
+    if ( first_layer_input == NULL ) {
+		fprintf(stderr, "%s.%s.%d malloc(%zu) failed\r\n", 
+			__FILE__, __func__, __LINE__, F*sizeof(double));
+		exit(1);
+    }
+#endif
 
     caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
 
@@ -996,6 +1025,10 @@ void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers, s
     }
 
     free(caches_layer);
+#ifdef WINDOWS
+    free(first_layer_input);
+#endif
+
 }
 
 
@@ -1003,10 +1036,24 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 {
 	lstm_values_cache_t ***caches_layer;
 	int i = 0, count, index, p = 0, b = 0;
-	char input = set_char_to_indx(char_index_mapping, first);
+	int input = set_indx_to_char(char_index_mapping, first);
 	int F = model_layers[0]->F;
 	int N = model_layers[0]->N;
-	double first_layer_input[F];
+#ifdef WINDOWS
+    double *first_layer_input;
+#else
+    double first_layer_input[F];
+#endif
+
+#ifdef WINDOWS
+ 	first_layer_input = malloc(F*sizeof(double));
+
+    if ( first_layer_input == NULL ) {
+		fprintf(stderr, "%s.%s.%d malloc(%zu) failed\r\n", 
+			__FILE__, __func__, __LINE__, F*sizeof(double));
+		exit(1);
+    }
+#endif
 
 	caches_layer = calloc(layers, sizeof(lstm_values_cache_t**));
 
@@ -1035,6 +1082,11 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 		while ( count < F ) {
 			first_layer_input[count] = 0.0;
 			++count;
+		}
+
+		if ( index < 0 ) {
+			index = 0;
+			printf("%s.%s unexpected input char: '%c', (%d)\r\n", __FILE__, __func__, input, input);
 		}
 
 		first_layer_input[index] = 1.0;
@@ -1071,6 +1123,9 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_T* char_index_m
 	}
 
 	free(caches_layer);
+#ifdef WINDOWS
+    free(first_layer_input);
+#endif
 }
 
 void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* char_index_mapping, char * input_string, int layers, int out_length)
@@ -1081,6 +1136,18 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 	int F = model_layers[0]->F;
 
 	int p = 0;
+
+#ifdef WINDOWS
+    double *first_layer_input = malloc(F*sizeof(double));
+
+    if ( first_layer_input == NULL ) {
+		fprintf(stderr, "%s.%s.%d malloc(%zu) failed\r\n", 
+			__FILE__, __func__, __LINE__, F*sizeof(double));
+		exit(1);
+    }
+#else
+    double first_layer_input[F];
+#endif
 
 	caches_layers = calloc(layers, sizeof(lstm_values_cache_t**));
 
@@ -1100,8 +1167,6 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 
 		++p;
 	}
-
-	double first_layer_input[F];
 
 	in_len = strlen(input_string);
 	i = 0;
@@ -1180,6 +1245,9 @@ void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_T* c
 	}
 
 	free(caches_layers);
+#ifdef WINDOWS
+    free(first_layer_input);
+#endif
 }
 
 void lstm_store_progress(const char* filename, unsigned int n, double loss)
@@ -1245,7 +1313,17 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params, se
 	F = model_layers[0]->F;
 	S = model_layers[0]->S;
 
-	double first_layer_input[F];
+#ifdef WINDOWS
+    double *first_layer_input = malloc(F*sizeof(double));
+
+    if ( first_layer_input == NULL ) {
+		fprintf(stderr, "%s.%s.%d malloc(%zu) failed\r\n", 
+			__FILE__, __func__, __LINE__, F*sizeof(double));
+		exit(1);
+    }
+#else
+    double first_layer_input[F];
+#endif
 
 	if ( stateful ) {
 		stateful_d_next = calloc(layers, sizeof(lstm_values_state_t*));
@@ -1580,17 +1658,7 @@ to continue refining the weights.\n", params->store_network_name_raw);
 	free(gradient_layers);
 	free(M_layers);
 	free(R_layers);
-
+#ifdef WINDOWS
+    free(first_layer_input);
+#endif
 }
-
-
-
-
-
-
-
-
-
-
-
-

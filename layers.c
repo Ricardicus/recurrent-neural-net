@@ -34,6 +34,10 @@
 
 #include "layers.h"
 
+#ifdef WINDOWS
+#include <stdio.h>
+#endif
+
 //		Y = AX + b  			&Y,      A,   		X,		B,     Rows (for A), Columns (for A)
 void	fully_connected_forward(double* Y, double* A, double* X, double* b, int R, int C)
 {
@@ -97,7 +101,19 @@ void 	softmax_layers_forward(double* P, double* Y, int F, double temperature)
 {
 	int f = 0;
 	double sum = 0;
+#ifdef WINDOWS
+	// MSVC is not a C99 compiler, and does not support variable length arrays
+	// MSVC is documented as conforming to C90
+	double *cache = malloc(sizeof(double)*F);
+
+	if ( cache == NULL ) {
+		fprintf(stderr, "%s.%s.%d malloc(%zu) failed\r\n", 
+			__FILE__, __func__, __LINE__, sizeof(double)*F);
+		exit(1);
+	}
+#else
 	double cache[F];
+#endif
 
 	while ( f < F ) {
 		cache[f] = exp(Y[f] / temperature);
@@ -110,6 +126,10 @@ void 	softmax_layers_forward(double* P, double* Y, int F, double temperature)
 		P[f] = cache[f] / sum;
 		++f;
 	}
+
+#ifdef WINDOWS
+	free(cache);
+#endif
 }
 //									  P,	  c,  &dldh, rows
 void 	softmax_loss_layer_backward(double* P, int c, double* dldh, int R)
