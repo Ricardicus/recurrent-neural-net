@@ -546,6 +546,31 @@ void 	vector_read(double * V, int L, FILE * fp)
 
 }
 
+void 	vector_store_ascii(double* V, int L, FILE * fp)
+{
+	int l = 0;
+
+	while ( l < L ){
+		fprintf(fp, "%.20lf\r\n", V[l]);
+		++l;
+	}
+}
+
+void 	vector_read_ascii(double * V, int L, FILE * fp)
+{
+	int l = 0;
+
+	while ( l < L ) {
+		if ( fscanf(fp, "%lf", &V[l]) <= 0 ) {
+			fprintf(stderr, "%s.%s Failed to read file\r\n",
+				__FILE__, __func__);
+			exit(1);
+		}
+		++l;
+	}
+
+}
+
 /*
 * 	This function is used to store a JSON file representation
 * 	of a LSTM neural network that can be read by an HTML application.

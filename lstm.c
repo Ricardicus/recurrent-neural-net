@@ -825,6 +825,19 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename, int laye
 
 	while ( p < layers ) {
 
+#ifdef STORE_NET_AS_ASCII
+		vector_store_ascii(model[p]->Wy, model[p]->F * model[p]->N, fp);
+		vector_store_ascii(model[p]->Wi, model[p]->N * model[p]->S, fp);
+		vector_store_ascii(model[p]->Wc, model[p]->N * model[p]->S, fp);
+		vector_store_ascii(model[p]->Wo, model[p]->N * model[p]->S, fp);
+		vector_store_ascii(model[p]->Wf, model[p]->N * model[p]->S, fp);
+
+		vector_store_ascii(model[p]->by, model[p]->F, fp);
+		vector_store_ascii(model[p]->bi, model[p]->N, fp);
+		vector_store_ascii(model[p]->bc, model[p]->N, fp);
+		vector_store_ascii(model[p]->bf, model[p]->N, fp);
+		vector_store_ascii(model[p]->bo, model[p]->N, fp);
+#else
 		vector_store(model[p]->Wy, model[p]->F * model[p]->N, fp);
 		vector_store(model[p]->Wi, model[p]->N * model[p]->S, fp);
 		vector_store(model[p]->Wc, model[p]->N * model[p]->S, fp);
@@ -836,6 +849,7 @@ void lstm_store_net_layers(lstm_model_t** model, const char * filename, int laye
 		vector_store(model[p]->bc, model[p]->N, fp);
 		vector_store(model[p]->bf, model[p]->N, fp);
 		vector_store(model[p]->bo, model[p]->N, fp);
+#endif
 
 		++p;
 	}
@@ -918,6 +932,19 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename, int layer
 
 	while ( p < layers ) {
 
+#ifdef STORE_NET_AS_ASCII
+		vector_read_ascii(model[p]->Wy, model[p]->F * model[p]->N, fp);
+		vector_read_ascii(model[p]->Wi, model[p]->N * model[p]->S, fp);
+		vector_read_ascii(model[p]->Wc, model[p]->N * model[p]->S, fp);
+		vector_read_ascii(model[p]->Wo, model[p]->N * model[p]->S, fp);
+		vector_read_ascii(model[p]->Wf, model[p]->N * model[p]->S, fp);
+
+		vector_read_ascii(model[p]->by, model[p]->F, fp);
+		vector_read_ascii(model[p]->bi, model[p]->N, fp);
+		vector_read_ascii(model[p]->bc, model[p]->N, fp);
+		vector_read_ascii(model[p]->bf, model[p]->N, fp);
+		vector_read_ascii(model[p]->bo, model[p]->N, fp);
+#else
 		vector_read(model[p]->Wy, model[p]->F * model[p]->N, fp);
 		vector_read(model[p]->Wi, model[p]->N * model[p]->S, fp);
 		vector_read(model[p]->Wc, model[p]->N * model[p]->S, fp);
@@ -929,6 +956,7 @@ void lstm_read_net_layers(lstm_model_t** model, const char * filename, int layer
 		vector_read(model[p]->bc, model[p]->N, fp);
 		vector_read(model[p]->bf, model[p]->N, fp);
 		vector_read(model[p]->bo, model[p]->N, fp);
+#endif
 
 		++p;	
 	}

@@ -82,5 +82,7 @@ void 	vector_print_min_max(char *, double *, int);
 void 	vector_read(double *, int, FILE *);
 void 	vector_store(double *, int, FILE *);
 void 	matrix_store(double **, int, int, FILE *);  
-void 	matrix_read(double **, int, int, FILE *);   
+void 	matrix_read(double **, int, int, FILE *);
+void 	vector_read_ascii(double *, int, FILE *);
+void 	vector_store_ascii(double *, int, FILE *);
 #endif

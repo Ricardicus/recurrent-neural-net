@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 add_compile_definitions(WINDOWS)
+add_compile_definitions(STORE_NET_AS_ASCII)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 project (net)
 add_executable(net main.c layers.c lstm.c set.c utilities.c)
