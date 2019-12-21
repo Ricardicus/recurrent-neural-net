@@ -49,7 +49,9 @@ for file in $(ls -p $folder | grep -v /); do
     # Train the net using new weights
     # a file with the name lstm_net.net
     # will appear, see std_conf.h
-    ./net $folder/$file
+    # Store every 500 iterations,
+    # train for 10000 iterations.
+    ./net $folder/$file -st 500 -it 10000
     first=0
   else 
     # Train the net using previously trained weights
