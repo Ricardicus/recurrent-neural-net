@@ -25,8 +25,8 @@
 
 void lstm_init_fail(const char * msg)
 {
-	printf("%s: %s",__func__,msg);
-	exit(-1);
+  printf("%s: %s",__func__,msg);
+  exit(-1);
 }
 
 // Inputs, Neurons, Outputs, &lstm model, zeros
@@ -34,204 +34,204 @@ int lstm_init_model(int X, int N, int Y,
   lstm_model_t **model_to_be_set, int zeros, 
   lstm_model_parameters_t *params)
 {
-	int S = X + N;
-	lstm_model_t* lstm = e_calloc(1, sizeof(lstm_model_t));
+  int S = X + N;
+  lstm_model_t* lstm = e_calloc(1, sizeof(lstm_model_t));
 
-	lstm->X = X;
-	lstm->N = N;
-	lstm->S = S;
+  lstm->X = X;
+  lstm->N = N;
+  lstm->S = S;
   lstm->Y = Y;
 
-	lstm->params = params;
+  lstm->params = params;
 
-	if ( zeros ) {
-		lstm->Wf = get_zero_vector(N * S);
-		lstm->Wi = get_zero_vector(N * S);
-		lstm->Wc = get_zero_vector(N * S);
-		lstm->Wo = get_zero_vector(N * S);
-		lstm->Wy = get_zero_vector(Y * N);
-	} else {
-		lstm->Wf = get_random_vector(N * S, S);
-		lstm->Wi = get_random_vector(N * S, S);
-		lstm->Wc = get_random_vector(N * S, S);
-		lstm->Wo = get_random_vector(N * S, S);
-		lstm->Wy = get_random_vector(Y * N, N);
-	}
+  if ( zeros ) {
+    lstm->Wf = get_zero_vector(N * S);
+    lstm->Wi = get_zero_vector(N * S);
+    lstm->Wc = get_zero_vector(N * S);
+    lstm->Wo = get_zero_vector(N * S);
+    lstm->Wy = get_zero_vector(Y * N);
+  } else {
+    lstm->Wf = get_random_vector(N * S, S);
+    lstm->Wi = get_random_vector(N * S, S);
+    lstm->Wc = get_random_vector(N * S, S);
+    lstm->Wo = get_random_vector(N * S, S);
+    lstm->Wy = get_random_vector(Y * N, N);
+  }
 
-	lstm->bf = get_zero_vector(N);
-	lstm->bi = get_zero_vector(N);
-	lstm->bc = get_zero_vector(N);
-	lstm->bo = get_zero_vector(N);
-	lstm->by = get_zero_vector(Y);
+  lstm->bf = get_zero_vector(N);
+  lstm->bi = get_zero_vector(N);
+  lstm->bc = get_zero_vector(N);
+  lstm->bo = get_zero_vector(N);
+  lstm->by = get_zero_vector(Y);
 
-	lstm->dldhf = get_zero_vector(N);
-	lstm->dldhi = get_zero_vector(N);
-	lstm->dldhc = get_zero_vector(N);
-	lstm->dldho = get_zero_vector(N);
-	lstm->dldc  = get_zero_vector(N);
-	lstm->dldh  = get_zero_vector(N);
+  lstm->dldhf = get_zero_vector(N);
+  lstm->dldhi = get_zero_vector(N);
+  lstm->dldhc = get_zero_vector(N);
+  lstm->dldho = get_zero_vector(N);
+  lstm->dldc  = get_zero_vector(N);
+  lstm->dldh  = get_zero_vector(N);
 
-	lstm->dldXc = get_zero_vector(S);
-	lstm->dldXo = get_zero_vector(S);
-	lstm->dldXi = get_zero_vector(S);
-	lstm->dldXf = get_zero_vector(S);
+  lstm->dldXc = get_zero_vector(S);
+  lstm->dldXo = get_zero_vector(S);
+  lstm->dldXi = get_zero_vector(S);
+  lstm->dldXf = get_zero_vector(S);
 
-	// Gradient descent momentum caches
-	lstm->Wfm = get_zero_vector(N * S);
-	lstm->Wim = get_zero_vector(N * S);
-	lstm->Wcm = get_zero_vector(N * S);
-	lstm->Wom = get_zero_vector(N * S);
-	lstm->Wym = get_zero_vector(Y * N);
+  // Gradient descent momentum caches
+  lstm->Wfm = get_zero_vector(N * S);
+  lstm->Wim = get_zero_vector(N * S);
+  lstm->Wcm = get_zero_vector(N * S);
+  lstm->Wom = get_zero_vector(N * S);
+  lstm->Wym = get_zero_vector(Y * N);
 
-	lstm->bfm = get_zero_vector(N);
-	lstm->bim = get_zero_vector(N);
-	lstm->bcm = get_zero_vector(N);
-	lstm->bom = get_zero_vector(N);
-	lstm->bym = get_zero_vector(Y);
+  lstm->bfm = get_zero_vector(N);
+  lstm->bim = get_zero_vector(N);
+  lstm->bcm = get_zero_vector(N);
+  lstm->bom = get_zero_vector(N);
+  lstm->bym = get_zero_vector(Y);
 
-	*model_to_be_set = lstm;
+  *model_to_be_set = lstm;
 
-	return 0;
+  return 0;
 }
 //					 lstm model to be freed
 void lstm_free_model(lstm_model_t* lstm)
 {
-	free_vector(&lstm->Wf);
-	free_vector(&lstm->Wi);
-	free_vector(&lstm->Wc);
-	free_vector(&lstm->Wo);
-	free_vector(&lstm->Wy);
+  free_vector(&lstm->Wf);
+  free_vector(&lstm->Wi);
+  free_vector(&lstm->Wc);
+  free_vector(&lstm->Wo);
+  free_vector(&lstm->Wy);
 
-	free_vector(&lstm->bf);
-	free_vector(&lstm->bi);
-	free_vector(&lstm->bc);
-	free_vector(&lstm->bo);
-	free_vector(&lstm->by);
+  free_vector(&lstm->bf);
+  free_vector(&lstm->bi);
+  free_vector(&lstm->bc);
+  free_vector(&lstm->bo);
+  free_vector(&lstm->by);
 
-	free_vector(&lstm->dldhf);
-	free_vector(&lstm->dldhi);
-	free_vector(&lstm->dldhc);
-	free_vector(&lstm->dldho);
-	free_vector(&lstm->dldc);
-	free_vector(&lstm->dldh);
+  free_vector(&lstm->dldhf);
+  free_vector(&lstm->dldhi);
+  free_vector(&lstm->dldhc);
+  free_vector(&lstm->dldho);
+  free_vector(&lstm->dldc);
+  free_vector(&lstm->dldh);
 
-	free_vector(&lstm->dldXc);
-	free_vector(&lstm->dldXo);
-	free_vector(&lstm->dldXi);
-	free_vector(&lstm->dldXf);
+  free_vector(&lstm->dldXc);
+  free_vector(&lstm->dldXo);
+  free_vector(&lstm->dldXi);
+  free_vector(&lstm->dldXf);
 
-	free_vector(&lstm->Wfm);
-	free_vector(&lstm->Wim);
-	free_vector(&lstm->Wcm);
-	free_vector(&lstm->Wom);
-	free_vector(&lstm->Wym);
+  free_vector(&lstm->Wfm);
+  free_vector(&lstm->Wim);
+  free_vector(&lstm->Wcm);
+  free_vector(&lstm->Wom);
+  free_vector(&lstm->Wym);
 
-	free_vector(&lstm->bfm);
-	free_vector(&lstm->bim);
-	free_vector(&lstm->bcm);
-	free_vector(&lstm->bom);
-	free_vector(&lstm->bym);
+  free_vector(&lstm->bfm);
+  free_vector(&lstm->bim);
+  free_vector(&lstm->bcm);
+  free_vector(&lstm->bom);
+  free_vector(&lstm->bym);
 
-	free(lstm);
+  free(lstm);
 }
 
 void lstm_cache_container_free(lstm_values_cache_t* cache_to_be_freed)
 {
-	free_vector(&(cache_to_be_freed)->probs);
-	free_vector(&(cache_to_be_freed)->probs_before_sigma);
-	free_vector(&(cache_to_be_freed)->c);
-	free_vector(&(cache_to_be_freed)->h);
-	free_vector(&(cache_to_be_freed)->c_old);
-	free_vector(&(cache_to_be_freed)->h_old);
-	free_vector(&(cache_to_be_freed)->X);
-	free_vector(&(cache_to_be_freed)->hf);
-	free_vector(&(cache_to_be_freed)->hi);
-	free_vector(&(cache_to_be_freed)->ho);
-	free_vector(&(cache_to_be_freed)->hc);
-	free_vector(&(cache_to_be_freed)->tanh_c_cache);
+  free_vector(&(cache_to_be_freed)->probs);
+  free_vector(&(cache_to_be_freed)->probs_before_sigma);
+  free_vector(&(cache_to_be_freed)->c);
+  free_vector(&(cache_to_be_freed)->h);
+  free_vector(&(cache_to_be_freed)->c_old);
+  free_vector(&(cache_to_be_freed)->h_old);
+  free_vector(&(cache_to_be_freed)->X);
+  free_vector(&(cache_to_be_freed)->hf);
+  free_vector(&(cache_to_be_freed)->hi);
+  free_vector(&(cache_to_be_freed)->ho);
+  free_vector(&(cache_to_be_freed)->hc);
+  free_vector(&(cache_to_be_freed)->tanh_c_cache);
 }
 
 lstm_values_cache_t*  lstm_cache_container_init(int X, int N, int Y)
 {
-	int S = N + X;
+  int S = N + X;
 
-	lstm_values_cache_t* cache = e_calloc(1, sizeof(lstm_values_cache_t));
+  lstm_values_cache_t* cache = e_calloc(1, sizeof(lstm_values_cache_t));
 
-	cache->probs = get_zero_vector(Y);
-	cache->probs_before_sigma = get_zero_vector(Y);
-	cache->c = get_zero_vector(N);
-	cache->h = get_zero_vector(N);
-	cache->c_old = get_zero_vector(N);
-	cache->h_old = get_zero_vector(N);
-	cache->X = get_zero_vector(S);
-	cache->hf = get_zero_vector(N);
-	cache->hi = get_zero_vector(N);
-	cache->ho = get_zero_vector(N);
-	cache->hc = get_zero_vector(N);
-	cache->tanh_c_cache = get_zero_vector(N);
+  cache->probs = get_zero_vector(Y);
+  cache->probs_before_sigma = get_zero_vector(Y);
+  cache->c = get_zero_vector(N);
+  cache->h = get_zero_vector(N);
+  cache->c_old = get_zero_vector(N);
+  cache->h_old = get_zero_vector(N);
+  cache->X = get_zero_vector(S);
+  cache->hf = get_zero_vector(N);
+  cache->hi = get_zero_vector(N);
+  cache->ho = get_zero_vector(N);
+  cache->hc = get_zero_vector(N);
+  cache->tanh_c_cache = get_zero_vector(N);
 
-	return cache;
+  return cache;
 }
 
 void lstm_values_state_init(lstm_values_state_t** d_next_to_set, int N)
 {
-	lstm_values_state_t * d_next = e_calloc(1, sizeof(lstm_values_state_t));
+  lstm_values_state_t * d_next = e_calloc(1, sizeof(lstm_values_state_t));
 
-	init_zero_vector(&d_next->c, N);
-	init_zero_vector(&d_next->h, N);
+  init_zero_vector(&d_next->c, N);
+  init_zero_vector(&d_next->h, N);
 
-	*d_next_to_set = d_next;
+  *d_next_to_set = d_next;
 }
 
 int gradients_fit(lstm_model_t* gradients, double limit)
 {
-	int msg = 0;
-	msg += vectors_fit(gradients->Wy, limit, gradients->Y * gradients->N);
-	msg += vectors_fit(gradients->Wi, limit, gradients->N * gradients->S);
-	msg += vectors_fit(gradients->Wc, limit, gradients->N * gradients->S);
-	msg += vectors_fit(gradients->Wo, limit, gradients->N * gradients->S);
-	msg += vectors_fit(gradients->Wf, limit, gradients->N * gradients->S);
+  int msg = 0;
+  msg += vectors_fit(gradients->Wy, limit, gradients->Y * gradients->N);
+  msg += vectors_fit(gradients->Wi, limit, gradients->N * gradients->S);
+  msg += vectors_fit(gradients->Wc, limit, gradients->N * gradients->S);
+  msg += vectors_fit(gradients->Wo, limit, gradients->N * gradients->S);
+  msg += vectors_fit(gradients->Wf, limit, gradients->N * gradients->S);
 
-	msg += vectors_fit(gradients->by, limit, gradients->Y);
-	msg += vectors_fit(gradients->bi, limit, gradients->N);
-	msg += vectors_fit(gradients->bc, limit, gradients->N);
-	msg += vectors_fit(gradients->bf, limit, gradients->N);
-	msg += vectors_fit(gradients->bo, limit, gradients->N);
+  msg += vectors_fit(gradients->by, limit, gradients->Y);
+  msg += vectors_fit(gradients->bi, limit, gradients->N);
+  msg += vectors_fit(gradients->bc, limit, gradients->N);
+  msg += vectors_fit(gradients->bf, limit, gradients->N);
+  msg += vectors_fit(gradients->bo, limit, gradients->N);
 
-	return msg;
+  return msg;
 }
 
 int gradients_clip(lstm_model_t* gradients, double limit)
 {
-	int msg = 0;
-	msg += vectors_clip(gradients->Wy, limit, gradients->Y * gradients->N);
-	msg += vectors_clip(gradients->Wi, limit, gradients->N * gradients->S);
-	msg += vectors_clip(gradients->Wc, limit, gradients->N * gradients->S);
-	msg += vectors_clip(gradients->Wo, limit, gradients->N * gradients->S);
-	msg += vectors_clip(gradients->Wf, limit, gradients->N * gradients->S);
+  int msg = 0;
+  msg += vectors_clip(gradients->Wy, limit, gradients->Y * gradients->N);
+  msg += vectors_clip(gradients->Wi, limit, gradients->N * gradients->S);
+  msg += vectors_clip(gradients->Wc, limit, gradients->N * gradients->S);
+  msg += vectors_clip(gradients->Wo, limit, gradients->N * gradients->S);
+  msg += vectors_clip(gradients->Wf, limit, gradients->N * gradients->S);
 
-	msg += vectors_clip(gradients->by, limit, gradients->Y);
-	msg += vectors_clip(gradients->bi, limit, gradients->N);
-	msg += vectors_clip(gradients->bc, limit, gradients->N);
-	msg += vectors_clip(gradients->bf, limit, gradients->N);
-	msg += vectors_clip(gradients->bo, limit, gradients->N);
+  msg += vectors_clip(gradients->by, limit, gradients->Y);
+  msg += vectors_clip(gradients->bi, limit, gradients->N);
+  msg += vectors_clip(gradients->bc, limit, gradients->N);
+  msg += vectors_clip(gradients->bf, limit, gradients->N);
+  msg += vectors_clip(gradients->bo, limit, gradients->N);
 
-	return msg;
+  return msg;
 }
 
 void sum_gradients(lstm_model_t* gradients, lstm_model_t* gradients_entry)
 {
-	vectors_add(gradients->Wy, gradients_entry->Wy, gradients->Y * gradients->N);
-	vectors_add(gradients->Wi, gradients_entry->Wi, gradients->N * gradients->S);
-	vectors_add(gradients->Wc, gradients_entry->Wc, gradients->N * gradients->S);
-	vectors_add(gradients->Wo, gradients_entry->Wo, gradients->N * gradients->S);
-	vectors_add(gradients->Wf, gradients_entry->Wf, gradients->N * gradients->S);
+  vectors_add(gradients->Wy, gradients_entry->Wy, gradients->Y * gradients->N);
+  vectors_add(gradients->Wi, gradients_entry->Wi, gradients->N * gradients->S);
+  vectors_add(gradients->Wc, gradients_entry->Wc, gradients->N * gradients->S);
+  vectors_add(gradients->Wo, gradients_entry->Wo, gradients->N * gradients->S);
+  vectors_add(gradients->Wf, gradients_entry->Wf, gradients->N * gradients->S);
 
-	vectors_add(gradients->by, gradients_entry->by, gradients->Y);
-	vectors_add(gradients->bi, gradients_entry->bi, gradients->N);
-	vectors_add(gradients->bc, gradients_entry->bc, gradients->N);
-	vectors_add(gradients->bf, gradients_entry->bf, gradients->N);
-	vectors_add(gradients->bo, gradients_entry->bo, gradients->N);
+  vectors_add(gradients->by, gradients_entry->by, gradients->Y);
+  vectors_add(gradients->bi, gradients_entry->bi, gradients->N);
+  vectors_add(gradients->bc, gradients_entry->bc, gradients->N);
+  vectors_add(gradients->bf, gradients_entry->bf, gradients->N);
+  vectors_add(gradients->bo, gradients_entry->bo, gradients->N);
 }
 
 // A -= alpha * Am_hat / (np.sqrt(Rm_hat) + epsilon)
@@ -1258,39 +1258,39 @@ int lstm_reinit_model(
 
 void lstm_read_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers)
 {
-	// Will only work for ( layer1->N, layer1->F ) == ( layer2->N, layer2->F )
-	unsigned int p = 0;
+  // Will only work for ( layer1->N, layer1->F ) == ( layer2->N, layer2->F )
+  unsigned int p = 0;
 
-	while ( p < layers ) {
+  while ( p < layers ) {
 
 #ifdef STORE_NET_AS_ASCII
-		vector_read_ascii(model[p]->Wy, model[p]->Y * model[p]->N, fp);
-		vector_read_ascii(model[p]->Wi, model[p]->N * model[p]->S, fp);
-		vector_read_ascii(model[p]->Wc, model[p]->N * model[p]->S, fp);
-		vector_read_ascii(model[p]->Wo, model[p]->N * model[p]->S, fp);
-		vector_read_ascii(model[p]->Wf, model[p]->N * model[p]->S, fp);
+    vector_read_ascii(model[p]->Wy, model[p]->Y * model[p]->N, fp);
+    vector_read_ascii(model[p]->Wi, model[p]->N * model[p]->S, fp);
+    vector_read_ascii(model[p]->Wc, model[p]->N * model[p]->S, fp);
+    vector_read_ascii(model[p]->Wo, model[p]->N * model[p]->S, fp);
+    vector_read_ascii(model[p]->Wf, model[p]->N * model[p]->S, fp);
 
-		vector_read_ascii(model[p]->by, model[p]->Y, fp);
-		vector_read_ascii(model[p]->bi, model[p]->N, fp);
-		vector_read_ascii(model[p]->bc, model[p]->N, fp);
-		vector_read_ascii(model[p]->bf, model[p]->N, fp);
-		vector_read_ascii(model[p]->bo, model[p]->N, fp);
-#else
-		vector_read(model[p]->Wy, model[p]->Y * model[p]->N, fp);
-		vector_read(model[p]->Wi, model[p]->N * model[p]->S, fp);
-		vector_read(model[p]->Wc, model[p]->N * model[p]->S, fp);
-		vector_read(model[p]->Wo, model[p]->N * model[p]->S, fp);
-		vector_read(model[p]->Wf, model[p]->N * model[p]->S, fp);
+    vector_read_ascii(model[p]->by, model[p]->Y, fp);
+    vector_read_ascii(model[p]->bi, model[p]->N, fp);
+    vector_read_ascii(model[p]->bc, model[p]->N, fp);
+    vector_read_ascii(model[p]->bf, model[p]->N, fp);
+    vector_read_ascii(model[p]->bo, model[p]->N, fp);
+    #else
+    vector_read(model[p]->Wy, model[p]->Y * model[p]->N, fp);
+    vector_read(model[p]->Wi, model[p]->N * model[p]->S, fp);
+    vector_read(model[p]->Wc, model[p]->N * model[p]->S, fp);
+    vector_read(model[p]->Wo, model[p]->N * model[p]->S, fp);
+    vector_read(model[p]->Wf, model[p]->N * model[p]->S, fp);
 
-		vector_read(model[p]->by, model[p]->Y, fp);
-		vector_read(model[p]->bi, model[p]->N, fp);
-		vector_read(model[p]->bc, model[p]->N, fp);
-		vector_read(model[p]->bf, model[p]->N, fp);
-		vector_read(model[p]->bo, model[p]->N, fp);
+    vector_read(model[p]->by, model[p]->Y, fp);
+    vector_read(model[p]->bi, model[p]->N, fp);
+    vector_read(model[p]->bc, model[p]->N, fp);
+    vector_read(model[p]->bf, model[p]->N, fp);
+    vector_read(model[p]->bo, model[p]->N, fp);
 #endif
 
-		++p;
-	}
+  ++p;
+  }
 
 }
 

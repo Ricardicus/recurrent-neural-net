@@ -16,7 +16,7 @@
 
 #include "std_conf.h"
 
-#define ITERATIONS 	100000000
+#define ITERATIONS  100000000
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
 lstm_model_t **model_layers;
@@ -28,45 +28,45 @@ static char *read_network = NULL;
 
 void store_the_net_layers(int signo)
 {
-	if ( model_layers != NULL ){
+  if ( model_layers != NULL ){
     lstm_store(STD_LOADABLE_NET_NAME, &set,
-      model_layers, params.layers);
-		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, params.layers);
-		printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
-			STD_JSON_NET_NAME);
-		printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
-to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
-	} else {
-		printf("\nFailed to store the net!\n");
-		exit(-1);
-	}
+    model_layers, params.layers);
+    lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, params.layers);
+    printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
+    STD_JSON_NET_NAME);
+    printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
+    to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
+  } else {
+    printf("\nFailed to store the net!\n");
+    exit(-1);
+  }
 
-	exit(0);
-	return;
+  exit(0);
+  return;
 }
 
 void usage(char *argv[]) {
-	printf("Usage: %s datafile [flag value]*\r\n", argv[0]);
-	printf("\r\n");
-	printf("Flags can be used to change the training procedure.\r\n");
-	printf("The flags require a value to be passed as the following argument.\r\n");
-	printf("    E.g., this is how you train with a learning rate set to 0.03:\r\n");
-	printf("        %s datafile -lr 0.03\r\n", argv[0]);
-	printf("\r\n");
-	printf("The following flags are available:\r\n");
-	printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\r\n", STD_LOADABLE_NET_NAME);
-	printf("    -lr : learning rate that is to be used during training, see the example above.\r\n");
-	printf("    -it : the number of iterations used for training (not to be confused with epochs).\r\n");
-	printf("    -mb : mini batch size.\r\n");
-	printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\r\n");
-	printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\r\n");
-	printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
-	printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
+  printf("Usage: %s datafile [flag value]*\r\n", argv[0]);
   printf("\r\n");
-	printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
-	printf("\r\n");
-	printf("%s compiled %s %s\r\n", argv[0], __DATE__, __TIME__);
-	exit(1);
+  printf("Flags can be used to change the training procedure.\r\n");
+  printf("The flags require a value to be passed as the following argument.\r\n");
+  printf("    E.g., this is how you train with a learning rate set to 0.03:\r\n");
+  printf("        %s datafile -lr 0.03\r\n", argv[0]);
+  printf("\r\n");
+  printf("The following flags are available:\r\n");
+  printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\r\n", STD_LOADABLE_NET_NAME);
+  printf("    -lr : learning rate that is to be used during training, see the example above.\r\n");
+  printf("    -it : the number of iterations used for training (not to be confused with epochs).\r\n");
+  printf("    -mb : mini batch size.\r\n");
+  printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\r\n");
+  printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\r\n");
+  printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
+  printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
+  printf("\r\n");
+  printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
+  printf("\r\n");
+  printf("%s compiled %s %s\r\n", argv[0], __DATE__, __TIME__);
+  exit(1);
 }
 
 void parse_input_args(int argc, char** argv)
@@ -361,5 +361,5 @@ Reallocating space in network input and output layer to accommodate this new fea
   free(model_layers);
   free(X_train);
 
-	return 0;
+  return 0;
 }

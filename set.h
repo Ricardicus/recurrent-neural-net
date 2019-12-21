@@ -32,8 +32,8 @@
 #define	SET_MAX_CHARS	1000
 
 typedef struct set_t {
-	char values[SET_MAX_CHARS];
-	int free[SET_MAX_CHARS];
+  char values[SET_MAX_CHARS];
+  int free[SET_MAX_CHARS];
 } set_t;
 
 int set_insert_symbol(set_t*, char);
