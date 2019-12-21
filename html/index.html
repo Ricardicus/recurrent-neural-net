@@ -595,38 +595,8 @@ function init_gui(filename) {
 	hs = [];
 	cs = [];
 
-	while ( l < layers ) {
-		// Setting the h's and c's to zero.
-
-		var layer = data["Layer " + (l+1)];
-
-		if ( typeof layer === 'undefined' ) {
-			write_error_msg("Key: 'Layer " + (l+1) + "'' not found. The JSON file is incorrect and cannot be used for this feature.");
-			return;
-
-		} else {
-
-			// Getting the value of neurons and output features (N and F)
-			Wy = layer["Wy"];
-
-			if ( N == 0 ){
-				N = Wy[0].length;
-			} else if ( Wy[0].length != N ) {
-				write_error_msg("ValueError: 'Layer " + (l+1) + "'' has: " + Wy[0].length + " neurons. Previous layer has " + N + " neurons. This application only works for LSTM networks with an equal number of neurons in each layer.");
-				return;
-			}
-
-			if ( F == 0 ) {
-				F = Wy.length;
-			} else if ( Wy.length != F ) {
-				write_error_msg("ValueError: 'Layer " + (l+1) + "'' has: " + Wy.length + " features. Previous layer has " + F + " features. This application only works for LSTM networks with an equal number of features for each layer.");
-				return;
-			}
-
-		}
-
-		l++;
-	}
+	N = data["Layer 1"]["Wy"][0].length;
+	F = data["Layer 1"]["Wy"].length;
 
 	reset_state(layers);
 
