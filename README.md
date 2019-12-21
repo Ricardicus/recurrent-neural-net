@@ -55,7 +55,9 @@ for file in $(ls -p $folder | grep -v /); do
     first=0
   else 
     # Train the net using previously trained weights
-    ./net $folder/$file -r lstm_net.net
+    # Store every 500 iterations,
+    # train for 10000 iterations.
+    ./net $folder/$file -r lstm_net.net -st 500 -it 10000
   fi
 done
 </pre>
