@@ -119,7 +119,7 @@ Try to optimize it the way you want using the compiler at hand!
 
 # Mathematical expressions
 
-This is the LSTM model I use: 
+This is the model I use for a single LSTM cell: 
 
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/LSTM_forward.png"></img>
 
