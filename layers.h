@@ -23,6 +23,13 @@
 #include <stdlib.h>
 #include <math.h>
 
+/*! \file layers.h
+    \brief Various mathematical functions
+    
+    An LSTM network is built out of a series
+    of these type of mathematical operations.
+*/
+
 // Dealing with FC layers, forward and backward
 //		Y = AX + b  			&Y,      A,   		X,		B,     Rows (A), Columns (A)
 void fully_connected_forward(double*, double*, double*, double*, int, int);

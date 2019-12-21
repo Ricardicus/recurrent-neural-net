@@ -73,10 +73,11 @@ The following flags are available:
     -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).
     -st : number of iterations between how the network is continously stored during training (.json and .net).
     -out: number of characters to output directly, note: a network and a datafile must be provided.
+    -L  : Number of layers, may not exceed 10
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Feb 14 2019 14:41:42
+./net compiled Dec 21 2019 14:08:20
 
 </pre>
 

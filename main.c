@@ -324,7 +324,7 @@ Reallocating space in network input and output layer to accommodate this new fea
         *clean = ' ';
     } while ( clean != NULL );
 
-    lstm_output_string_from_string_layers(model_layers, &set, argv[5], params.layers, 128);
+    lstm_output_string_from_string(model_layers, &set, argv[5], params.layers, 128);
 
   } else {
 

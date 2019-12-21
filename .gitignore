@@ -1,0 +1,13 @@
+# Some files from my mac
+.DS_Store
+
+# Files I can produce sometimes
+*.patch
+
+# Executable
+net
+
+# Some products of network sessions
+*.json
+*.net
+*.csv

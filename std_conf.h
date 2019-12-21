@@ -25,6 +25,10 @@
 * Set the standard behaviour of the network
 */
 
+/*! \file std_conf.h
+    \brief Definitions that set the standard behaviour of the network
+*/
+
 #ifndef STD_CONF_H
 #define STD_CONF_H
 

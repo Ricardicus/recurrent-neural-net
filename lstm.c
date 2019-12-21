@@ -793,7 +793,7 @@ void lstm_cache_container_set_start(lstm_values_cache_t * cache, int neurons)
 
 }
 
-void lstm_store_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers) 
+void lstm_store_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers)
 {
   unsigned int p = 0;
 
@@ -876,7 +876,8 @@ void lstm_store_net_portable_layers(lstm_model_t** model, set_t *features, const
 
 }
 
-void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, const char *set_name, set_t *set, unsigned int layers)
+void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
+  const char *set_name, set_t *set, unsigned int layers)
 {
   FILE * fp;
   unsigned int p = 0;
@@ -1393,7 +1394,8 @@ void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers,
 }
 
 
-void lstm_output_string_layers(lstm_model_t ** model_layers, set_t* char_index_mapping, int first, int numbers_to_display, int layers)
+void lstm_output_string_layers(lstm_model_t ** model_layers, set_t* char_index_mapping,
+  int first, int numbers_to_display, int layers)
 {
   lstm_values_cache_t ***caches_layer;
   int i = 0, count, index, p = 0, b = 0;
@@ -1491,7 +1493,7 @@ void lstm_output_string_layers(lstm_model_t ** model_layers, set_t* char_index_m
 #endif
 }
 
-void lstm_output_string_from_string_layers(lstm_model_t **model_layers, set_t* char_index_mapping,
+void lstm_output_string_from_string(lstm_model_t **model_layers, set_t* char_index_mapping,
   char * input_string, int layers, int out_length)
 {
   lstm_values_cache_t ***caches_layers;

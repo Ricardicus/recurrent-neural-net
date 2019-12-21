@@ -23,6 +23,12 @@
 #ifndef LSTM_UTILITIES_H
 #define LSTM_UTILITIES_H
 
+/*! \file utilities.h
+    \brief Some utility functions used in the LSTM program
+    
+    Here are some functions that help produce the LSTM network.
+*/
+
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>

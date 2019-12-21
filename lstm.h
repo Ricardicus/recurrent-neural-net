@@ -20,6 +20,21 @@
 * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
 * OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
+/*! \file lstm.h
+    \brief LSTM functionalities [Perhaps most interesting from a user perspective]
+    
+    Here are some functions that define, produce and use the LSTM network.
+    
+    A LSTM network consists of an array of \ref lstm_model_t data.
+
+    Each model in this array is called a layer. Output is collected 
+    in the beginning of the array, and input is entered in the end.
+
+    Say there is L > 0 layers, in a model defined as \ref lstm_model_t ** model,
+    then model[0] refers to the output layer and model[L-1] refers to the input layer.
+*/
+
 #ifndef LSTM_H
 #define LSTM_H
 
@@ -165,21 +180,41 @@ typedef struct lstm_values_next_cache_t {
   double* dldY_pass;
 } lstm_values_next_cache_t;
 
-// Setup functions
+/**
+* Initialize a new model
+* @param X number of inputs
+* @param N number of nodes
+* @param Y number of outputs
+* @param model_to_be_set the model object that is to be set
+* @param zero if set to 0, the model will have zeros as weights,\
+otherwise random initialization
+* @param param model parameters
+* @return 0 on success, negative values on errors
+*/ 
 int lstm_init_model(int X, int N, int Y, 
   lstm_model_t** model_to_be_set, int zeros,
   lstm_model_parameters_t *params);
+/**
+* Set all weights in a model to zero
+* @param model model to be set to zero
+*/ 
 void lstm_zero_the_model(lstm_model_t *model);
 void lstm_zero_d_next(lstm_values_next_cache_t * d_next,
   int outputs, int neurons);
 void lstm_cache_container_set_start(lstm_values_cache_t *cache, int neurons);
 
-// lstm model to be freed
+/**
+* Free a model
+* @param lstm model to be freed
+*/ 
 void lstm_free_model(lstm_model_t *lstm);
-//model, input,  state and cache values, &state and cache values
+/**
+* Compute the output of a network
+* @param model model to be used, must been initialized with \ref lstm_init_model
+* \see lstm_init_model
+*/ 
 void lstm_forward_propagate(lstm_model_t *model, double *input, 
   lstm_values_cache_t *cache_in, lstm_values_cache_t *cache_out, int softmax);
-// model, y_probabilities, y_correct, the next deltas, state and cache values, &gradients, &the next deltas
 void lstm_backward_propagate(lstm_model_t*, double*, int, lstm_values_next_cache_t*, lstm_values_cache_t*, lstm_model_t*, lstm_values_next_cache_t*);
 
 void lstm_values_state_init(lstm_values_state_t** d_next_to_set, int N);
@@ -191,29 +226,109 @@ void lstm_values_next_cache_init(lstm_values_next_cache_t**, int N, int X);
 void lstm_values_next_cache_free(lstm_values_next_cache_t*);
 void sum_gradients(lstm_model_t*, lstm_model_t*);
 
-// For storing and loading of net data
-//					model (already init), name
-#if 0
-void lstm_read(const char *path, set_t *set);
-void lstm_store(const char *path, set_t *set);
-#endif
+/**
+* Load a previously stored network, generated with \ref lstm_store
+* \see lstm_store
+* @param path path to the model that is to be loaded
+* @param set feature set, will be read from network
+* @param params parameters, some will be read from loaded
+* @param model model reference to be set
+*/ 
 void lstm_load(const char *path, set_t *set, 
   lstm_model_parameters_t *params, lstm_model_t ***model);
+/**
+* Store a network, can be read again with \ref lstm_load
+* \see lstm_load
+* @param path path to the model that is to be store
+* @param set feature set, will be stored to the file
+* @param model model reference to be stored
+* @param layers number of layers in the model.\
+\p model is an array, layers is used as a length. 
+*/ 
 void lstm_store(const char *path, set_t *set,
   lstm_model_t **model, unsigned int layers);
 int lstm_reinit_model(
   lstm_model_t** model, unsigned int layers,
   unsigned int previousNbrFeatures, unsigned int newNbrFeatures);
-void lstm_read_net_layers(lstm_model_t **model, FILE *fp, unsigned int layers);
-void lstm_store_net_layers(lstm_model_t**model, FILE *fp, unsigned int layers);
-void lstm_store_net_layers_as_json(lstm_model_t**, const char *, const char *, set_t *, unsigned int);
+/**
+* Store a network in JSON format.
+* \see lstm_init
+* \see lstm_train
+* @param model model to be stored
+* @param filenam eile that is to be store
+* @param set_name Name of the field that will present the feature-to-index \
+mapping in the JSON file.
+* @param set feature-to-index set, will be stored to the file
+* @param layers the number of layers this model consists of. \
+\p model is an array, layers is used as a length. 
+*/ 
+void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
+  const char *set_name, set_t *set, unsigned int layers);
 void lstm_store_progress(const char*, unsigned int, double);
 
-// The main entry point
-//						model, number of training points, X_train, Y_train, number of iterations
-void lstm_train(lstm_model_t**, lstm_model_parameters_t*, set_t*, unsigned int, int*, int*, unsigned int);
-// Used to output a given number of characters from the net based on an input char
-void lstm_output_string_layers(lstm_model_t **, set_t*, int, int, int);
-void lstm_output_string_from_string_layers(lstm_model_t **, set_t*, char *, int, int);
+/**
+* This is the entry point to the realm of black magic.
+* Trains the network.
+* \see lstm_init_model
+* @param model The model that is to be used, must have been \
+initialzed with \ref lstm_init_model.
+* @param params Various parameters determining the training process
+* @param set The feature-to-index mapping. 
+* @param training_points length of the training data array \p X
+* @param X input observations
+* @param Y output observations (typically &X[1], so that X[0] -> Y[0]: 'h' -> 'e', \
+if X[...] = 'hello' => Y[...] = 'ello ').
+* @param layers number of layers in the network, the number of models \p model \
+is pointing to. Internally if layers is L, then input is given to model[L-1] and \
+output collected at model[0].  
+*/ 
+void lstm_train(lstm_model_t** model, lstm_model_parameters_t*params,
+  set_t* set, unsigned int training_points, int *X, int *Y, unsigned int layers);
+/**
+* If you are training on textual data, this function can be used 
+* to sample and output from the network directly to stdout. 
+* \see lstm_init_model
+* \see lstm_train
+* @param model The model that is to be used, must have been \
+initialzed with \ref lstm_init_model.
+* @param set The feature-to-index mapping. 
+* @param first input seed, the rest will "follow" to stdout.
+* @param samples_to_display How many observations to write to stdout
+* @param layers how many layers this network has
+*/ 
+void lstm_output_string_layers(lstm_model_t ** model_layers, set_t* set,
+  int first, int samples_to_display, int layers);
+/**
+* If you are training on textual data, this function can be used 
+* to sample and output from the network directly to stdout. 
+* \see lstm_init_model
+* \see lstm_train
+* @param model The model that is to be used, must have been \
+initialzed with \ref lstm_init_model.
+* @param set The feature-to-index mapping. 
+* @param input_string input seed string, the rest will "follow" to stdout.
+* @param layers how many layers this network has
+* @param out_length How many characters to write to stdout
+*/ 
+void lstm_output_string_from_string(lstm_model_t **model,
+  set_t* set, char * input_string, int layers, int out_length);
+/**
+* If you are training on textual data, this function can be used 
+* to sample and output from the network directly to file. 
+* \see lstm_init_model
+* \see lstm_train
+* @param fp an open file handle to which one will write. Must \
+have been opened with write privileges
+* @param model The model that is to be used, must have been \
+initialzed with \ref lstm_init_model.
+* @param set The feature-to-index mapping. 
+* @param first input seed, the rest will "follow" to file.
+* @param samples_to_display How many observations to write to stdout
+* @param layers how many layers this network has
+*/ 
+void lstm_output_string_layers_to_file(FILE * fp,lstm_model_t ** model_layers, 
+  set_t* set, int first, int samples_to_display, int layers);
 
+void lstm_read_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers);
+void lstm_store_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers);
 #endif

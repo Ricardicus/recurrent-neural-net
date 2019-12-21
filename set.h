@@ -23,6 +23,13 @@
 #ifndef LSTM_SET_H
 #define LSTM_SET_H
 
+/*! \file set.h
+    \brief LSTM feature-to-index mapping
+    
+    Features get mapped to an index value.
+    This process is done using the following definitions and functions.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
