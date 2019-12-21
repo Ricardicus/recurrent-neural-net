@@ -35,7 +35,7 @@ void store_the_net_layers(int signo)
     printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
     STD_JSON_NET_NAME);
     printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
-    to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
+to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
   } else {
     printf("\nFailed to store the net!\n");
     exit(-1);
@@ -62,6 +62,7 @@ void usage(char *argv[]) {
   printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\r\n");
   printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
   printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
+  printf("    -N  : Number of neurons in every layer\r\n");
   printf("\r\n");
   printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
   printf("\r\n");
@@ -113,6 +114,11 @@ void parse_input_args(int argc, char** argv)
       }
     } else if ( !strcmp(argv[a], "-L") ) {
       params.layers = (unsigned int) atoi(argv[a+1]);
+      if ( params.layers > LSTM_MAX_LAYERS ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-N") ) {
+      params.neurons = (unsigned int) atoi(argv[a+1]);
       if ( params.layers > LSTM_MAX_LAYERS ) {
         usage(argv);
       }
@@ -171,6 +177,7 @@ int main(int argc, char *argv[])
   params.decrease_lr = DECREASE_LR;
   params.model_regularize = MODEL_REGULARIZE;
   params.layers = LAYERS;
+  params.neurons = NEURONS;
   params.optimizer = OPTIMIZE_ADAM;
   // Interaction configuration with the training of the network
   params.print_progress = PRINT_PROGRESS;
@@ -280,7 +287,7 @@ Reallocating space in network input and output layer to accommodate this new fea
     while ( p < params.layers ) {
       // All layers have the same training parameters
       int X;
-      int N = NEURONS;
+      int N = params.neurons;
       int Y;
 
       if ( params.layers == 1 ) {
@@ -289,13 +296,13 @@ Reallocating space in network input and output layer to accommodate this new fea
       } else {
         if ( p == 0 ) {
           Y = set_get_features(&set);
-          X = NEURONS;
+          X = params.neurons;
         } else if ( p == params.layers - 1) {
-          Y = NEURONS;
+          Y = params.neurons;
           X = set_get_features(&set);
         } else {
-          Y = NEURONS;
-          X = NEURONS;
+          Y = params.neurons;
+          X = params.neurons;
         }
       }
 

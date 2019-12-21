@@ -54,7 +54,8 @@ void  fully_connected_forward(double* Y, double* A, double* X, double* b, int R,
 
 }
 //    Y = AX + b        dldY,       A,     X,        &dldA,    &dldX,    &dldb   Rows (A), Columns (A)
-void  fully_connected_backward(double* dldY, double* A, double* X,double* dldA, double* dldX, double* dldb, int R, int C)
+void  fully_connected_backward(double* dldY, double* A, double* X,double* dldA,
+  double* dldX, double* dldb, int R, int C)
 {
   int i = 0, n = 0;
 
@@ -90,9 +91,9 @@ void  fully_connected_backward(double* dldY, double* A, double* X,double* dldA, 
   }
 }
 
-double cross_entropy(double* probs, int correct)
+double cross_entropy(double* probabilities, int correct)
 {
-  return -log(probs[correct]);  
+  return -log(probabilities[correct]);  
 }
 
 // Dealing with softmax layer, forward and backward

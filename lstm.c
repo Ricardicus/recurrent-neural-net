@@ -1033,6 +1033,10 @@ void lstm_load(const char *path, set_t *set,
     ++l;
   }
 
+  // Setting the number of neurons
+  // NOTE: it is the same for each layer (for now)
+  params->neurons = layerNodes[0];
+
   // Import feature set
   f = 0;
   while ( f < F ) {

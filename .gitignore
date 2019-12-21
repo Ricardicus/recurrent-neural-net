@@ -11,3 +11,6 @@ net
 *.json
 *.net
 *.csv
+
+# Documentation, I only include doxygen html in repo
+docs/latex 

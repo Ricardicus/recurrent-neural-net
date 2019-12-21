@@ -81,6 +81,8 @@ typedef struct lstm_model_parameters_t {
 
   // How many layers
   unsigned int layers;
+  // How many neurons this layer has
+  unsigned int neurons;
 
   // Output configuration for interactivity
   long print_progress_iterations;
