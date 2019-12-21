@@ -41,7 +41,7 @@ If you have <i>several datafiles</i> then you can do something like:
 # see std_conf.h on how to change the default
 # behaviour before building the program.
 
-folder = THE FOLDER WITH THE FILES
+folder="THE FOLDER WITH THE FILES"
 
 first=1
 for file in $(ls -p $folder | grep -v /); do
