@@ -124,8 +124,11 @@ This is the LSTM model I use:
 <img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/LSTM_forward.png"></img>
 
 That image describes a single layer forward pass. The terminology in the codebase are derived from that 
-notation. So for example, if you wonder what model->Wy means, then Wy is represented in that set of 
-expressions. Also, model->dldWy means the backpropagated gradients for Wy.  
+notation. So for example, if you wonder what model->Wf means, then Wf is represented in that set of 
+expressions. Also, model->dldWf means the backpropagated gradients for Wf. I connect the layers with a
+fully connected layer, introducing Wy and by also. Inputs to the fully connected is the array h in the 
+set of expressions above. I apply a softmax to output layer of the model also in the end,
+to get the probabilities.
 
 # Additional interesting stuff
 
