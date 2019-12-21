@@ -117,6 +117,16 @@ gcc *.c -O3 -Ofast -msse3 -lm
 
 Try to optimize it the way you want using the compiler at hand!
 
+# Mathematical expressions
+
+This is the LSTM model I use: 
+
+<img src="https://raw.githubusercontent.com/Ricardicus/recurrent-neural-net/master/html/LSTM_forward.png"></img>
+
+That image describes a single layer forward pass. The terminology in the codebase are derived from that 
+notation. So for example, if you wonder what model->Wy means, then Wy is represented in that set of 
+expressions. Also, model->dldWy means the backpropagated gradients for Wy.  
+
 # Additional interesting stuff
 
 Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
