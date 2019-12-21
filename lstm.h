@@ -107,10 +107,10 @@ typedef struct lstm_model_parameters_t {
 
 typedef struct lstm_model_t
 {
-  int X; // Number of input nodes
-  int N; // Number of neurons
-  int Y; // Number of output nodes
-  int S; // X + N
+  int X; /**< Number of input nodes */
+  int N; /**< Number of neurons */
+  int Y; /**< Number of output nodes */
+  int S; /**< lstm_model_t.X + lstm_model_t.N */
 
   // Parameters
   lstm_model_parameters_t * params;
@@ -151,8 +151,6 @@ typedef struct lstm_model_t
   double* bcm;
   double* bom;
   double* bym;
-
-  int fully_connect;
 
 } lstm_model_t;
 
