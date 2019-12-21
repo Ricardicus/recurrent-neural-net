@@ -40,13 +40,16 @@ If you have <i>several datafiles</i> then you can do something like:
 # bash example of how to use the -r flag
 # see std_conf.h on how to change the default
 # behaviour before building the program.
+
+folder = THE FOLDER WITH THE FILES
+
 first=1
-for file in $(ls -p | grep -v /); do
+for file in $(ls -p $folder | grep -v /); do
 	if [ $first -eq 1 ]; then
 		# Train the net using new weights
 		# a file with the name lstm_net.net
 		# will appear, see std_conf.h
-		./net $file
+		./net $folder/$file
 		first=0
 	else 
 		# Train the net using previously trained weights
