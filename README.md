@@ -34,6 +34,28 @@ Then run the program:
 where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
 
+If you have <i>several datafiles</i> then you can do something like:
+
+<pre>
+# bash example of how to use the -r flag
+# on how to change the default
+# behaviour before building the 
+# net program.
+first=1
+for file in $(ls -p | grep -v /); do
+	if [ $first -eq 1 ]; then
+		# Train the net using new weights
+		# a file with the name lstm_net.net
+		# will appear, see std_conf.h
+		./net $file
+		first=0
+	else 
+		# Train the net using previously trained weights
+		./net $file -r lstm_net.net
+	fi
+done
+</pre>
+
 ## Windows
 
 I have only built it using Visual Studio Native Tools Command Prompt for VS2017. 
