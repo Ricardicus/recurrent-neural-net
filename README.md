@@ -74,10 +74,11 @@ The following flags are available:
     -st : number of iterations between how the network is continously stored during training (.json and .net).
     -out: number of characters to output directly, note: a network and a datafile must be provided.
     -L  : Number of layers, may not exceed 10
+    -N  : Number of neurons in every layer
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Dec 21 2019 14:08:20
+./net compiled Dec 21 2019 15:55:28
 
 </pre>
 
