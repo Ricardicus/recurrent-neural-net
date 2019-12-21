@@ -12,5 +12,7 @@ net
 *.net
 *.csv
 
-# Documentation, I only include doxygen html in repo
-docs/latex 
+# Documentation, I only include doxygen configuration file in the repo
+# and files that doxygen produce are not kept under version control
+docs/latex
+docs/html
