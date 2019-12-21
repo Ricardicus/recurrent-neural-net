@@ -38,9 +38,8 @@ If you have <i>several datafiles</i> then you can do something like:
 
 <pre>
 # bash example of how to use the -r flag
-# on how to change the default
-# behaviour before building the 
-# net program.
+# see std_conf.h on how to change the default
+# behaviour before building the program.
 first=1
 for file in $(ls -p | grep -v /); do
 	if [ $first -eq 1 ]; then
