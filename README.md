@@ -45,16 +45,16 @@ folder = THE FOLDER WITH THE FILES
 
 first=1
 for file in $(ls -p $folder | grep -v /); do
-	if [ $first -eq 1 ]; then
-		# Train the net using new weights
-		# a file with the name lstm_net.net
-		# will appear, see std_conf.h
-		./net $folder/$file
-		first=0
-	else 
-		# Train the net using previously trained weights
-		./net $folder/$file -r lstm_net.net
-	fi
+  if [ $first -eq 1 ]; then
+    # Train the net using new weights
+    # a file with the name lstm_net.net
+    # will appear, see std_conf.h
+    ./net $folder/$file
+    first=0
+  else 
+    # Train the net using previously trained weights
+    ./net $folder/$file -r lstm_net.net
+  fi
 done
 </pre>
 
