@@ -85,4 +85,8 @@ void 	matrix_store(double **, int, int, FILE *);
 void 	matrix_read(double **, int, int, FILE *);
 void 	vector_read_ascii(double *, int, FILE *);
 void 	vector_store_ascii(double *, int, FILE *);
+
+// Memory
+void*   e_calloc(size_t count, size_t size);
+size_t  e_alloc_total();
 #endif

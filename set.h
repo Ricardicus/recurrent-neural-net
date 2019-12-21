@@ -31,24 +31,24 @@
 
 #define	SET_MAX_CHARS	1000
 
-typedef struct set_T {
+typedef struct set_t {
 	char values[SET_MAX_CHARS];
 	int free[SET_MAX_CHARS];
-} set_T;
+} set_t;
 
-int set_insert_symbol(set_T*, char);
-char set_indx_to_char(set_T*, int);
-int set_char_to_indx(set_T*, char);
-int set_probability_choice(set_T*, double*);
-int set_greedy_argmax(set_T*, double*);
-int set_get_features(set_T*);
+int set_insert_symbol(set_t*, char);
+char set_indx_to_char(set_t*, int);
+int set_char_to_indx(set_t*, char);
+int set_probability_choice(set_t*, double*);
+int set_greedy_argmax(set_t*, double*);
+int set_get_features(set_t*);
 
-void set_print(set_T*, double*);
+void set_print(set_t*, double*);
 
-void initialize_set(set_T*);
+void initialize_set(set_t*);
 
-void set_store_as_json(set_T *, FILE*);
-void set_store(set_T *, FILE*);
-int set_read(set_T *, FILE*);
+void set_store_as_json(set_t *, FILE*);
+void set_store(set_t *, FILE*);
+int set_read(set_t *, FILE*);
 
 #endif

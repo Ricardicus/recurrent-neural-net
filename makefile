@@ -1,5 +1,5 @@
 CC := gcc
-FLAGS := O3 Ofast msse3
+FLAGS := O3 Ofast msse3 Wall
 LIB := m
 SOURCES := *.c
 .PHONY : net

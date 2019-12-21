@@ -20,7 +20,8 @@
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
 lstm_model_t **model_layers;
-set_T set;
+lstm_model_parameters_t params;
+set_t set;
 
 static int write_output_directly_bytes = 0;
 static char *read_network = NULL;
@@ -28,8 +29,9 @@ static char *read_network = NULL;
 void store_the_net_layers(int signo)
 {
 	if ( model_layers != NULL ){
-		lstm_store_net_layers(model_layers, STD_LOADABLE_NET_NAME, LAYERS);
-		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, LAYERS);
+    lstm_store(STD_LOADABLE_NET_NAME, &set,
+      model_layers, params.layers);
+		lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, params.layers);
 		printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
 			STD_JSON_NET_NAME);
 		printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
@@ -44,223 +46,320 @@ to continue refining the weights.\n", STD_LOADABLE_NET_NAME);
 }
 
 void usage(char *argv[]) {
-	printf("Usage: %s datafile [flag value]*\n", argv[0]);
-	printf("\n");
-	printf("Flags can be used to change the training procedure.\n");
-	printf("The flags require a value to be passed as the following argument.\n");
-	printf("    E.g., this is how you train with a learning rate set to 0.03:\n");
-	printf("        %s datafile -lr 0.03\n", argv[0]);
-	printf("\n");
-	printf("The following flags are available:\n");
-	printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\n", STD_LOADABLE_NET_NAME);
-	printf("    -lr : learning rate that is to be used during training, see the example above.\n");
-	printf("    -it : the number of iterations used for training (not to be confused with epochs).\n");
-	printf("    -mb : mini batch size.\n");
-	printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\n");
-	printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\n");
-	printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\n");
-	printf("\n");
-	printf("Check std_conf.h to see what default values are used, these are set during compilation.\n");
-	printf("\n");
-	printf("%s compiled %s %s\n", argv[0], __DATE__, __TIME__);
+	printf("Usage: %s datafile [flag value]*\r\n", argv[0]);
+	printf("\r\n");
+	printf("Flags can be used to change the training procedure.\r\n");
+	printf("The flags require a value to be passed as the following argument.\r\n");
+	printf("    E.g., this is how you train with a learning rate set to 0.03:\r\n");
+	printf("        %s datafile -lr 0.03\r\n", argv[0]);
+	printf("\r\n");
+	printf("The following flags are available:\r\n");
+	printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\r\n", STD_LOADABLE_NET_NAME);
+	printf("    -lr : learning rate that is to be used during training, see the example above.\r\n");
+	printf("    -it : the number of iterations used for training (not to be confused with epochs).\r\n");
+	printf("    -mb : mini batch size.\r\n");
+	printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\r\n");
+	printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\r\n");
+	printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
+	printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
+  printf("\r\n");
+	printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
+	printf("\r\n");
+	printf("%s compiled %s %s\r\n", argv[0], __DATE__, __TIME__);
 	exit(1);
 }
 
-void parse_input_args(int argc, char** argv, lstm_model_parameters_t* params)
+void parse_input_args(int argc, char** argv)
 {
-	int a = 0;
+  int a = 0;
 
-	while ( a < argc ) {
+  while ( a < argc ) {
 
-		if ( argc <= (a+1) )
-			break; // All flags have values attributed to them
+    if ( argc <= (a+1) )
+      break; // All flags have values attributed to them
 
-		if ( !strcmp(argv[a], "-r") ) {
-			read_network = argv[a + 1];
-		} else if ( !strcmp(argv[a], "-lr") ) {
-			params->learning_rate = atof(argv[a + 1]);
-			if ( params->learning_rate == 0.0 ) {
-				usage(argv);
-			}
-		} else if ( !strcmp(argv[a], "-mb") ) {
-			params->mini_batch_size = atoi(argv[a + 1]);
-			if ( params->mini_batch_size <= 0 ) {
-				usage(argv);
-			}
-		} else if ( !strcmp(argv[a], "-it") ) {
-			params->iterations = (unsigned long) atol(argv[a + 1]);
-			if ( params->iterations == 0 ) {
-				usage(argv);
-			}
-		} else if ( !strcmp(argv[a], "-dl") ) {
-			params->learning_rate_decrease = atof(argv[a + 1]);
-			if ( params->learning_rate_decrease == 0 ) {
-				usage(argv);
-			}
-			params->decrease_lr = 1;
-		} else if ( !strcmp(argv[a], "-st") ) {
-			params->store_network_every = atoi(argv[a + 1]);
-			if ( params->store_network_every == 0 ) {
-				usage(argv);
-			}
-		} else if ( !strcmp(argv[a], "-out") ) {
-			write_output_directly_bytes = atoi(argv[a+1]);
-			if ( write_output_directly_bytes <= 0 ) {
-				usage(argv);
-			}
-		}
+    if ( !strcmp(argv[a], "-r") ) {
+      read_network = argv[a + 1];
+    } else if ( !strcmp(argv[a], "-lr") ) {
+      params.learning_rate = atof(argv[a + 1]);
+      if ( params.learning_rate == 0.0 ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-mb") ) {
+      params.mini_batch_size = atoi(argv[a + 1]);
+      if ( params.mini_batch_size <= 0 ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-it") ) {
+      params.iterations = (unsigned long) atol(argv[a + 1]);
+      if ( params.iterations == 0 ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-dl") ) {
+      params.learning_rate_decrease = atof(argv[a + 1]);
+      if ( params.learning_rate_decrease == 0 ) {
+        usage(argv);
+      }
+      params.decrease_lr = 1;
+    } else if ( !strcmp(argv[a], "-st") ) {
+      params.store_network_every = atoi(argv[a + 1]);
+      if ( params.store_network_every == 0 ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-out") ) {
+      write_output_directly_bytes = atoi(argv[a+1]);
+      if ( write_output_directly_bytes <= 0 ) {
+        usage(argv);
+      }
+    } else if ( !strcmp(argv[a], "-L") ) {
+      params.layers = (unsigned int) atoi(argv[a+1]);
+      if ( params.layers > LSTM_MAX_LAYERS ) {
+        usage(argv);
+      }
+    }
 
-		a += 2;
-	}
+    a += 2;
+  }
+}
+
+static char * prettyPrintBytes(size_t bytes)
+{
+  static char buffer[128];
+  const char *categories[4] = 
+    {"B", "KB", "MB", "GB"};
+  unsigned int category = 0;
+  size_t displayBytes = bytes;
+  size_t displayBytesRest = 0;
+
+  while ( category < (sizeof(categories)/sizeof(*categories)) && displayBytes > 1024 )
+  {
+    displayBytesRest = displayBytes % 1024;
+    displayBytes /= 1024;
+    ++category;
+  }
+
+  snprintf(buffer,sizeof(buffer), "%zu.%zu %s", 
+    displayBytes, displayBytesRest, categories[category]);
+  return buffer;
 }
 
 int main(int argc, char *argv[])
 {
-	int i = 0, c, p = 0;
-	size_t file_size = 0, sz = 0;
-	int *X_train, *Y_train;
-	char * clean;
-	FILE * fp;
+  int c;
+  unsigned int p = 0;
+  unsigned int file_size = 0, sz = 0;
+  int *X_train, *Y_train;
+  char * clean;
+  FILE * fp;
 
-	int layers = LAYERS;
+  memset(&params, 0, sizeof(params));
 
-	lstm_model_parameters_t params;
-	memset(&params, 0, sizeof(params));
+  params.iterations = ITERATIONS;
+  params.loss_moving_avg = LOSS_MOVING_AVG;
+  params.learning_rate = STD_LEARNING_RATE;
+  params.momentum = STD_MOMENTUM;
+  params.lambda = STD_LAMBDA;
+  params.softmax_temp = SOFTMAX_TEMP;
+  params.mini_batch_size = MINI_BATCH_SIZE;
+  params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
+  params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
+  params.stateful = STATEFUL;
+  params.beta1 = 0.9;
+  params.beta2 = 0.999;
+  params.gradient_fit = GRADIENTS_FIT;
+  params.gradient_clip = GRADIENTS_CLIP;
+  params.decrease_lr = DECREASE_LR;
+  params.model_regularize = MODEL_REGULARIZE;
+  params.layers = LAYERS;
+  params.optimizer = OPTIMIZE_ADAM;
+  // Interaction configuration with the training of the network
+  params.print_progress = PRINT_PROGRESS;
+  params.print_progress_iterations = PRINT_EVERY_X_ITERATIONS;
+  params.print_progress_sample_output = PRINT_SAMPLE_OUTPUT;
+  params.print_progress_to_file = PRINT_SAMPLE_OUTPUT_TO_FILE;
+  params.print_progress_number_of_chars = NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING;
+  params.print_sample_output_to_file_arg = PRINT_SAMPLE_OUTPUT_TO_FILE_ARG;
+  params.print_sample_output_to_file_name = PRINT_SAMPLE_OUTPUT_TO_FILE_NAME;
+  params.store_progress_every_x_iterations = STORE_PROGRESS_EVERY_X_ITERATIONS;
+  params.store_progress_file_name = PROGRESS_FILE_NAME;
+  params.store_network_name_raw = STD_LOADABLE_NET_NAME;
+  params.store_network_name_json = STD_LOADABLE_NET_NAME;
+  params.store_char_indx_map_name = JSON_KEY_NAME_SET;
 
-	params.iterations = ITERATIONS;
-	params.loss_moving_avg = LOSS_MOVING_AVG;
-	params.learning_rate = STD_LEARNING_RATE;
-	params.momentum = STD_MOMENTUM;
-	params.lambda = STD_LAMBDA;
-	params.softmax_temp = SOFTMAX_TEMP;
-	params.mini_batch_size = MINI_BATCH_SIZE;
-	params.gradient_clip_limit = GRADIENT_CLIP_LIMIT;
-	params.learning_rate_decrease = STD_LEARNING_RATE_DECREASE;
-	params.stateful = STATEFUL;
-	params.beta1 = 0.9;
-	params.beta2 = 0.999;
-	params.gradient_fit = GRADIENTS_FIT;
-	params.gradient_clip = GRADIENTS_CLIP;
-	params.decrease_lr = DECREASE_LR;
-	params.model_regularize = MODEL_REGULARIZE;
-	params.layers = LAYERS;
-	params.optimizer = OPTIMIZE_ADAM;
-	// Interaction configuration with the training of the network
-	params.print_progress = PRINT_PROGRESS;
-	params.print_progress_iterations = PRINT_EVERY_X_ITERATIONS;
-	params.print_progress_sample_output = PRINT_SAMPLE_OUTPUT;
-	params.print_progress_to_file = PRINT_SAMPLE_OUTPUT_TO_FILE;
-	params.print_progress_number_of_chars = NUMBER_OF_CHARS_TO_DISPLAY_DURING_TRAINING;
-	params.print_sample_output_to_file_arg = PRINT_SAMPLE_OUTPUT_TO_FILE_ARG;
-	params.print_sample_output_to_file_name = PRINT_SAMPLE_OUTPUT_TO_FILE_NAME;
-	params.store_progress_every_x_iterations = STORE_PROGRESS_EVERY_X_ITERATIONS;
-	params.store_progress_file_name = PROGRESS_FILE_NAME;
-	params.store_network_name_raw = STD_LOADABLE_NET_NAME;
-	params.store_network_name_json = STD_LOADABLE_NET_NAME;
-	params.store_char_indx_map_name = JSON_KEY_NAME_SET;
+  srand( time ( NULL ) );
 
-	srand( time ( NULL ) );
+  if ( argc < 2 ) {
+    usage(argv);
+    return -1;
+  }
 
-	if ( argc < 2 ) {
-		usage(argv);
-		return -1;
-	}
+  parse_input_args(argc, argv);
 
-	initialize_set(&set);
+  initialize_set(&set);
 
-	fp = fopen(argv[1], "r");
-	if ( fp == NULL ) {
-		printf("Could not open file: %s\n", argv[1]);
-		return -1;
-	}
+  fp = fopen(argv[1], "r");
+  if ( fp == NULL ) {
+    printf("Could not open file: %s\n", argv[1]);
+    return -1;
+  }
 
-	while ( ( c = fgetc(fp) ) != EOF ) {
-		set_insert_symbol(&set, (char)c );
-		++file_size;
-	}
+  while ( ( c = fgetc(fp) ) != EOF ) {
+    set_insert_symbol(&set, (char)c );
+    ++file_size;
+  }
 
-	fclose(fp);
+  fclose(fp);
 
-	X_train = calloc(file_size+1, sizeof(int));
-	if ( X_train == NULL )
-		return -1;
+  X_train = calloc(file_size+1, sizeof(int));
+  if ( X_train == NULL )
+    return -1;
 
-	X_train[file_size] = (int) set_char_to_indx(&set,'.');
+  X_train[file_size] = X_train[0];
 
-	Y_train = &X_train[1];
+  Y_train = &X_train[1];
 
-	fp = fopen(argv[1], "r");
-	while ( ( c = fgetc(fp) ) != EOF ) 
-		X_train[sz++] = set_char_to_indx(&set,c);
-	fclose(fp);
+  fp = fopen(argv[1], "r");
+  while ( ( c = fgetc(fp) ) != EOF ) 
+    X_train[sz++] = set_char_to_indx(&set,c);
+  fclose(fp);
 
-	model_layers = calloc(layers, sizeof(lstm_model_t*));
+  if ( read_network != NULL ) {
+    int FRead;
+    int FReadNewAfterDataFile;
 
-	if ( model_layers == NULL ) {
-		printf("Error in init!\n");
-		exit(-1);
-	}
+    initialize_set(&set);
 
-	p = 0;
+    lstm_load(read_network, &set, &params, &model_layers);
 
-	while ( p < layers ) {
-		// All layers have the same training parameters
-		lstm_init_model(set_get_features(&set), NEURONS, &model_layers[p], 0, &params);	
-		++p;
-	}
+    FRead = set_get_features(&set);
 
-	parse_input_args(argc, argv, &params);
+    // Read from datafile, see if new features appear
 
-	if ( write_output_directly_bytes && read_network != NULL ) {
+    fp = fopen(argv[1], "r");
+    if ( fp == NULL ) {
+      printf("Could not open file: %s\n", argv[1]);
+      return -1;
+    }
 
-		if ( read_network != NULL )
-			lstm_read_net_layers(model_layers, read_network, LAYERS);
+    while ( ( c = fgetc(fp) ) != EOF ) {
+      set_insert_symbol(&set, (char)c );
+    }
 
-		lstm_output_string_layers(model_layers, &set, set_indx_to_char(&set, 0), write_output_directly_bytes, LAYERS);
+    fclose(fp);
 
-		free(model_layers);
-		free(X_train);
-		return 0;
-	} else if ( write_output_directly_bytes && read_network == NULL ) {
-		usage(argv);
-	} else if ( read_network != NULL ) {
-		lstm_read_net_layers(model_layers, read_network, LAYERS);
-		printf("Loaded the net: %s\n", read_network);
-	}
+    FReadNewAfterDataFile = set_get_features(&set);
 
-	if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
-		do {
-			clean = strchr(argv[5], '_');
-			if ( clean != NULL )
-				*clean = ' ';
-		} while ( clean != NULL );
+    if ( FReadNewAfterDataFile > FRead ) {
+      // New features appeared. Must change 
+      // first and last layer.
+      printf("New features detected in datafile.\nLoaded network worked with %d features\
+, now there is %d features in total.\n\
+Reallocating space in network input and output layer to accommodate this new feature set.\n",
+        FRead, FReadNewAfterDataFile);
 
-		lstm_output_string_from_string_layers(model_layers, &set, argv[5], LAYERS, 128);
+      lstm_reinit_model(
+        model_layers,
+        params.layers,
+        FRead,
+        FReadNewAfterDataFile
+      );
 
-	} else {
+    }
 
-		printf("LSTM Neural net compiled: %s %s, %d Layers, Neurons: %d, Backprop Through Time: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf\n",__DATE__, __TIME__, layers, NEURONS, MINI_BATCH_SIZE, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+    printf("Loaded the net: %s\n", read_network);
+  } else {
+    /* Allocating space for a new model */
+    model_layers = calloc(params.layers, sizeof(lstm_model_t*));
 
-		signal(SIGINT, store_the_net_layers);
+    if ( model_layers == NULL ) {
+      printf("Error in init!\n");
+      exit(-1);
+    }
 
-		lstm_train(
-			model_layers,
-			&params,
-			&set,
-			file_size,
-			X_train,
-			Y_train,
-			layers
-		);
+    p = 0;
+    while ( p < params.layers ) {
+      // All layers have the same training parameters
+      int X;
+      int N = NEURONS;
+      int Y;
 
-	}
+      if ( params.layers == 1 ) {
+        X = set_get_features(&set);
+        Y = set_get_features(&set);
+      } else {
+        if ( p == 0 ) {
+          Y = set_get_features(&set);
+          X = NEURONS;
+        } else if ( p == params.layers - 1) {
+          Y = NEURONS;
+          X = set_get_features(&set);
+        } else {
+          Y = NEURONS;
+          X = NEURONS;
+        }
+      }
 
+      lstm_init_model(X, N, Y, &model_layers[p], 0, &params); 
 
-	free(model_layers);
-	free(X_train);
+      ++p;
+    }
+  }
 
+  if ( write_output_directly_bytes && read_network != NULL ) {
 
+    lstm_output_string_layers(model_layers, &set, set_indx_to_char(&set, 0), write_output_directly_bytes, params.layers);
+
+    free(model_layers);
+    free(X_train);
+    return 0;
+  } else if ( write_output_directly_bytes && read_network == NULL ) {
+    usage(argv);
+  }
+
+  if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
+
+    do {
+      clean = strchr(argv[5], '_');
+      if ( clean != NULL )
+        *clean = ' ';
+    } while ( clean != NULL );
+
+    lstm_output_string_from_string_layers(model_layers, &set, argv[5], params.layers, 128);
+
+  } else {
+
+    assert(params.layers > 0);
+
+    printf("LSTM Neural net compiled: %s %s, %u Layers, ", 
+      __DATE__, __TIME__, params.layers);
+    // Print neurons in each layer
+    printf("Neurons: [");
+    p = 0;
+    while ( p < params.layers ) {
+      printf("%s%d", (p>0?", ":""), model_layers[p]->N);
+      ++p;
+    }
+    printf("], Features: %d.\n", model_layers[params.layers-1]->X);
+    printf("Allocated bytes for the network: %s\n", prettyPrintBytes(e_alloc_total()));
+    printf("Training parameters: Backprop Through Time: %d, LR: %lf, Mo: %lf, LA: %lf, LR-decrease: %lf.\n",
+      MINI_BATCH_SIZE, params.learning_rate, params.momentum, params.lambda, params.learning_rate_decrease);
+
+    signal(SIGINT, store_the_net_layers);
+
+    lstm_train(
+      model_layers,
+      &params,
+      &set,
+      file_size,
+      X_train,
+      Y_train,
+      params.layers
+    );
+
+  }
+
+  free(model_layers);
+  free(X_train);
 
 	return 0;
-
 }

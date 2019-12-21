@@ -23,7 +23,7 @@
 #include "set.h"
 
 void 
-initialize_set(set_T * set) 
+initialize_set(set_t * set) 
 {
 	int i = 0;
 	while ( i < SET_MAX_CHARS ) {
@@ -34,9 +34,8 @@ initialize_set(set_T * set)
 }
 
 int
-set_insert_symbol(set_T * set, char c)
+set_insert_symbol(set_t * set, char c)
 {
-	uint8_t d = c;
 	int i = 0;
 	while (  i <  SET_MAX_CHARS ) {
 		if ( (char) set->values[i] == c && set->free[i] == 0 )
@@ -52,7 +51,7 @@ set_insert_symbol(set_T * set, char c)
 }
 
 char 
-set_indx_to_char(set_T* set, int indx)
+set_indx_to_char(set_t* set, int indx)
 {
 	if ( indx >= SET_MAX_CHARS ){
 		return '\0';
@@ -61,7 +60,7 @@ set_indx_to_char(set_T* set, int indx)
 }
 
 int 
-set_char_to_indx(set_T* set, char c) 
+set_char_to_indx(set_t* set, char c) 
 {
 	int i = 0;
 	while (  i <  SET_MAX_CHARS ) {
@@ -74,7 +73,7 @@ set_char_to_indx(set_T* set, char c)
 }
 
 int
-set_probability_choice(set_T* set, double* probs)
+set_probability_choice(set_t* set, double* probs)
 {
 	int i = 0;
 	double sum = 0, random_value;
@@ -94,7 +93,7 @@ set_probability_choice(set_T* set, double* probs)
 }
 
 int
-set_get_features(set_T* set) 
+set_get_features(set_t* set) 
 {
 	int i = 0;
 	while ( set->free[i] == 0 )
@@ -106,7 +105,7 @@ set_get_features(set_T* set)
 }
 
 void 
-set_print(set_T* set, double* probs)
+set_print(set_t* set, double* probs)
 {
 	int i = 0;
 	while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
@@ -119,7 +118,7 @@ set_print(set_T* set, double* probs)
 }
 
 int 
-set_greedy_argmax(set_T* set, double* probs)
+set_greedy_argmax(set_t* set, double* probs)
 {
 	int i = 0;
 	int max_i = 0;
@@ -136,7 +135,7 @@ set_greedy_argmax(set_T* set, double* probs)
 }
 
 void
-set_store_as_json(set_T *set, FILE*fp)
+set_store_as_json(set_t *set, FILE*fp)
 {
 	int i = 0;
 
@@ -158,7 +157,7 @@ set_store_as_json(set_T *set, FILE*fp)
 }
 
 void
-set_store(set_T *set, FILE*fp)
+set_store(set_t *set, FILE*fp)
 {
 	int i = 0, n;
 	char * d;
@@ -177,7 +176,7 @@ set_store(set_T *set, FILE*fp)
 }
 
 int
-set_read(set_T *set, FILE*fp)
+set_read(set_t *set, FILE*fp)
 {
 	int i = 0, n, c;
 	char *d,*e;

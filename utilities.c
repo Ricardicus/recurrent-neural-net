@@ -130,15 +130,10 @@ int 	init_random_matrix(double*** A, int R, int C)
 {
 	int r = 0, c = 0;
 
-	*A = calloc(R, sizeof(double*));
-
-	if ( *A == NULL )
-		return -1;
+	*A = e_calloc(R, sizeof(double*));
 
 	while ( r < R ) {
-		(*A)[r] = calloc(C, sizeof(double));
-		if ( (*A)[r] == NULL )
-			return -2;
+		(*A)[r] = e_calloc(C, sizeof(double));
 		++r;
 	}
 
@@ -160,9 +155,7 @@ double*		get_random_vector(int L, int R) {
 	
 	int l = 0;
 	double *p;
-	p = calloc(L, sizeof(double));
-	if ( p == NULL )
-		exit(0);
+	p = e_calloc(L, sizeof(double));
 
 	while ( l < L ){
 		p[l] = randn(0,1) / sqrt( R / 5 );
@@ -177,15 +170,10 @@ double** 	get_random_matrix(int R, int C)
 {
 	int r = 0, c = 0;
 	double ** p;
-	p = calloc(R, sizeof(double*));
-
-	if ( p == NULL )
-		exit(-1);
+	p = e_calloc(R, sizeof(double*));
 
 	while ( r < R ) {
-		p[r] = calloc(C, sizeof(double));
-		if ( p[r] == NULL )
-			exit(-1);
+		p[r] = e_calloc(C, sizeof(double));
 		++r;
 	}
 
@@ -207,15 +195,11 @@ double** 	get_zero_matrix(int R, int C)
 {
 	int r = 0, c = 0;
 	double ** p;
-	p = calloc(R, sizeof(double*));
-
-	if ( p == NULL )
-		exit(-1);
+	p = e_calloc(R, sizeof(double*));
 
 	while ( r < R ) {
-		p[r] = calloc(C, sizeof(double));
-		if ( p[r] == NULL )
-			exit(-1);
+		p[r] = e_calloc(C, sizeof(double));
+
 		++r;
 	}
 
@@ -237,15 +221,11 @@ int 	init_zero_matrix(double*** A, int R, int C)
 {
 	int r = 0, c = 0;
 
-	*A = calloc(R, sizeof(double*));
-
-	if ( *A == NULL )
-		return -1;
+	*A = e_calloc(R, sizeof(double*));
 
 	while ( r < R ) {
-		(*A)[r] = calloc(C, sizeof(double));
-		if ( (*A)[r] == NULL )
-			return -2;
+		(*A)[r] = e_calloc(C, sizeof(double));
+
 		++r;
 	}
 
@@ -277,9 +257,7 @@ int 	free_matrix(double** A, int R)
 int 	init_zero_vector(double** V, int L) 
 {
 	int l = 0;
-	*V = calloc(L, sizeof(double));
-	if ( *V == NULL )
-		return -1;
+	*V = e_calloc(L, sizeof(double));
 
 	while ( l < L ){
 		(*V)[l] = 0.0;
@@ -293,9 +271,7 @@ double* 	get_zero_vector(int L)
 {
 	int l = 0;
 	double *p;
-	p = calloc(L, sizeof(double));
-	if ( p == NULL )
-		exit(0);
+	p = e_calloc(L, sizeof(double));
 
 	while ( l < L ){
 		p[l] = 0.0;
@@ -578,7 +554,6 @@ void 	vector_read_ascii(double * V, int L, FILE * fp)
 void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
 {
 	int r = 0, c = 0;
-	size_t i = 0;
 
 	if ( fp == NULL )
 		return; // No file, nothing to do. 
@@ -621,7 +596,6 @@ void 	vector_store_as_matrix_json(double* V, int R, int C, FILE * fp)
 void 	vector_store_json(double* V, int L, FILE * fp)
 {
 	int l = 0;
-	size_t i = 0;
 
 	if ( fp == NULL )
 		return; // No file, nothing to do. 
@@ -681,4 +655,24 @@ double sample_normal() {
     if (r == 0 || r > 1) return sample_normal();
     double c = sqrt(-2 * log(r) / r);
     return u * c;
+}
+
+/* Memory related utilities */
+static size_t alloc_mem_tot = 0;
+void*   e_calloc(size_t count, size_t size)
+{
+	void *p = calloc(count, size);
+	if ( p == NULL ) {
+		/* Failed to allocate this memory will exit */
+		fprintf(stderr, "%s error: Failed to allocate %zu bytes, having allocated %zu in total already.\n", 
+			__func__, count*size, alloc_mem_tot);
+		exit(1);
+	}
+	alloc_mem_tot += count*size;
+	return p;
+}
+
+size_t  e_alloc_total()
+{
+	return alloc_mem_tot;
 }

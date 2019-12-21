@@ -28,7 +28,7 @@
 #ifndef STD_CONF_H
 #define STD_CONF_H
 
-#define NEURONS                                                 128
+#define NEURONS                                                 68
 
 #define STD_LEARNING_RATE                                       0.001
 #define STD_MOMENTUM                                            0.0
