@@ -53,7 +53,7 @@ for file in $(ls -p $folder | grep -v /); do
 		first=0
 	else 
 		# Train the net using previously trained weights
-		./net $file -r lstm_net.net
+		./net $folder/$file -r lstm_net.net
 	fi
 done
 </pre>
