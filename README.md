@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/Ricardicus/recurrent-neural-net.svg?branch=master)](https://travis-ci.org/Ricardicus/recurrent-neural-net)
 
+![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Build%20&%20Passing/badge.svg)
+
 # Reccurent neural network
 
 In the process of designing systems that can adapt and learn patterns we explore on a basic, fundamental, level theories about how complex biological systems, such as human brains, work. I find this very fascinating. A recurrent neural network is a system that contains feedback loops and can store information from the past. 
