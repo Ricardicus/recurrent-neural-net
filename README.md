@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/Ricardicus/recurrent-neural-net.svg?branch=master)](https://travis-ci.org/Ricardicus/recurrent-neural-net)
 
-![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Build%20&%20Passing/badge.svg)
+![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Building%20&%20Running/badge.svg)
 
 # Reccurent neural network
 
