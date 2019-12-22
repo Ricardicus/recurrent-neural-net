@@ -159,7 +159,7 @@ set_store_as_json(set_t *set, FILE*fp)
 void
 set_store(set_t *set, FILE*fp)
 {
-  int i = 0, n;
+  unsigned i = 0, n;
   char * d;
 
   while ( i < SET_MAX_CHARS ) {
@@ -178,7 +178,8 @@ set_store(set_t *set, FILE*fp)
 int
 set_read(set_t *set, FILE*fp)
 {
-  int i = 0, n, c;
+  int i = 0, c;
+  unsigned int n;
   char *d,*e;
 
   while ( i < SET_MAX_CHARS ) {

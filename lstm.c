@@ -829,53 +829,6 @@ void lstm_store_net_layers(lstm_model_t** model, FILE *fp, unsigned int layers)
   }
 }
 
-void lstm_store_net_portable_layers(lstm_model_t** model, set_t *features, const char * filename, unsigned int layers) 
-{
-  FILE * fp;
-  unsigned int p = 0;
-
-  fp = fopen(filename, "w");
-
-  if ( fp == NULL ) {
-    fprintf(stderr, "Failed to open file: %s for writing.\n", filename);
-    return;
-  }
-
-  while ( p < layers ) {
-
-#ifdef STORE_NET_AS_ASCII
-    vector_store_ascii(model[p]->Wy, model[p]->Y * model[p]->N, fp);
-    vector_store_ascii(model[p]->Wi, model[p]->N * model[p]->S, fp);
-    vector_store_ascii(model[p]->Wc, model[p]->N * model[p]->S, fp);
-    vector_store_ascii(model[p]->Wo, model[p]->N * model[p]->S, fp);
-    vector_store_ascii(model[p]->Wf, model[p]->N * model[p]->S, fp);
-
-    vector_store_ascii(model[p]->by, model[p]->Y, fp);
-    vector_store_ascii(model[p]->bi, model[p]->N, fp);
-    vector_store_ascii(model[p]->bc, model[p]->N, fp);
-    vector_store_ascii(model[p]->bf, model[p]->N, fp);
-    vector_store_ascii(model[p]->bo, model[p]->N, fp);
-#else
-    vector_store(model[p]->Wy, model[p]->Y * model[p]->N, fp);
-    vector_store(model[p]->Wi, model[p]->N * model[p]->S, fp);
-    vector_store(model[p]->Wc, model[p]->N * model[p]->S, fp);
-    vector_store(model[p]->Wo, model[p]->N * model[p]->S, fp);
-    vector_store(model[p]->Wf, model[p]->N * model[p]->S, fp);
-
-    vector_store(model[p]->by, model[p]->Y, fp);
-    vector_store(model[p]->bi, model[p]->N, fp);
-    vector_store(model[p]->bc, model[p]->N, fp);
-    vector_store(model[p]->bf, model[p]->N, fp);
-    vector_store(model[p]->bo, model[p]->N, fp);
-#endif
-
-    ++p;
-  }
-
-  fclose(fp);
-
-}
-
 void lstm_store_net_layers_as_json(lstm_model_t** model, const char * filename, 
   const char *set_name, set_t *set, unsigned int layers)
 {
@@ -1071,7 +1024,7 @@ void lstm_store(const char *path, set_t *set,
   FILE * fp;
   int f;
   int F = set_get_features(set);
-  int l;
+  unsigned int l;
   unsigned int L = layers;
 
   fp = fopen(path, "w");
@@ -1658,7 +1611,8 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   set_t* char_index_mapping, unsigned int training_points,
   int* X_train, int* Y_train, unsigned int layers)
 {
-  int status = 0, p = 0;
+  int status = 0;
+  unsigned int p;
   unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count, trailing;
   unsigned long n = 0, epoch = 0;
   double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
