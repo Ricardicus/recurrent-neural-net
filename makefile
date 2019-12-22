@@ -1,12 +1,33 @@
 CC := gcc
-FLAGS := O3 Ofast msse3 Wall
-LIB := m
-SOURCES := *.c
-.PHONY : net
+FLAGS := O3 Ofast msse3
+LIBS := m
+GCC_HINTS := all \
+			unused \
+			uninitialized \
+			no-unused-variable \
+			extra \
+			unused-parameter
+
+.PHONY : net clean
+
+SRCS := layers.c \
+		lstm.c \
+		main.c \
+		set.c \
+		utilities.c
+
+OBJS := $(subst .c,.o,$(SRCS))
 
 all: net
 
-net:
-	$(CC) $(SOURCES) $(addprefix -, $(FLAGS)) $(addprefix -l, $(LIB)) -o $@
+%.o : %.c
+	$(CC) -c $< $(addprefix -, $(FLAGS)) $(addprefix -W, $(GCC_HINTS)) \
+		$(addprefix -l, $(LIBS)) -o $@
 
+net: $(OBJS)
+	$(CC) $^ $(addprefix -, $(FLAGS)) $(addprefix -W, $(GCC_HINTS)) \
+		$(addprefix -l, $(LIBS)) -o $@2
+
+clean:
+	rm -f $(OBJS)
 
