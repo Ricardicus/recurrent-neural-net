@@ -1,6 +1,8 @@
 name: C/C++ CI
 
 on: [push]
+
+jobs:
   build-ubuntu:
 
     runs-on: ubuntu-latest
