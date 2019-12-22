@@ -26,7 +26,7 @@ all: net
 
 net: $(OBJS)
 	$(CC) $^ $(addprefix -, $(FLAGS)) $(addprefix -W, $(GCC_HINTS)) \
-		$(addprefix -l, $(LIBS)) -o $@2
+		$(addprefix -l, $(LIBS)) -o $@
 
 clean:
 	rm -f $(OBJS)
