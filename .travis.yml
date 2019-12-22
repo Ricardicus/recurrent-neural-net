@@ -6,6 +6,7 @@ compiler:
 
 script:
   - make
+  - ./net data/bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200
 
 matrix:
   include:
