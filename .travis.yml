@@ -2,4 +2,4 @@ language: c
 script:
   - make
   - ls
-  - ./net data/bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200
+  - ./net data/bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200 -L 2 -N 10
