@@ -1,0 +1,27 @@
+name: C/C++ CI
+
+on: [push]
+  build-ubuntu:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: build
+      run: make
+    - name: test
+      run: ./net data/bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200
+
+  build-windows:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, windows-2016]
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: build
+      run: mkdir build && cd build && cmake ..
+    - name: test
+      run: cd build && net ..\data\bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200
