@@ -1609,7 +1609,7 @@ void lstm_model_regularization(lstm_model_t* model, lstm_model_t* gradients)
 //						model, number of training points, X_train, Y_train
 void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   set_t* char_index_mapping, unsigned int training_points,
-  int* X_train, int* Y_train, unsigned int layers)
+  int* X_train, int* Y_train, unsigned int layers, double *loss_out)
 {
   int status = 0;
   unsigned int p, i = 0, b = 0, q = 0, e1 = 0, e2 = 0,
@@ -1942,17 +1942,13 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
       lstm_store_progress(store_progress_file_name, n, loss);
 
     if ( store_network_every && !(n % store_network_every) ) {
-      FILE *fp_w = fopen(params->store_network_name_raw, "w");
-      if ( fp_w != NULL ) {
-        lstm_store_net_layers(model_layers, fp_w, layers);
-        fclose(fp_w);
-      }
+      lstm_store(
+        params->store_network_name_raw,
+        char_index_mapping,
+        model_layers,
+        layers);
       lstm_store_net_layers_as_json(model_layers, params->store_network_name_json,
         params->store_char_indx_map_name, char_index_mapping, layers);
-      printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
-      params->store_network_name_json);
-      printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
-      to continue refining the weights.\n", params->store_network_name_raw); 
     }
 
     if ( b + params->mini_batch_size >= training_points )
@@ -1971,6 +1967,9 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
     ++n;
   }
+
+  // Reporting the loss value
+  *loss_out = loss;
 
   p = 0;
   while ( p < layers ) {

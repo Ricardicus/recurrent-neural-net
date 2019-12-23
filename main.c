@@ -30,13 +30,13 @@ void store_the_net_layers(int signo)
 {
   if ( SIGINT == signo ) {
     if ( model_layers != NULL ){
-      lstm_store(STD_LOADABLE_NET_NAME, &set,
+      lstm_store(params.store_network_name_raw, &set,
       model_layers, params.layers);
-      lstm_store_net_layers_as_json(model_layers, STD_JSON_NET_NAME, JSON_KEY_NAME_SET, &set, params.layers);
+      lstm_store_net_layers_as_json(model_layers, params.store_network_name_json, JSON_KEY_NAME_SET, &set, params.layers);
       printf("\nStored the net as: '%s'\nYou can use that file in the .html interface.\n", 
-      STD_JSON_NET_NAME);
+      params.store_network_name_json );
       printf("The net in its raw format is stored as: '%s'.\nYou can use that with the -r flag \
-  to continue refining the weights.\n", STD_LOADABLE_NET_NAME); 
+to continue refining the weights.\n", params.store_network_name_raw); 
     } else {
       printf("\nFailed to store the net!\n");
       exit(-1);
@@ -65,6 +65,7 @@ void usage(char *argv[]) {
   printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
   printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
   printf("    -N  : Number of neurons in every layer\r\n");
+  printf("    -vr : Verbosity level. Set to zero and only the loss function after and not during training will be printed.\n");
   printf("\r\n");
   printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
   printf("\r\n");
@@ -124,6 +125,8 @@ void parse_input_args(int argc, char** argv)
       if ( params.layers > LSTM_MAX_LAYERS ) {
         usage(argv);
       }
+    } else if ( !strcmp(argv[a], "-vr") ) {
+      params.print_progress = !!atoi(argv[a+1]);
     }
 
     a += 2;
@@ -192,7 +195,7 @@ int main(int argc, char *argv[])
   params.store_progress_every_x_iterations = STORE_PROGRESS_EVERY_X_ITERATIONS;
   params.store_progress_file_name = PROGRESS_FILE_NAME;
   params.store_network_name_raw = STD_LOADABLE_NET_NAME;
-  params.store_network_name_json = STD_LOADABLE_NET_NAME;
+  params.store_network_name_json = STD_JSON_NET_NAME;
   params.store_char_indx_map_name = JSON_KEY_NAME_SET;
 
   srand( time ( NULL ) );
@@ -336,6 +339,7 @@ Reallocating space in network input and output layer to accommodate this new fea
     lstm_output_string_from_string(model_layers, &set, argv[5], params.layers, 128);
 
   } else {
+    double loss;
 
     assert(params.layers > 0);
 
@@ -362,9 +366,11 @@ Reallocating space in network input and output layer to accommodate this new fea
       file_size,
       X_train,
       Y_train,
-      params.layers
+      params.layers,
+      &loss
     );
 
+    printf("Loss after training: %lf\n", loss);
   }
 
   free(model_layers);

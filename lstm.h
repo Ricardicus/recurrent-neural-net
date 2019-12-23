@@ -280,10 +280,13 @@ initialzed with \ref lstm_init_model.
 if X[...] = 'hello' => Y[...] = 'ello ').
 * @param layers number of layers in the network, the number of models \p model \
 is pointing to. Internally if layers is L, then input is given to model[L-1] and \
-output collected at model[0].  
+output collected at model[0].
+* @param loss the value of the loss function, put under a smoothing \
+moving average filter, after the training has been completed.
 */ 
 void lstm_train(lstm_model_t** model, lstm_model_parameters_t*params,
-  set_t* set, unsigned int training_points, int *X, int *Y, unsigned int layers);
+  set_t* set, unsigned int training_points, int *X, int *Y, unsigned int layers,
+  double *loss);
 /**
 * If you are training on textual data, this function can be used 
 * to sample and output from the network directly to stdout. 
