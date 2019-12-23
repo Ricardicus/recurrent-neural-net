@@ -56,9 +56,9 @@ cycle=0
 # list source files
 files=$(ls *.h *.c)
 
+first=1
 while [ $cycle -lt $CYCLES ]; do
   echo "$(date) Starting cycle $((cycle+1))"
-  first=1
   for file in $files; do
     echo "$(date) starting to train on file: $file"
     if [ $first -eq 1 ]; then
