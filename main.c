@@ -25,6 +25,7 @@ set_t set;
 
 static int write_output_directly_bytes = 0;
 static char *read_network = NULL;
+static char *seed = NULL;
 
 void store_the_net_layers(int signo)
 {
@@ -66,6 +67,7 @@ void usage(char *argv[]) {
   printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
   printf("    -N  : Number of neurons in every layer\r\n");
   printf("    -vr : Verbosity level. Set to zero and only the loss function after and not during training will be printed.\n");
+  printf("    -c  : Don't train, only generate output. Seed given by the value. If -r is used, datafile is not considered.\r\n");
   printf("\r\n");
   printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
   printf("\r\n");
@@ -127,6 +129,8 @@ void parse_input_args(int argc, char** argv)
       }
     } else if ( !strcmp(argv[a], "-vr") ) {
       params.print_progress = !!atoi(argv[a+1]);
+    } else if ( !strcmp(argv[a], "-c") ) {
+      seed = argv[a+1];
     }
 
     a += 2;
@@ -243,42 +247,47 @@ int main(int argc, char *argv[])
 
     lstm_load(read_network, &set, &params, &model_layers);
 
-    FRead = set_get_features(&set);
+    if ( seed == NULL ) {
 
-    // Read from datafile, see if new features appear
+      FRead = set_get_features(&set);
 
-    fp = fopen(argv[1], "r");
-    if ( fp == NULL ) {
-      printf("Could not open file: %s\n", argv[1]);
-      return -1;
-    }
+      // Read from datafile, see if new features appear
 
-    while ( ( c = fgetc(fp) ) != EOF ) {
-      set_insert_symbol(&set, (char)c );
-    }
+      fp = fopen(argv[1], "r");
+      if ( fp == NULL ) {
+        printf("Could not open file: %s\n", argv[1]);
+        return -1;
+      }
 
-    fclose(fp);
+      while ( ( c = fgetc(fp) ) != EOF ) {
+        set_insert_symbol(&set, (char)c );
+      }
 
-    FReadNewAfterDataFile = set_get_features(&set);
+      fclose(fp);
 
-    if ( FReadNewAfterDataFile > FRead ) {
-      // New features appeared. Must change 
-      // first and last layer.
-      printf("New features detected in datafile.\nLoaded network worked with %d features\
+      FReadNewAfterDataFile = set_get_features(&set);
+
+      if ( FReadNewAfterDataFile > FRead ) {
+        // New features appeared. Must change 
+        // first and last layer.
+        printf("New features detected in datafile.\nLoaded network worked with %d features\
 , now there is %d features in total.\n\
 Reallocating space in network input and output layer to accommodate this new feature set.\n",
-        FRead, FReadNewAfterDataFile);
+          FRead, FReadNewAfterDataFile);
 
-      lstm_reinit_model(
-        model_layers,
-        params.layers,
-        FRead,
-        FReadNewAfterDataFile
-      );
+        lstm_reinit_model(
+          model_layers,
+          params.layers,
+          FRead,
+          FReadNewAfterDataFile
+        );
+
+      }
 
     }
 
-    printf("Loaded the net: %s\n", read_network);
+    if ( seed == NULL )
+      printf("Loaded the net: %s\n", read_network);
   } else {
     /* Allocating space for a new model */
     model_layers = calloc(params.layers, sizeof(lstm_model_t*));
@@ -328,15 +337,9 @@ Reallocating space in network input and output layer to accommodate this new fea
     usage(argv);
   }
 
-  if ( argc >= 6 && !strcmp(argv[4], "-c") ) {
-
-    do {
-      clean = strchr(argv[5], '_');
-      if ( clean != NULL )
-        *clean = ' ';
-    } while ( clean != NULL );
-
-    lstm_output_string_from_string(model_layers, &set, argv[5], params.layers, 128);
+  if ( seed != NULL ) {
+    // output directly
+    lstm_output_string_from_string(model_layers, &set, seed, params.layers, 256);
 
   } else {
     double loss;
