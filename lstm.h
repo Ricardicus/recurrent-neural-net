@@ -100,17 +100,17 @@ typedef struct lstm_model_parameters_t {
   char *store_char_indx_map_name;
 
   // General parameters
-  int mini_batch_size;
+  unsigned int mini_batch_size;
   double gradient_clip_limit;
   unsigned long iterations;
 } lstm_model_parameters_t;
 
 typedef struct lstm_model_t
 {
-  int X; /**< Number of input nodes */
-  int N; /**< Number of neurons */
-  int Y; /**< Number of output nodes */
-  int S; /**< lstm_model_t.X + lstm_model_t.N */
+  unsigned int X; /**< Number of input nodes */
+  unsigned int N; /**< Number of neurons */
+  unsigned int Y; /**< Number of output nodes */
+  unsigned int S; /**< lstm_model_t.X + lstm_model_t.N */
 
   // Parameters
   lstm_model_parameters_t * params;

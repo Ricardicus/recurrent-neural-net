@@ -2,11 +2,11 @@ CC := gcc
 FLAGS := O3 Ofast msse3
 LIBS := m
 GCC_HINTS := all \
-			unused \
-			uninitialized \
-			no-unused-variable \
-			extra \
-			unused-parameter
+  unused \
+  uninitialized \
+  no-unused-variable \
+  extra \
+  unused-parameter
 
 .PHONY : net clean
 

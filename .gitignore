@@ -16,3 +16,6 @@ net
 # and files that doxygen produce are not kept under version control
 docs/latex
 docs/html
+
+# Object files
+*.o

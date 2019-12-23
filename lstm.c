@@ -1611,8 +1611,9 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   set_t* char_index_mapping, unsigned int training_points,
   int* X_train, int* Y_train, unsigned int layers)
 {
-  int status = 0, p;
-  unsigned int i = 0, b = 0, q = 0, e1 = 0, e2 = 0, e3, record_iteration = 0, tmp_count, trailing;
+  int status = 0;
+  unsigned int p, i = 0, b = 0, q = 0, e1 = 0, e2 = 0,
+    e3, record_iteration = 0, tmp_count, trailing;
   unsigned long n = 0, epoch = 0;
   double loss = -1, loss_tmp = 0.0, record_keeper = 0.0;
   double initial_learning_rate = params->learning_rate;
@@ -1769,7 +1770,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
       if ( p > 0 ) {
         --p;
-        while ( p >= 0 ) {
+        while ( p >= 0 && p <= layers - 1 ) {
           lstm_forward_propagate(model_layers[p],
             cache_layers[p+1][e2]->probs,
             cache_layers[p][e1],
