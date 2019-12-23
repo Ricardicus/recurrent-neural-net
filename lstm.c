@@ -1770,7 +1770,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
       if ( p > 0 ) {
         --p;
-        while ( p >= 0 && p <= layers - 1 ) {
+        while ( p <= layers - 1 ) {
           lstm_forward_propagate(model_layers[p],
             cache_layers[p+1][e2]->probs,
             cache_layers[p][e1],
@@ -1983,8 +1983,10 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
       ++i;
     }
 
-    lstm_free_model(M_layers[p]);
-    lstm_free_model(R_layers[p]);
+    if ( params->optimizer == OPTIMIZE_ADAM ) {
+      lstm_free_model(M_layers[p]);
+      lstm_free_model(R_layers[p]);
+    }
 
     lstm_free_model(gradient_layers_entry[p]);
     lstm_free_model(gradient_layers[p]);
