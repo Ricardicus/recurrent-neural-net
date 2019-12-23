@@ -43,26 +43,36 @@ If you have <i>several datafiles</i> then you can do something like:
 # bash example of how to use the -r flag
 # see std_conf.h on how to change the default
 # behaviour before building the program.
+# 
+# In this example, the source code
+# of the project will be given as
+# training data for the LSTM network.
 
-folder="THE FOLDER WITH THE FILES"
+# Build
+make
+# How many cycles all source files are to be trained on
+CYCLES=10
+cycle=0
+# list source files
+files=$(ls *.h *.c)
 
-first=1
-for file in $(ls -p $folder | grep -v /); do
-  if [ $first -eq 1 ]; then
-    # Train the net using new weights
-    # a file with the name lstm_net.net
-    # will appear, see std_conf.h
-    # Store every 500 iterations,
-    # train for 10000 iterations.
-    ./net $folder/$file -st 500 -it 10000
-    first=0
-  else 
-    # Train the net using previously trained weights
-    # Store every 500 iterations,
-    # train for 10000 iterations.
-    ./net $folder/$file -r lstm_net.net -st 500 -it 10000
-  fi
+while [ $cycle -lt $CYCLES ]; do
+  echo "$(date) Starting cycle $((cycle+1))"
+  first=1
+  for file in $files; do
+    echo "$(date) starting to train on file: $file"
+    if [ $first -eq 1 ]; then
+      ./net $file -vr 0 -it 10000 -st 5000 -N 64 -L 3
+      first=0
+    else 
+      ./net $file -vr 0 -r lstm_net.net -it 10000 -st 5000
+    fi
+  done
+
+  cycle=$((cycle+1))
 done
+
+echo "Finished!"
 </pre>
 
 ## Windows
@@ -106,10 +116,12 @@ The following flags are available:
     -out: number of characters to output directly, note: a network and a datafile must be provided.
     -L  : Number of layers, may not exceed 10
     -N  : Number of neurons in every layer
+    -vr : Verbosity level. Set to zero and only the loss function after and not during training will be printed.
+    -c  : Don't train, only generate output. Seed given by the value. If -r is used, datafile is not considered.
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Dec 21 2019 15:55:28
+./net compiled Dec 23 2019 17:13:42
 
 </pre>
 
