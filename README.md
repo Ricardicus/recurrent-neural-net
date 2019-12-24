@@ -62,7 +62,7 @@ while [ $cycle -lt $CYCLES ]; do
   for file in $files; do
     echo "$(date) starting to train on file: $file"
     if [ $first -eq 1 ]; then
-      ./net $file -vr 0 -ep 1 -st 0 -N 30 -L 3
+      ./net $file -vr 0 -ep 1 -st 0 -N 64 -L 3
       first=0
     else 
       ./net $file -vr 0 -r lstm_net.net -ep 1 -st 0
