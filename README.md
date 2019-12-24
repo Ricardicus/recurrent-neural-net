@@ -51,7 +51,7 @@ If you have <i>several datafiles</i> then you can do something like:
 # Build
 make
 # How many cycles all source files are to be trained on
-CYCLES=100
+CYCLES=1000
 cycle=0
 # list source files
 files=$(ls *.h *.c)
