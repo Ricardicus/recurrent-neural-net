@@ -51,7 +51,7 @@ If you have <i>several datafiles</i> then you can do something like:
 # Build
 make
 # How many cycles all source files are to be trained on
-CYCLES=10
+CYCLES=100
 cycle=0
 # list source files
 files=$(ls *.h *.c)
@@ -62,17 +62,15 @@ while [ $cycle -lt $CYCLES ]; do
   for file in $files; do
     echo "$(date) starting to train on file: $file"
     if [ $first -eq 1 ]; then
-      ./net $file -vr 0 -it 10000 -st 5000 -N 64 -L 3
+      ./net $file -vr 0 -ep 1 -st 0 -N 30 -L 3
       first=0
     else 
-      ./net $file -vr 0 -r lstm_net.net -it 10000 -st 5000
+      ./net $file -vr 0 -r lstm_net.net -ep 1 -st 0
     fi
   done
 
   cycle=$((cycle+1))
 done
-
-echo "Finished!"
 </pre>
 
 ## Windows

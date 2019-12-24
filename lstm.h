@@ -103,6 +103,7 @@ typedef struct lstm_model_parameters_t {
   unsigned int mini_batch_size;
   double gradient_clip_limit;
   unsigned long iterations;
+  unsigned long epochs;
 } lstm_model_parameters_t;
 
 typedef struct lstm_model_t

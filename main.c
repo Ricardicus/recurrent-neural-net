@@ -17,6 +17,7 @@
 #include "std_conf.h"
 
 #define ITERATIONS  100000000
+#define NO_EPOCHS   0 
 
 lstm_model_t *model = NULL, *layer1 = NULL, *layer2 = NULL;
 lstm_model_t **model_layers;
@@ -26,6 +27,7 @@ set_t set;
 static int write_output_directly_bytes = 0;
 static char *read_network = NULL;
 static char *seed = NULL;
+static int store_after_training = 0;
 
 void store_the_net_layers(int signo)
 {
@@ -60,9 +62,10 @@ void usage(char *argv[]) {
   printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\r\n", STD_LOADABLE_NET_NAME);
   printf("    -lr : learning rate that is to be used during training, see the example above.\r\n");
   printf("    -it : the number of iterations used for training (not to be confused with epochs).\r\n");
+  printf("    -it : the number of epochs used for training (not to be confused with iterations).\r\n");
   printf("    -mb : mini batch size.\r\n");
   printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\r\n");
-  printf("    -st : number of iterations between how the network is continously stored during training (.json and .net).\r\n");
+  printf("    -st : number of iterations between how the network is stored during training. If 0 only stored once after training.\r\n");
   printf("    -out: number of characters to output directly, note: a network and a datafile must be provided.\r\n");
   printf("    -L  : Number of layers, may not exceed %d\r\n", LSTM_MAX_LAYERS);
   printf("    -N  : Number of neurons in every layer\r\n");
@@ -101,6 +104,8 @@ void parse_input_args(int argc, char** argv)
       if ( params.iterations == 0 ) {
         usage(argv);
       }
+    } else if ( !strcmp(argv[a], "-ep") ) {
+      params.epochs = (unsigned long) atol(argv[a + 1]);
     } else if ( !strcmp(argv[a], "-dl") ) {
       params.learning_rate_decrease = atof(argv[a + 1]);
       if ( params.learning_rate_decrease == 0 ) {
@@ -110,7 +115,7 @@ void parse_input_args(int argc, char** argv)
     } else if ( !strcmp(argv[a], "-st") ) {
       params.store_network_every = atoi(argv[a + 1]);
       if ( params.store_network_every == 0 ) {
-        usage(argv);
+        store_after_training = 1;
       }
     } else if ( !strcmp(argv[a], "-out") ) {
       write_output_directly_bytes = atoi(argv[a+1]);
@@ -170,6 +175,7 @@ int main(int argc, char *argv[])
   memset(&params, 0, sizeof(params));
 
   params.iterations = ITERATIONS;
+  params.epochs = NO_EPOCHS;
   params.loss_moving_avg = LOSS_MOVING_AVG;
   params.learning_rate = STD_LEARNING_RATE;
   params.momentum = STD_MOMENTUM;
@@ -372,6 +378,13 @@ Reallocating space in network input and output layer to accommodate this new fea
       params.layers,
       &loss
     );
+
+    if ( store_after_training ) {
+      lstm_store(params.store_network_name_raw, &set,
+      model_layers, params.layers);
+      lstm_store_net_layers_as_json(model_layers, params.store_network_name_json,
+        JSON_KEY_NAME_SET, &set, params.layers); 
+    }
 
     printf("Loss after training: %lf\n", loss);
   }

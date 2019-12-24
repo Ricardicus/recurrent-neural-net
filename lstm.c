@@ -1620,6 +1620,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   time_t time_iter;
   char time_buffer[40];
   unsigned long iterations = params->iterations;
+  unsigned long epochs = params->epochs;
   int stateful = params->stateful, decrease_lr = params->decrease_lr;
   // configuration for output printing during training
   int print_progress = params->print_progress;
@@ -1718,6 +1719,12 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
   i = 0; b = 0;
   while ( n < iterations ) {
+
+    if ( epochs && epoch >= epochs ) {
+      // We have done enough iterations now
+      break;
+    }
+
     b = i;
 
     loss_tmp = 0.0;
