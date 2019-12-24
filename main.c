@@ -62,7 +62,7 @@ void usage(char *argv[]) {
   printf("    -r  : read a previously trained network, the name of which is currently configured to be '%s'.\r\n", STD_LOADABLE_NET_NAME);
   printf("    -lr : learning rate that is to be used during training, see the example above.\r\n");
   printf("    -it : the number of iterations used for training (not to be confused with epochs).\r\n");
-  printf("    -it : the number of epochs used for training (not to be confused with iterations).\r\n");
+  printf("    -ep : the number of epochs used for training (not to be confused with iterations).\r\n");
   printf("    -mb : mini batch size.\r\n");
   printf("    -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).\r\n");
   printf("    -st : number of iterations between how the network is stored during training. If 0 only stored once after training.\r\n");
