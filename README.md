@@ -108,9 +108,10 @@ The following flags are available:
     -r  : read a previously trained network, the name of which is currently configured to be 'lstm_net.net'.
     -lr : learning rate that is to be used during training, see the example above.
     -it : the number of iterations used for training (not to be confused with epochs).
+    -it : the number of epochs used for training (not to be confused with iterations).
     -mb : mini batch size.
     -dl : decrease the learning rate over time, according to lr(n+1) <- lr(n) / (1 + n/value).
-    -st : number of iterations between how the network is continously stored during training (.json and .net).
+    -st : number of iterations between how the network is stored during training. If 0 only stored once after training.
     -out: number of characters to output directly, note: a network and a datafile must be provided.
     -L  : Number of layers, may not exceed 10
     -N  : Number of neurons in every layer
@@ -119,8 +120,7 @@ The following flags are available:
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Dec 23 2019 17:13:42
-
+./net compiled Dec 24 2019 09:48:26
 </pre>
 
 The -st flags is great. Per default the network is stored upon interrupting the program with Ctrl-C. But using this argument, you can let the program train and have it store the network continously during the training process.
