@@ -892,7 +892,7 @@ static void e_lstm_fgets(char *str, size_t n, FILE *fp)
 {
   if ( fgets(str,n,fp) == NULL ) {
     fprintf(stderr, "lstm_read error: unexpected EOF. \
-Net-file in compatible with current version.\n"); 
+Net-file incompatible with current version.\n"); 
     fflush(stderr);
     exit(1);
   }
@@ -998,6 +998,8 @@ void lstm_load(const char *path, set_t *set,
     set->free[f] = 0;
     ++f;
   }
+
+  assert(set_get_features(set) == layerInputs[L-1]);
 
   *model = (lstm_model_t**) malloc(L*sizeof(lstm_model_t*));
   if ( *model == NULL )
@@ -1110,9 +1112,9 @@ int lstm_reinit_model(
   lstm_model_t* modelInputs;
   lstm_model_t* modelOutputs;
 
-  int Sold = model[0]->S;
-  int Snew = newNbrFeatures + model[0]->N;
-  int Nin = model[0]->N;
+  int Sold = model[layers-1]->S;
+  int Snew = newNbrFeatures + model[layers-1]->N;
+  int Nin = model[layers-1]->N;
   int Nout;
   int Yold = previousNbrFeatures;
   int Ynew = newNbrFeatures;
@@ -1132,6 +1134,9 @@ int lstm_reinit_model(
   if ( previousNbrFeatures == newNbrFeatures ||
       previousNbrFeatures > newNbrFeatures )
     return -1;
+
+  assert(previousNbrFeatures < newNbrFeatures);
+  assert(Sold < Snew);
 
   Nout = model[0]->N;
 
@@ -1195,14 +1200,15 @@ int lstm_reinit_model(
       ++i;
     }
     ++n;
-  }  
+  }
+
   free(modelOutputs->Wy);
   free(modelOutputs->by);
   free(modelOutputs->Wym);
   free(modelOutputs->bym);
 
   modelOutputs->Wy = newVectorWy;
-  modelOutputs->by = get_zero_vector(Ynew * Nout);
+  modelOutputs->by = get_zero_vector(Ynew);
   modelOutputs->Wym = get_zero_vector(Ynew * Nout);
   modelOutputs->bym = get_zero_vector(Ynew);
 
