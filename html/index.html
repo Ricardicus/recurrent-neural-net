@@ -160,6 +160,10 @@ var last_timeout;
 var input = "";
 var result = "";
 
+// Handling the swedish letters å,ä,ö, begins with c3 (195)
+var svenska = {"132": "Ä", "133": "Å", "150": "Ö", 
+	"164": "ä", "165": "å", "182": "ö"};
+
 // The pre cannot display characters such as '<', '>' or '&' correctly
 // this map is necessary to make them displayed
 var special_chars = {
@@ -354,7 +358,31 @@ function display_report(report) {
 		i++;
 	}
 
-	document.getElementById("chars").innerHTML = result;
+	i = 0;
+	values = [];
+	while ( i < result.length ) {
+		values.push(result.charCodeAt(i));
+		i += 1;
+	}
+
+	i = 0;
+	var string = "";
+	while ( i < values.length ) {
+		if ( values[i] == 195 && i < values.length - 1 ) {
+			// We might have å,ä,ö coming for us now.
+			var intInString = values[i+1].toString();
+			if ( intInString in svenska ) {
+				string += svenska[intInString];
+				i += 1;
+			}
+		} else {
+			string += String.fromCharCode(values[i]);
+		}
+
+		i += 1;
+	}
+
+	document.getElementById("chars").innerHTML = string;
 }
 
 function reset_state(layers) {
