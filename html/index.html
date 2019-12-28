@@ -170,6 +170,14 @@ var special_chars = {
 	'<' : "&lt",
 	'>' : "&gt",
 	'&' : "&amp"
+};
+
+function encode_utf8(s) {
+  return unescape(encodeURIComponent(s));
+}
+
+function decode_utf8(s) {
+  return decodeURIComponent(escape(s));
 }
 
 function write_positive_msg(msg, timeout=4) {
@@ -521,20 +529,6 @@ function LSTM_feed_forward( input_value, start_state=false ) {
 
 	report.sort(sort_feature_entries);
 
-
-
-	if ( debug ) {
-	/*
-		i = 0;
-		console.log("====== Top 10 probability (input: " + String.fromCharCode(parseInt(input_value)) + ")======");
-		while ( i < 10 && i < F ) {
-			console.log((i+1) + ". " + report[i]["feature"] + ": " + report[i]["probability"]);
-			i++;
-		}
-	*/
-	} 
-
-
 	return report;
 }
 
@@ -744,7 +738,7 @@ document.getElementById('reset-btn').addEventListener('click', function(e){
 var last_timeout;
 
 function read_from_chars(i, time_in_between=500){
-	var string = document.getElementById('chars-input').value;
+	var string = encode_utf8(document.getElementById('chars-input').value);
 
 	if ( i == string.length ) {
 		document.getElementById('chars-input').value = "";
