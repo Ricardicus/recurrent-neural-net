@@ -43,18 +43,14 @@ If you have <i>several datafiles</i> then you can do something like:
 # bash example of how to use the -r flag
 # see std_conf.h on how to change the default
 # behaviour before building the program.
-# 
-# In this example, the source code
-# of the project will be given as
-# training data for the LSTM network.
 
 # Build
 make
 # How many cycles all source files are to be trained on
 CYCLES=1000
 cycle=0
-# list source files
-files=$(ls *.h *.c)
+# list files to train on
+files=$(ls folder_with_files/*)
 
 first=1
 while [ $cycle -lt $CYCLES ]; do
