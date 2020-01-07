@@ -11,12 +11,31 @@ it has been training on using a LSTM network implemented in C. The repo is inspi
 
 # Build 
 
+## CMake 
+This is the preferred way to build it on Windows.
+<pre>
+# Build using cmake
+mkdir build
+cd build
+cmake ..
+cmake --build .
+</pre>
+
+## Unix Makefile
+
+<pre>
+# Build using make and GCC
+make
+</pre>
+
+
+# Running
+
 Do you have a mac or a Linux machine? 
 In that case it is super easy to download and run.
 
 ## Mac or Linux (UNIX types)
 
-Download the program. 
 Open a terminal window and type:
 
 <pre>
@@ -69,21 +88,7 @@ while [ $cycle -lt $CYCLES ]; do
 done
 </pre>
 
-## Windows
-
-I have only built it using Visual Studio Native Tools Command Prompt for VS2017. 
-
-Install CMake and Nmake (and git). 
-Then do:
-
-<pre>
-git clone https://github.com/Ricardicus/recurrent-neural-net/
-cd recurrent-neural-net
-cmake -G"NMake Makefiles"
-nmake
-</pre>
-
-# Configure
+# Configure default behaviour before build
 
 Check out the file "std_conf.h".
 
@@ -146,13 +151,6 @@ there would be a huge speedup which the results show!
 I will give this some time and hopefully I figure out a way that
 optimizes the program even more for speed.. Until then, have a go at this 
 little program and edit it as you please! 
-
-# Build
-
-I use GCC and compile with with: 
-gcc *.c -O3 -Ofast -msse3 -lm
-
-Try to optimize it the way you want using the compiler at hand!
 
 # Mathematical expressions
 
