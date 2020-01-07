@@ -28,7 +28,6 @@ cmake --build .
 make
 </pre>
 
-
 # Running
 
 Do you have a mac or a Linux machine? 
@@ -87,6 +86,11 @@ while [ $cycle -lt $CYCLES ]; do
   cycle=$((cycle+1))
 done
 </pre>
+
+## Windows
+
+Build using CMake.
+Run with the same arguments as in UNIX. 
 
 # Configure default behaviour before build
 
