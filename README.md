@@ -169,6 +169,17 @@ fully connected layer, introducing Wy and by also. Inputs to the fully connected
 set of expressions above. I apply a softmax to output layer of the model also in the end,
 to get the probabilities.
 
+# Docker
+
+I have built a container for this, it just trains a
+network at the moment. Take a look at Dockerfile. 
+Modify at will. Here is a container for training
+on the poetic edda:
+<pre>
+# Pulls an image that trains the network on the poetic Edda
+docker pull rickardhallerback/recurrent-neural-net:1.0
+</pre>
+
 # Additional interesting stuff
 
 Under the folder 'html' you will find a document that can be used to play around with pre-trained models. 
