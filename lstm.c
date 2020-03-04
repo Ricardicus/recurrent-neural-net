@@ -1617,7 +1617,6 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   set_t* char_index_mapping, unsigned int training_points,
   int* X_train, int* Y_train, unsigned int layers, double *loss_out)
 {
-  int status = 0;
   unsigned int p, i = 0, b = 0, q = 0, e1 = 0, e2 = 0,
     e3, record_iteration = 0, tmp_count, trailing;
   unsigned long n = 0, epoch = 0;
@@ -1640,11 +1639,11 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
   char *store_progress_file_name = params->store_progress_file_name;
   int store_network_every = params->store_network_every;
 
-  lstm_values_state_t ** stateful_d_next;
+  lstm_values_state_t ** stateful_d_next = NULL;
   lstm_values_cache_t ***cache_layers;
   lstm_values_next_cache_t **d_next_layers;
 
-  lstm_model_t **gradient_layers, **gradient_layers_entry,  **M_layers, **R_layers;
+  lstm_model_t **gradient_layers, **gradient_layers_entry,  **M_layers = NULL, **R_layers = NULL;
 
 #ifdef WINDOWS
   double *first_layer_input = malloc(model_layers[0]->Y*sizeof(double));
@@ -1922,7 +1921,6 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
     if ( print_progress && !( n % print_progress_iterations ) ) {
 
-      status = 0;
       memset(time_buffer, '\0', sizeof time_buffer);
       time(&time_iter);
       strftime(time_buffer, sizeof time_buffer, "%X", localtime(&time_iter));
@@ -2006,7 +2004,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
     ++p;
   }
 
-  if ( stateful ) {
+  if ( stateful && stateful_d_next != NULL ) {
     i = 0;
     while ( i < layers) {
       free(stateful_d_next[i]);
@@ -2018,8 +2016,10 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
   free(cache_layers);
   free(gradient_layers);
-  free(M_layers);
-  free(R_layers);
+  if ( M_layers != NULL )
+    free(M_layers);
+  if ( R_layers != NULL )
+    free(R_layers);
 #ifdef WINDOWS
   free(first_layer_input);
 #endif
