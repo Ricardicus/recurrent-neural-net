@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  training:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: training:1.0
+
+  nodeApp:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    image: lstmnodeapp:1.0
