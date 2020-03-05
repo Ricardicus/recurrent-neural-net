@@ -211,6 +211,54 @@
         httpGet(url);
       }
 
+      function setupDatasetSelect(){
+        var command = "ls data";
+        var url = "/launch.cgi?" + btoa(command);
+
+        var datasets = httpGet(url);
+        if ( datasets.length > 0 ) {
+
+          datasets = JSON.parse(datasets)["output"];
+
+          datasets = datasets.split(' ');
+
+          var html = "";
+          for ( var i = 0; datasets.length; i++ ) {
+            html += "<select value='" + datasets[i] + "'>" + datasets[i] + "</select>";
+          }
+
+          document.getElementById("dataset-select").innerHTML = html;
+        }
+      }
+
+      function datasetView() {
+        var e = document.getElementById("dataset-select");
+        var value = e.options[e.selectedIndex].value;
+        var text = e.options[e.selectedIndex].text;
+
+        var command = "cat data/" + value;
+        var url = "/launch.cgi?" + btoa(command);
+
+        var content = httpGet(url);
+
+        content = JSON.parse(content)["output"];
+
+        document.getElementById("dataset-view-pre").innerHTML = content;
+      }
+
+      function updateNets(nets) {
+        var html = "<thead><tr><th>File Name</th><th>Last Modified</th></tr></thead>";
+
+        html += "<tbody>";
+        for ( var i = 0; i < nets.length; i++ ) {
+          html += "<td>" + nets["name"] + "</td>";
+          html += "<td>" + nets["modified"] + "</td>";
+        }
+        html += "</tbody>";
+
+        document.getElementById("prev-networks-table").innerHTML = html;
+      }
+
       function setup() {
 
         // Output command output
@@ -231,6 +279,24 @@
         }, 1000);
 
         // Output last command
+        setInterval(function() {
+
+          var command = 'stat -c "%y %s %n" $(ls docker) 2>/dev/null';
+          var url = "/launch.cgi?" + btoa(command);
+
+          var nets = httpGet(url);
+          if ( nets.length > 0 ) {
+            nets = JSON.parse(nets)["output"].split(' ');
+
+            updateNets(nets);
+          }
+
+        }, 5000);
+
+
+        setupDatasetSelect();
+
+        // Output networks
         setInterval(function() {
 
           var response = httpGet("/getLastCommand.cgi");
@@ -286,6 +352,38 @@
             <pre id="Output">
               
             </pre>
+          </center>
+        </div>
+
+        <div class="section_header">
+          Datasets
+        </div>
+
+        <div>
+          <center>
+            <table>
+              <tr>
+                <td>Select dataset</td>
+                <td><select id="dataset-select"></select></td>
+                <td><button onclick="datasetView();" >View Content</button></td>
+              </tr>
+            </table>
+
+            <pre id="dataset-view-pre">
+              
+            </pre>
+          </center>
+        </div>
+
+        <div class="section_header">
+          Networks
+        </div>
+
+        <div>
+          <center>
+            <table id="prev-networks-table">
+            </table>
+
           </center>
         </div>
 

@@ -19,6 +19,7 @@ RUN apt-get install apt-utils -y
 WORKDIR /usr/src/app
 
 RUN mkdir /usr/src/app/data
+RUN mkdir /usr/src/app/nets
 
 COPY --from=compile-image /usr/src/app/net .
 COPY --from=compile-image /usr/src/app/data/* /usr/src/app/data/
