@@ -31,11 +31,14 @@ taskMgrProc.on('close', (code) => {
 
 // To keep track of latest output
 var lastOutput = "";
+var lastOutputMonitor = "";
 
 taskMgrProc.on('message', message => {
 
   if ( message.startsWith("output:") ) {
     lastOutput = message.substring(7);
+  } else if ( "output-monitor:" ) {
+    lastOutputMonitor = message.substring(15);
   }
 
 });
@@ -45,9 +48,14 @@ var lastCommand = "";
 
 // Continously ask for output from subprocess
 var askForSubProcessOutput = false;
+var askForSubProcessOutputMonitor = false;
+
 setInterval(function() {
   if ( askForSubProcessOutput ) {
     taskMgrProc.send("output");
+  }
+  if ( askForSubProcessOutputMonitor ) {
+    taskMgrProc.send("output-monitor");
   }
 }, 1000);
 
@@ -163,8 +171,21 @@ const server = http.createServer((req, res) => {
     askForSubProcessOutput = true;
 
     ok(res);
+  } else if ( url.startsWith("launchMonitor.cgi?") ) {
+    var base64Start = url.split(".cgi?")[1];
+
+    var startCommand = "monitor-start:"+atob(base64Start);
+
+    taskMgrProc.send(startCommand);
+
+    askForSubProcessOutputMonitor = true;
+
+    ok(res);
   } else if ( url.startsWith("getOutput.cgi") ) {
     var output = {"output": lastOutput};
+    sendJson(res, output);
+  } else if ( url.startsWith("getMonitorOutput.cgi") ) {
+    var output = {"output": lastOutputMonitor};
     sendJson(res, output);
   } else if ( url.startsWith("getLastCommand.cgi") ) {
     var output = {"output": lastCommand};

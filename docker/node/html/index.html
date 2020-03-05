@@ -194,7 +194,7 @@
   }
     </style>
   </head>
-  <body onload="setup();">
+  <body>
     <script type="text/javascript">
       
       function httpGet(theUrl) {
@@ -213,37 +213,26 @@
 
       function setupDatasetSelect(){
         var command = "ls data";
-        var url = "/launch.cgi?" + btoa(command);
+        var url = "/launchMonitor.cgi?" + btoa(command);
 
-        var datasets = httpGet(url);
-        if ( datasets.length > 0 ) {
+        httpGet(url);
 
-          datasets = JSON.parse(datasets)["output"];
+        setTimeout(function() {
 
-          datasets = datasets.split(' ');
+          var response = httpGet("/getMonitorOutput.cgi");
 
-          var html = "";
-          for ( var i = 0; datasets.length; i++ ) {
-            html += "<select value='" + datasets[i] + "'>" + datasets[i] + "</select>";
+          try {
+
+            var output = JSON.parse(response)["output"];
+            //document.getElementById("Output").innerHTML = output;
+
+          } catch(e) {
+
+
           }
 
-          document.getElementById("dataset-select").innerHTML = html;
-        }
-      }
+        }, 1000);
 
-      function datasetView() {
-        var e = document.getElementById("dataset-select");
-        var value = e.options[e.selectedIndex].value;
-        var text = e.options[e.selectedIndex].text;
-
-        var command = "cat data/" + value;
-        var url = "/launch.cgi?" + btoa(command);
-
-        var content = httpGet(url);
-
-        content = JSON.parse(content)["output"];
-
-        document.getElementById("dataset-view-pre").innerHTML = content;
       }
 
       function updateNets(nets) {
@@ -251,8 +240,8 @@
 
         html += "<tbody>";
         for ( var i = 0; i < nets.length; i++ ) {
-          html += "<td>" + nets["name"] + "</td>";
-          html += "<td>" + nets["modified"] + "</td>";
+          html += "<td>" + nets[i] + "</td>";
+          html += "<td>" + "</td>";
         }
         html += "</tbody>";
 
@@ -278,18 +267,27 @@
 
         }, 1000);
 
-        // Output last command
+        // List networks
         setInterval(function() {
 
-          var command = 'stat -c "%y %s %n" $(ls docker) 2>/dev/null';
-          var url = "/launch.cgi?" + btoa(command);
+          var command = 'ls nets';
+          var url = "/launchMonitor.cgi?" + btoa(command);
 
-          var nets = httpGet(url);
-          if ( nets.length > 0 ) {
-            nets = JSON.parse(nets)["output"].split(' ');
+          httpGet(url);
 
-            updateNets(nets);
-          }
+          setTimeout(function() {
+
+            var response = httpGet("/getMonitorOutput.cgi");
+
+            try {
+
+              var nets = JSON.parse(response)["output"].split(' ');
+              updateNets(nets);
+
+            } catch(e) {
+            }
+
+          }, 1000);
 
         }, 5000);
 
@@ -314,6 +312,8 @@
         }, 1000);
 
       }
+
+      window.onload = setup;
 
     </script>
     <div class="main_page">
@@ -365,7 +365,7 @@
               <tr>
                 <td>Select dataset</td>
                 <td><select id="dataset-select"></select></td>
-                <td><button onclick="datasetView();" >View Content</button></td>
+                <td><button>Download Content</button></td>
               </tr>
             </table>
 
@@ -383,6 +383,7 @@
           <center>
             <table id="prev-networks-table">
             </table>
+            <button>Download Network (.json)</button>
 
           </center>
         </div>
