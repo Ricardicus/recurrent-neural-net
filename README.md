@@ -22,8 +22,7 @@ cmake --build .
 </pre>
 
 ## Meson 
-This works on multiple platforms
-Only requirement is Python3.
+This works on multiple platform, the only requirement is Python3.
 
 <pre>
 # Create virtual environment
