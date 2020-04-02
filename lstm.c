@@ -650,7 +650,7 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
   lstm_values_next_cache_t* d_next, lstm_values_cache_t* cache_in, 
   lstm_model_t* gradients, lstm_values_next_cache_t* cache_out)
 {
-  double *h,*c,*dldh_next,*dldc_next, *dldy, *dldh, *dldho, *dldhf, *dldhi, *dldhc, *dldc;
+  double *h,*dldh_next,*dldc_next, *dldy, *dldh, *dldho, *dldhf, *dldhi, *dldhc, *dldc;
   int N, Y, S;
 
   N = model->N;
@@ -666,7 +666,6 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
   dldhc = model->dldhc;
 
   h = cache_in->h;
-  c = cache_in->c;
 
   dldh_next = d_next->dldh_next;
   dldc_next = d_next->dldc_next;
@@ -955,6 +954,7 @@ void lstm_load(const char *path, set_t *set,
   // Read file version
   e_lstm_fgets(intContainer, sizeof(intContainer), fp);
   FileVersion = atoi(intContainer);
+  (void)FileVersion; // Not used yet, in this early stage.
 
   // Read NbrFeatures
   e_lstm_fgets(intContainer, sizeof(intContainer), fp);

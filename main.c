@@ -169,7 +169,6 @@ int main(int argc, char *argv[])
   unsigned int p = 0;
   unsigned int file_size = 0, sz = 0;
   int *X_train, *Y_train;
-  char * clean;
   FILE * fp;
 
   memset(&params, 0, sizeof(params));
