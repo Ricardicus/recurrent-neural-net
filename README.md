@@ -21,6 +21,26 @@ cmake ..
 cmake --build .
 </pre>
 
+## Meson 
+This works on multiple platforms
+Only requirement is Python3.
+
+<pre>
+# Create virtual environment
+# python3 -m venv venv
+# Activate virtual environment
+#   * On Linux:
+#       $ source venv/bin/active
+#   * On Windows:
+#       $ env/Script/active
+# Install meson
+# $ pip install meson
+meson builddir
+cd builddir
+ninja
+</pre>
+
+
 ## Unix Makefile
 
 <pre>
