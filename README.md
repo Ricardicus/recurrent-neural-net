@@ -155,8 +155,10 @@ Enjoy! :)
 # Examples
 I trained this program to read the first Harry Potter book, It produced quotes such as this: 
 
-"Iteration: 303400, Loss: 0.07877, output: ed Aunt Petunia suggested
-timidly, hours later, but Uncle Vernon was pointing at what had a thing while the next day. The Dursleys swut them on, the boy. "
+```
+Iteration: 303400, Loss: 0.07877, output: ed Aunt Petunia suggested
+timidly, hours later, but Uncle Vernon was pointing at what had a thing while the next day. The Dursleys swut them on, the boy.
+
 
 It has definately learned something. 
 
