@@ -158,9 +158,10 @@ I trained this program to read the first Harry Potter book, It produced quotes s
 ```
 Iteration: 303400, Loss: 0.07877, output: ed Aunt Petunia suggested
 timidly, hours later, but Uncle Vernon was pointing at what had a thing while the next day. The Dursleys swut them on, the boy.
+```
 
-
-It has definately learned something. 
+It has definately learned something as it is writing in english, and I only model on the most
+general basis, the character codes.
 
 For more activity based on this neural network, check out my twitter bot: 
 https://twitter.com/RicardicusPi
