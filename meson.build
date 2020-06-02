@@ -1,4 +1,4 @@
-project('syslogger' , ['c'], version: '1.0.0', default_options: ['warning_level=3', 'werror=true'])
+project('clstm' , ['c'], version: '1.0.0', default_options: ['warning_level=3', 'werror=true'])
 
 cc = meson.get_compiler('c')
 

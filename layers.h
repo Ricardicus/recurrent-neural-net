@@ -83,3 +83,4 @@ void tanh_backward(double* dldY, double* Y, double* dldX, int L);
 * @param correct the index that represents the correct observation
 */
 double cross_entropy(double* probabilities, int correct);
+
