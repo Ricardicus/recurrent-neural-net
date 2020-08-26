@@ -26,4 +26,4 @@ jobs:
     - name: build
       run: mkdir build; cd build; cmake ..; cmake --build .
     - name: test
-      run: cd build; cd src; .\net.exe ..\..\data\bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200 -N 20 -L 2
+      run: cd build; cd src; cd Debug; net.exe ..\..\..\data\bertrand_russell_ideas_that_have_harmed_mankind.txt -it 200 -N 20 -L 2
