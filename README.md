@@ -26,19 +26,18 @@ This works on multiple platform, the only requirement is Python3.
 
 <pre>
 # Create virtual environment
-# python3 -m venv venv
+python3 -m venv venv
 # Activate virtual environment
 #   * On Linux:
-#       $ source venv/bin/active
+source venv/bin/active
 #   * On Windows:
-#       $ env/Script/active
-# Install meson
-# $ pip install meson
+venv/Script/active 
+# Install requirements
+pip install -r requirements
 meson builddir
 cd builddir
 ninja
 </pre>
-
 
 ## Unix Makefile
 
