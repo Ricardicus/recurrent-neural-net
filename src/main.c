@@ -32,7 +32,7 @@ static int store_after_training = 0;
 void store_the_net_layers(int signo)
 {
   if ( SIGINT == signo ) {
-    if ( model_layers != NULL ){
+    if ( model_layers != NULL ) {
       lstm_store(params.store_network_name_raw, &set,
       model_layers, params.layers);
       lstm_store_net_layers_as_json(model_layers, params.store_network_name_json, JSON_KEY_NAME_SET, &set, params.layers);
@@ -316,7 +316,7 @@ Reallocating space in network input and output layer to accommodate this new fea
         if ( p == 0 ) {
           Y = set_get_features(&set);
           X = params.neurons;
-        } else if ( p == params.layers - 1) {
+        } else if ( p == params.layers - 1 ) {
           Y = params.neurons;
           X = set_get_features(&set);
         } else {

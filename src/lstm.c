@@ -628,11 +628,11 @@ void lstm_forward_propagate(lstm_model_t* model, double *input,
 
   // probs = softmax ( Wy*h + by )
   fully_connected_forward(cache_out->probs, model->Wy, cache_out->h, model->by, Y, N);
-  if  (softmax > 0 ){
+  if ( softmax > 0 ) {
     softmax_layers_forward(cache_out->probs, cache_out->probs, Y, model->params->softmax_temp);
   } 
 #ifdef INTERLAYER_SIGMOID_ACTIVATION
-  else {
+  if ( softmax <= 0 ) {
     sigmoid_forward(cache_out->probs, cache_out->probs, Y);
     copy_vector(cache_out->probs_before_sigma, cache_out->probs, Y);
   }
@@ -672,11 +672,11 @@ void lstm_backward_propagate(lstm_model_t* model, double* y_probabilities, int y
 
   dldy = y_probabilities;
 
-  if ( y_correct >= 0 ){
+  if ( y_correct >= 0 ) {
     dldy[y_correct] -= 1.0;
   }
 #ifdef INTERLAYER_SIGMOID_ACTIVATION
-  else {
+  if ( y_correct < 0 ) {
     sigmoid_backward(dldy, cache_in->probs_before_sigma, dldy, Y);
   }
 #endif
@@ -1151,7 +1151,7 @@ int lstm_reinit_model(
   n = 0;
   while ( n < Nin ) {
     i = 0;
-    while ( i < Sold) {
+    while ( i < Sold ) {
       newVectorWf[n*Snew + i] = modelInputs->Wf[n*Sold + i];
       newVectorWi[n*Snew + i] = modelInputs->Wi[n*Sold + i];
       newVectorWc[n*Snew + i] = modelInputs->Wc[n*Sold + i];
@@ -1194,7 +1194,7 @@ int lstm_reinit_model(
   n = 0;
   while ( n < Yold ) {
     i = 0;
-    while ( i < Nout) {
+    while ( i < Nout ) {
       newVectorWy[n*Nout + i] = modelOutputs->Wy[n*Nout + i];
       ++i;
     }
@@ -1483,7 +1483,7 @@ void lstm_output_string_from_string(lstm_model_t **model_layers, set_t* char_ind
     caches_layers[p] = e_calloc(2, sizeof(lstm_values_cache_t*));
 
     i = 0; 
-    while ( i < 2 ){
+    while ( i < 2 ) {
       caches_layers[p][i] = lstm_cache_container_init(
         model_layers[p]->X, model_layers[0]->N, model_layers[0]->Y);
       ++i;
@@ -1565,7 +1565,7 @@ void lstm_output_string_from_string(lstm_model_t **model_layers, set_t* char_ind
   while ( p < layers ) {
 
     i = 0; 
-    while ( i < 2 ){
+    while ( i < 2 ) {
       lstm_cache_container_free( caches_layers[p][i] ); 
       free(caches_layers[p][i]);
       ++i;
@@ -1660,7 +1660,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
     stateful_d_next = e_calloc(layers, sizeof(lstm_values_state_t*));
 
     i = 0;
-    while ( i < layers) {
+    while ( i < layers ) {
       stateful_d_next[i] = e_calloc( training_points/params->mini_batch_size + 1, sizeof(lstm_values_state_t));
 
       lstm_values_state_init(&stateful_d_next[i], model_layers[i]->N);
@@ -1764,7 +1764,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
       e3 = i % training_points;
 
       tmp_count = 0;
-      while ( tmp_count < model_layers[0]->Y ){
+      while ( tmp_count < model_layers[0]->Y ) {
         first_layer_input[tmp_count] = 0.0; 
         ++tmp_count;
       }
@@ -1806,7 +1806,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
     if ( n == 0 )
       record_keeper = loss;
 
-    if ( loss < record_keeper ){
+    if ( loss < record_keeper ) {
       record_keeper = loss;
       record_iteration = n;
     }
@@ -1966,7 +1966,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
     i = (b + params->mini_batch_size) % training_points;
 
-    if ( i < params->mini_batch_size) {
+    if ( i < params->mini_batch_size ) {
       i = 0;
     }
 
@@ -1986,7 +1986,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
     lstm_values_next_cache_free(d_next_layers[p]);
 
     i = 0;
-    while ( i < params->mini_batch_size) {
+    while ( i < params->mini_batch_size ) {
       lstm_cache_container_free(cache_layers[p][i]);
       lstm_cache_container_free(cache_layers[p][i]);
       ++i;
@@ -2005,7 +2005,7 @@ void lstm_train(lstm_model_t** model_layers, lstm_model_parameters_t *params,
 
   if ( stateful && stateful_d_next != NULL ) {
     i = 0;
-    while ( i < layers) {
+    while ( i < layers ) {
       free(stateful_d_next[i]);
       ++i;
     }

@@ -37,7 +37,7 @@ int
 set_insert_symbol(set_t * set, char c)
 {
   int i = 0;
-  while (  i <  SET_MAX_CHARS ) {
+  while ( i <  SET_MAX_CHARS ) {
     if ( (char) set->values[i] == c && set->free[i] == 0 )
       return i;
     if ( set->free[i] ) {
@@ -53,7 +53,7 @@ set_insert_symbol(set_t * set, char c)
 char 
 set_indx_to_char(set_t* set, int indx)
 {
-  if ( indx >= SET_MAX_CHARS ){
+  if ( indx >= SET_MAX_CHARS ) {
     return '\0';
   }
   return (char) set->values[indx];
@@ -63,7 +63,7 @@ int
 set_char_to_indx(set_t* set, char c) 
 {
   int i = 0;
-  while (  i <  SET_MAX_CHARS ) {
+  while ( i <  SET_MAX_CHARS ) {
     if ( set->values[i] == (int) c && set->free[i] == 0 )
       return i;
     ++i;
@@ -108,7 +108,7 @@ void
 set_print(set_t* set, double* probs)
 {
   int i = 0;
-  while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
+  while ( set->values[i] != 0 && i < SET_MAX_CHARS ) {
     if ( set->values[i] == '\n')
       printf("[ newline:  %lf ]\n", probs[i]);
     else
@@ -123,8 +123,8 @@ set_greedy_argmax(set_t* set, double* probs)
   int i = 0;
   int max_i = 0;
   double max_double = 0.0;
-  while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
-    if ( probs[i] > max_double ){
+  while ( set->values[i] != 0 && i < SET_MAX_CHARS ) {
+    if ( probs[i] > max_double ) {
       max_i = i;
       max_double = probs[i];
     }
@@ -144,7 +144,7 @@ set_store_as_json(set_t *set, FILE*fp)
 
   fprintf(fp, "{");
 
-  while ( set->values[i] != 0 && i < SET_MAX_CHARS ){
+  while ( set->values[i] != 0 && i < SET_MAX_CHARS ) {
     
     if ( i > 0 )
       fprintf(fp, ",");
@@ -187,7 +187,7 @@ set_read(set_t *set, FILE*fp)
 
     c = fgetc(fp);
 
-    if ( c != EOF ){
+    if ( c != EOF ) {
 
       n = 0;
       e = (char*) &c;

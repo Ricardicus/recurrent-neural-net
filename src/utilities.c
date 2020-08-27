@@ -139,9 +139,9 @@ int   init_random_matrix(double*** A, int R, int C)
 
   r = 0, c = 0;
 
-  while ( r < R ){
+  while ( r < R ) {
     c = 0;
-    while ( c < C ){
+    while ( c < C ) {
       (*A)[r][c] =  randn(0,1) / sqrt( R ); 
       ++c;
     }
@@ -157,7 +157,7 @@ double*   get_random_vector(int L, int R) {
   double *p;
   p = e_calloc(L, sizeof(double));
 
-  while ( l < L ){
+  while ( l < L ) {
     p[l] = randn(0,1) / sqrt( R / 5 );
     ++l;
   }
@@ -179,9 +179,9 @@ double**  get_random_matrix(int R, int C)
 
   r = 0, c = 0;
 
-  while ( r < R ){
+  while ( r < R ) {
     c = 0;
-    while ( c < C ){
+    while ( c < C ) {
       p[r][c] =  ((( (double) rand() ) / RAND_MAX) ) / sqrt( R / 2.0 ); 
       ++c;
     }
@@ -205,9 +205,9 @@ double**  get_zero_matrix(int R, int C)
 
   r = 0, c = 0;
 
-  while ( r < R ){
+  while ( r < R ) {
     c = 0;
-    while ( c < C ){
+    while ( c < C ) {
       p[r][c] =  0.0;
       ++c;
     }
@@ -231,9 +231,9 @@ int   init_zero_matrix(double*** A, int R, int C)
 
   r = 0, c = 0;
 
-  while ( r < R ){
+  while ( r < R ) {
     c = 0;
-    while ( c < C ){
+    while ( c < C ) {
       (*A)[r][c] = 0.0;
       ++c;
     }
@@ -259,7 +259,7 @@ int   init_zero_vector(double** V, int L)
   int l = 0;
   *V = e_calloc(L, sizeof(double));
 
-  while ( l < L ){
+  while ( l < L ) {
     (*V)[l] = 0.0;
     ++l;
   }
@@ -273,7 +273,7 @@ double*   get_zero_vector(int L)
   double *p;
   p = e_calloc(L, sizeof(double));
 
-  while ( l < L ){
+  while ( l < L ) {
     p[l] = 0.0;
     ++l;
   }
@@ -292,7 +292,7 @@ void  copy_vector(double* A, double* B, int L)
 {
   int l = 0;
 
-  while ( l < L ){
+  while ( l < L ) {
     A[l] = B[l];
     ++l;
   }
@@ -395,8 +395,8 @@ int   vectors_fit(double* V, double limit, int L)
   int l = 0;
   int msg = 0;
   double norm;
-  while ( l < L ){
-    if ( V[l] > limit || V[l] < -limit ){
+  while ( l < L ) {
+    if ( V[l] > limit || V[l] < -limit ) {
       msg = 1;
       norm = one_norm(V, L);
       break;
@@ -414,11 +414,11 @@ int   vectors_clip(double* V, double limit, int L)
 {
   int l = 0;
   int msg = 0;
-  while ( l < L ){
-    if ( V[l] > limit ){
+  while ( l < L ) {
+    if ( V[l] > limit ) {
       msg = 1;
       V[l] = limit;
-    } else if(  V[l] < -limit ){
+    } else if ( V[l] < -limit ) {
       msg = 1;
       V[l] = -limit;
     }
@@ -493,9 +493,9 @@ void  vector_store(double* V, int L, FILE * fp)
   size_t i = 0;
   char *p;
 
-  while ( l < L ){
+  while ( l < L ) {
     i = 0; p = (char*)&V[l];
-    while ( i < sizeof(double)) {
+    while ( i < sizeof(double) ) {
       fputc(*(p), fp);
       ++i; ++p;
     }
@@ -526,7 +526,7 @@ void  vector_store_ascii(double* V, int L, FILE * fp)
 {
   int l = 0;
 
-  while ( l < L ){
+  while ( l < L ) {
     fprintf(fp, "%.20lf\r\n", V[l]);
     ++l;
   }
@@ -602,7 +602,7 @@ void  vector_store_json(double* V, int L, FILE * fp)
 
   fprintf(fp, "[");
 
-  while ( l < L ){
+  while ( l < L ) {
 
     if ( l > 0 )
       fprintf(fp, ",");
@@ -631,13 +631,11 @@ randn (double mu, double sigma)
     return (mu + sigma * (double) X2);
   }
 
-  do
-  {
+  do {
     U1 = -1 + ((double) rand () / RAND_MAX) * 2;
     U2 = -1 + ((double) rand () / RAND_MAX) * 2;
     W = pow (U1, 2) + pow (U2, 2);
-  }
-  while (W >= 1 || W == 0);
+  } while ( W >= 1 || W == 0 );
  
   mult = sqrt ((-2 * log (W)) / W);
   X1 = U1 * mult;

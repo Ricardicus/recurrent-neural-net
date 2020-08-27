@@ -137,7 +137,7 @@ void  softmax_loss_layer_backward(double* P, int c, double* dldh, int R)
 { 
   int r = 0;
 
-  while ( r < R ){
+  while ( r < R ) {
     dldh[r] = P[r];
     ++r;
   }
@@ -172,7 +172,7 @@ void  sigmoid_backward(double* dldY, double* Y, double* dldX, int L)
 void  tanh_forward(double* Y, double* X, int L)
 {
   int l = 0;
-  while ( l < L ){
+  while ( l < L ) {
     Y[l] = tanh(X[l]);
     ++l;
   }
