@@ -1,5 +1,5 @@
 
-![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Building%20&%20Running/badge.svg) [![Build Status](https://travis-ci.org/Ricardicus/recurrent-neural-net.svg?branch=master)](https://travis-ci.org/Ricardicus/recurrent-neural-net)
+![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Building%20&%20Running/badge.svg) [![Build Status](https://travis-ci.org/Ricardicus/recurrent-neural-net.svg?branch=master)](https://travis-ci.org/Ricardicus/recurrent-neural-net) ![Style linter](https://github.com/Ricardicus/recurrent-neural-net/workflows/Style%20linter/badge.svg)
 
 # Reccurent neural network
 
