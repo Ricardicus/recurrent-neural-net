@@ -168,8 +168,6 @@ https://twitter.com/RicardicusPi
 
 # Comments
 
-For now I have just started with the implementation.
-
 I figured if it was to be implemented in C instead of Python then
 there would be a huge speedup which the results show!
 
