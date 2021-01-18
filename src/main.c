@@ -28,6 +28,8 @@ static int write_output_directly_bytes = 0;
 static char *read_network = NULL;
 static char *seed = NULL;
 static int store_after_training = 0;
+static char save_model_folder_raw[256];
+static char save_model_folder_json[256];
 
 void store_the_net_layers(int signo)
 {
@@ -71,6 +73,7 @@ void usage(char *argv[]) {
   printf("    -N  : Number of neurons in every layer\r\n");
   printf("    -vr : Verbosity level. Set to zero and only the loss function after and not during training will be printed.\n");
   printf("    -c  : Don't train, only generate output. Seed given by the value. If -r is used, datafile is not considered.\r\n");
+  printf("    -s  : Save folder, where models are stored (binary and JSON).\r\n");
   printf("\r\n");
   printf("Check std_conf.h to see what default values are used, these are set during compilation.\r\n");
   printf("\r\n");
@@ -117,6 +120,17 @@ void parse_input_args(int argc, char** argv)
       if ( params.store_network_every == 0 ) {
         store_after_training = 1;
       }
+    } else if ( !strcmp(argv[a], "-s") ) {
+      memset(save_model_folder_json, 0, sizeof(save_model_folder_json));
+      memset(save_model_folder_raw, 0, sizeof(save_model_folder_raw));
+
+      snprintf(save_model_folder_json, sizeof(save_model_folder_json),
+        "%s/%s", argv[a+1], STD_JSON_NET_NAME);
+      snprintf(save_model_folder_raw, sizeof(save_model_folder_raw),
+        "%s/%s", argv[a+1], STD_LOADABLE_NET_NAME);
+
+      params.store_network_name_raw = save_model_folder_raw;
+      params.store_network_name_json = save_model_folder_json;
     } else if ( !strcmp(argv[a], "-out") ) {
       write_output_directly_bytes = atoi(argv[a+1]);
       if ( write_output_directly_bytes <= 0 ) {

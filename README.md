@@ -73,41 +73,9 @@ Then run the program:
 where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
 
-If you have <i>several datafiles</i> then you can do something like:
-
-<pre>
-# bash example of how to use the -r flag
-# see std_conf.h on how to change the default
-# behaviour before building the program.
-
-# Build
-make
-# How many cycles all source files are to be trained on
-CYCLES=1000
-cycle=0
-# list files to train on
-files=$(ls folder_with_files/*)
-
-first=1
-while [ $cycle -lt $CYCLES ]; do
-  echo "$(date) Starting cycle $((cycle+1))"
-  for file in $files; do
-    echo "$(date) starting to train on file: $file"
-    if [ $first -eq 1 ]; then
-      ./net $file -vr 0 -ep 1 -st 0 -N 128 -L 3 -lr 0.0003
-      first=0
-    else 
-      ./net $file -vr 0 -r lstm_net.net -ep 1 -st 0 -lr 0.0003
-    fi
-  done
-
-  cycle=$((cycle+1))
-done
-</pre>
-
 ## Windows
 
-Build using CMake.
+Build using CMake or meson.
 Run with the same arguments as in UNIX. 
 
 # Configure default behaviour before build
@@ -140,10 +108,11 @@ The following flags are available:
     -N  : Number of neurons in every layer
     -vr : Verbosity level. Set to zero and only the loss function after and not during training will be printed.
     -c  : Don't train, only generate output. Seed given by the value. If -r is used, datafile is not considered.
+    -s  : Save folder, where models are stored (binary and JSON).
 
 Check std_conf.h to see what default values are used, these are set during compilation.
 
-./net compiled Dec 24 2019 10:05:26
+./net compiled Jan 18 2021 13:08:35
 </pre>
 
 The -st flags is great. Per default the network is stored upon interrupting the program with Ctrl-C. But using this argument, you can let the program train and have it store the network continously during the training process.
@@ -195,8 +164,14 @@ network at the moment. Take a look at Dockerfile.
 Modify at will. Here is a container for training
 on the poetic edda:
 <pre>
-# Pulls an image that trains the network on the poetic Edda
-docker pull rickardhallerback/recurrent-neural-net:1.0
+# Pulls an image that trains the network on the poetic Edda by default,
+# but can also train on your own, other data.
+docker pull rickardhallerback/recurrent-neural-net:1.1
+# Run the image, training on the poetic Edda (default)
+docker run rickardhallerback/recurrent-neural-net:1.1
+# Run the image, training on your own file, in the current working 
+# directory, say 'myfile.txt'. Storing model anew every 1000th iteration.
+docker run -v $(pwd):/data rickardhallerback/recurrent-neural-net:1.1 /data/myfile.txt -s /data -st 1000
 </pre>
 
 # Additional interesting stuff
