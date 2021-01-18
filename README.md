@@ -28,12 +28,12 @@ This works on multiple platform, the only requirement is Python3.
 # Create virtual environment
 python3 -m venv venv
 # Activate virtual environment
-#   * On Linux:
-source venv/bin/active
-#   * On Windows:
-venv/Script/active 
+# On Linux:
+source venv/bin/activate
+# On Windows:
+venv\Script\activate
 # Install requirements
-pip install -r requirements
+pip install -r requirements.txt
 meson builddir
 cd builddir
 ninja
