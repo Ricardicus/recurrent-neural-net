@@ -13,18 +13,18 @@ it has been training on using a LSTM network implemented in C. The repo is inspi
 
 ## CMake 
 This is the preferred way to build it on Windows.
-<pre>
+```Bash
 # Build using cmake
 mkdir build
 cd build
 cmake ..
 cmake --build .
-</pre>
+```
 
 ## Meson 
 This works on multiple platform, the only requirement is Python3.
 
-<pre>
+```Bash
 # Create virtual environment
 python3 -m venv venv
 # Activate virtual environment
@@ -37,14 +37,14 @@ pip install -r requirements.txt
 meson builddir
 cd builddir
 ninja
-</pre>
+```
 
 ## Unix Makefile
 
-<pre>
+```Bash
 # Build using make and GCC
 make
-</pre>
+```
 
 # Running
 
@@ -55,20 +55,20 @@ In that case it is super easy to download and run.
 
 Open a terminal window and type:
 
-<pre>
+```Bash
 # (You may have to install 'git', if you don't already have it!)
 git clone https://github.com/Ricardicus/recurrent-neural-net/
 cd recurrent-neural-net
 # This will compile the program. You need the compiler 'gcc' which is also available for download just like 'git'.
 make
-</pre>
+```
 
 If there is any complaints, then remove some flags in the 'makefile', I use 'msse3' on my mac but it does not work for my raspberry Pi for example. 
 
 Then run the program:
-<pre>
+```Bash
 ./net datafile 
-</pre>
+```
 
 where datafile is a file with the traning data and it will start training on it. You can see the progress 
 over time. 
@@ -163,7 +163,7 @@ I have built a container for this, it just trains a
 network at the moment. Take a look at Dockerfile. 
 Modify at will. Here is a container for training
 on the poetic edda:
-<pre>
+```Bash
 # Pulls an image that trains the network on the poetic Edda by default,
 # but can also train on your own, other data.
 docker pull rickardhallerback/recurrent-neural-net:1.1
@@ -172,7 +172,7 @@ docker run rickardhallerback/recurrent-neural-net:1.1
 # Run the image, training on your own file, in the current working 
 # directory, say 'myfile.txt'. Storing model anew every 1000th iteration.
 docker run -v $(pwd):/data rickardhallerback/recurrent-neural-net:1.1 /data/myfile.txt -s /data -st 1000
-</pre>
+```
 
 # Additional interesting stuff
 
