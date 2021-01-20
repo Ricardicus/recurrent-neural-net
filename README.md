@@ -1,5 +1,5 @@
 
-![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Building%20&%20Running/badge.svg) ![Style linter](https://github.com/Ricardicus/recurrent-neural-net/workflows/Style%20linter/badge.svg) ![Docker Image](https://github.com/Ricardicus/recurrent-neural-net/workflows/Docker%20Image%20CI/badge.svg)
+![](https://github.com/Ricardicus/recurrent-neural-net/workflows/Building%20&%20Running/badge.svg) ![Style linter](https://github.com/Ricardicus/recurrent-neural-net/workflows/Style%20linter/badge.svg) ![Docker Image](https://github.com/Ricardicus/recurrent-neural-net/workflows/Docker%20Image/badge.svg)
 
 # Reccurent neural network
 
