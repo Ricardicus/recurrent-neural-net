@@ -8,5 +8,6 @@ sources = ['layers.c','main.c','set.c','utilities.c', 'lstm.c']
 network = executable('net',
   sources: [sources],
   dependencies: m_dep,
-  include_directories: [includes]
+  include_directories: [includes],
+  install: true
 )
